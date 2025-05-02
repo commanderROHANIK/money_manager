@@ -1,62 +1,46 @@
-export interface UpcomingEvent {
-    id: number;
-    name: string;
-    eventDate: string; // ISO string format
-}
-
 export interface BankAccount {
     id: number;
-    name: string;
-    bankName: string;
+    accountName: string;
     balance: number;
-    currency: string;
-    accountType: 'checking' | 'savings' | 'credit' | 'other';
-}
-
-export interface Transaction {
-    id: number;
-    amount: number;
-    date: string;
-    description?: string;
-    category: string;
-    transactionType: 'income' | 'expense' | 'transfer';
-    bankAccountId: number;
+    bankName: string;
+    accountNumber: string;
+    accountType: string; // e.g. "Checking", "Savings"
 }
 
 export interface Loan {
     id: number;
-    name: string;
-    principalAmount: number;
-    outstandingAmount: number;
-    monthlyPayment: number;
+    loanName: string;
+    loanAmount: number;
+    remainingBalance: number;
     interestRate: number;
-    dueDay: number; // e.g., 15th of each month
-    nextPaymentDate: string;
+    dueDate: string; // ISO string format (DateTime in C#)
+    isPaidOff: boolean;
 }
 
-export interface RentalIncome {
+export interface RentalProperty {
     id: number;
     propertyName: string;
-    amount: number;
-    dueDay: number;
-    receivedDate?: string;
+    address: string;
+    rentAmount: number;
+    rentDueDate: string; // ISO date string from the backend
+    isRented: boolean;
 }
-
-export interface StockInvestment {
+  
+export interface Stock {
     id: number;
-    symbol: string;
-    companyName: string;
+    ticker: string;
     sharesOwned: number;
-    averageBuyPrice: number;
+    purchasePrice: number;
     currentPrice: number;
-    purchaseDate: string;
+    purchaseDate: string; // ISO date string
 }
 
-export interface Notification {
+export interface UpcomingEvent {
     id: number;
     title: string;
-    message: string;
-    eventDate: string;
-    isRead: boolean;
-    createdAt: string;
+    description: string;
+    eventDate: string; // ISO date string
+    isRecurring: boolean;
+    isNotified: boolean;
 }
+  
