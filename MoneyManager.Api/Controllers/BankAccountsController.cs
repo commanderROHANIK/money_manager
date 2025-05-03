@@ -16,55 +16,71 @@ namespace MoneyManager.Api.Controllers
             _context = context;
         }
 
+        // Get all bank accounts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BankAccount>>> GetBankAccounts()
         {
             return await _context.BankAccounts.ToListAsync();
         }
 
+        // Get a specific bank account by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<BankAccount>> GetBankAccount(int id)
         {
-            var account = await _context.BankAccounts.FindAsync(id);
-            if (account == null) return NotFound();
-            return account;
+            var bankAccount = await _context.BankAccounts.FindAsync(id);
+
+            if (bankAccount == null)
+            {
+                return NotFound();
+            }
+
+            return bankAccount;
         }
 
+        // Create a new bank account
         [HttpPost]
-        public async Task<ActionResult<BankAccount>> CreateBankAccount(BankAccount account)
+        public async Task<ActionResult<BankAccount>> CreateBankAccount([FromBody] BankAccount bankAccount)
         {
-            _context.BankAccounts.Add(account);
+            if (bankAccount == null)
+            {
+                return BadRequest("Bank account data is required.");
+            }
+
+            _context.BankAccounts.Add(bankAccount);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetBankAccount), new { id = account.Id }, account);
+
+            return CreatedAtAction(nameof(GetBankAccount), new { id = bankAccount.Id }, bankAccount);
         }
 
+        // Update an existing bank account
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBankAccount(int id, BankAccount updated)
+        public async Task<IActionResult> UpdateBankAccount(int id, [FromBody] BankAccount bankAccount)
         {
-            if (id != updated.Id) return BadRequest();
-            _context.Entry(updated).State = EntityState.Modified;
+            if (id != bankAccount.Id)
+            {
+                return BadRequest();
+            }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.BankAccounts.Any(e => e.Id == id)) return NotFound();
-                throw;
-            }
+            _context.Entry(bankAccount).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
+        // Delete a bank account
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBankAccount(int id)
         {
-            var account = await _context.BankAccounts.FindAsync(id);
-            if (account == null) return NotFound();
+            var bankAccount = await _context.BankAccounts.FindAsync(id);
 
-            _context.BankAccounts.Remove(account);
+            if (bankAccount == null)
+            {
+                return NotFound();
+            }
+
+            _context.BankAccounts.Remove(bankAccount);
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
     }
