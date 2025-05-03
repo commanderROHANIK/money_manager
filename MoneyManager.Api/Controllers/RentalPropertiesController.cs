@@ -17,51 +17,47 @@ namespace MoneyManager.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RentalProperty>>> GetRentalProperties()
+        public async Task<ActionResult<IEnumerable<RentalProperty>>> GetAll()
         {
             return await _context.RentalProperties.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<RentalProperty>> GetRentalProperty(int id)
+        public async Task<ActionResult<RentalProperty>> GetById(int id)
         {
             var property = await _context.RentalProperties.FindAsync(id);
-            if (property == null) return NotFound();
+            if (property == null)
+                return NotFound();
             return property;
         }
 
         [HttpPost]
-        public async Task<ActionResult<RentalProperty>> CreateRentalProperty(RentalProperty property)
+        public async Task<ActionResult<RentalProperty>> Create(RentalProperty property)
         {
+            property.RentDueDate= DateTime.SpecifyKind(property.RentDueDate, DateTimeKind.Utc);
+
             _context.RentalProperties.Add(property);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetRentalProperty), new { id = property.Id }, property);
+            return CreatedAtAction(nameof(GetById), new { id = property.Id }, property);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRentalProperty(int id, RentalProperty updated)
+        public async Task<IActionResult> Update(int id, RentalProperty property)
         {
-            if (id != updated.Id) return BadRequest();
-            _context.Entry(updated).State = EntityState.Modified;
+            if (id != property.Id)
+                return BadRequest();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.RentalProperties.Any(e => e.Id == id)) return NotFound();
-                throw;
-            }
-
+            _context.Entry(property).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRentalProperty(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var property = await _context.RentalProperties.FindAsync(id);
-            if (property == null) return NotFound();
+            if (property == null)
+                return NotFound();
 
             _context.RentalProperties.Remove(property);
             await _context.SaveChangesAsync();

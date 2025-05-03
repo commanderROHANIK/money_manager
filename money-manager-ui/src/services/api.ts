@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { UpcomingEvent } from '../models/models';
 import type { BankAccount } from '../models/models';
 import type { Loan } from '../models/models';
+import type { RentalProperty } from '../models/models';
 
 export const api = axios.create({
   baseURL: 'http://localhost:5296/api', // adjust port if needed
@@ -69,4 +70,22 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
   
   export async function deleteLoan(id: number): Promise<void> {
     await api.delete(`/Loans/${id}`);
+  }
+
+  export async function fetchRentalProperties(): Promise<RentalProperty[]> {
+    const response = await api.get<RentalProperty[]>('/RentalProperties');
+    return response.data;
+  }
+  
+  export async function createRentalProperty(newProp: RentalProperty): Promise<RentalProperty> {
+    const response = await api.post<RentalProperty>('/RentalProperties', newProp);
+    return response.data;
+  }
+  
+  export async function updateRentalProperty(id: number, prop: RentalProperty): Promise<void> {
+    await api.put(`/RentalProperties/${id}`, prop);
+  }
+  
+  export async function deleteRentalProperty(id: number): Promise<void> {
+    await api.delete(`/RentalProperties/${id}`);
   }
