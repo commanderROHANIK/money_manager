@@ -26,33 +26,32 @@ namespace MoneyManager.Api.Controllers
         public async Task<ActionResult<Loan>> GetLoan(int id)
         {
             var loan = await _context.Loans.FindAsync(id);
-            if (loan == null) return NotFound();
+
+            if (loan == null)
+                return NotFound();
+
             return loan;
         }
 
         [HttpPost]
         public async Task<ActionResult<Loan>> CreateLoan(Loan loan)
         {
+            loan.DueDate= DateTime.SpecifyKind(loan.DueDate, DateTimeKind.Utc);
+
             _context.Loans.Add(loan);
+
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetLoan), new { id = loan.Id }, loan);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLoan(int id, Loan updated)
+        public async Task<IActionResult> UpdateLoan(int id, Loan loan)
         {
-            if (id != updated.Id) return BadRequest();
-            _context.Entry(updated).State = EntityState.Modified;
+            if (id != loan.Id)
+                return BadRequest();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Loans.Any(e => e.Id == id)) return NotFound();
-                throw;
-            }
+            _context.Entry(loan).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -61,10 +60,13 @@ namespace MoneyManager.Api.Controllers
         public async Task<IActionResult> DeleteLoan(int id)
         {
             var loan = await _context.Loans.FindAsync(id);
-            if (loan == null) return NotFound();
+
+            if (loan == null)
+                return NotFound();
 
             _context.Loans.Remove(loan);
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
     }

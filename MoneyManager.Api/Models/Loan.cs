@@ -7,7 +7,7 @@ namespace MoneyManager.Api.Models
         public decimal LoanAmount { get; set; }
         public decimal RemainingBalance { get; set; }
         public decimal InterestRate { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime DueDate { get; set; } = DateTime.UtcNow;
         public bool IsPaidOff { get; set; }
     }
 }
