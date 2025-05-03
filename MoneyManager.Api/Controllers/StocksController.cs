@@ -17,51 +17,47 @@ namespace MoneyManager.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Stock>>> GetStocks()
+        public async Task<ActionResult<IEnumerable<Stock>>> GetAll()
         {
             return await _context.Stocks.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Stock>> GetStock(int id)
+        public async Task<ActionResult<Stock>> GetById(int id)
         {
             var stock = await _context.Stocks.FindAsync(id);
-            if (stock == null) return NotFound();
+            if (stock == null)
+                return NotFound();
             return stock;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Stock>> CreateStock(Stock stock)
+        public async Task<ActionResult<Stock>> Create(Stock stock)
         {
+            stock.PurchaseDate = DateTime.SpecifyKind(stock.PurchaseDate, DateTimeKind.Utc);
+
             _context.Stocks.Add(stock);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetStock), new { id = stock.Id }, stock);
+            return CreatedAtAction(nameof(GetById), new { id = stock.Id }, stock);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStock(int id, Stock updated)
+        public async Task<IActionResult> Update(int id, Stock stock)
         {
-            if (id != updated.Id) return BadRequest();
-            _context.Entry(updated).State = EntityState.Modified;
+            if (id != stock.Id)
+                return BadRequest();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Stocks.Any(e => e.Id == id)) return NotFound();
-                throw;
-            }
-
+            _context.Entry(stock).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStock(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var stock = await _context.Stocks.FindAsync(id);
-            if (stock == null) return NotFound();
+            if (stock == null)
+                return NotFound();
 
             _context.Stocks.Remove(stock);
             await _context.SaveChangesAsync();

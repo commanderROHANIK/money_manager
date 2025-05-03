@@ -4,6 +4,7 @@
     <BankAccounts />
     <LoanPage />
     <RentalPropertyPage />
+    <StockPage />
   </div>
 </template>
 
@@ -11,5 +12,6 @@
 import BankAccounts from './components/BankAccounts.vue';
 import LoanPage from './components/LoanPage.vue';
 import RentalPropertyPage from './components/RentalPropertyPage.vue';
+import StockPage from './components/StockPage.vue';
 import UpcomingEvents from './components/UpcomingEvents.vue'
 </script>

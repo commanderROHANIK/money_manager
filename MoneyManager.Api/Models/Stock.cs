@@ -7,6 +7,6 @@ namespace MoneyManager.Api.Models
         public int SharesOwned { get; set; }
         public decimal PurchasePrice { get; set; }
         public decimal CurrentPrice { get; set; }
-        public DateTime PurchaseDate { get; set; }
+        public DateTime PurchaseDate { get; set; } = DateTime.UtcNow;
     }
 }

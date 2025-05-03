@@ -3,6 +3,7 @@ import type { UpcomingEvent } from '../models/models';
 import type { BankAccount } from '../models/models';
 import type { Loan } from '../models/models';
 import type { RentalProperty } from '../models/models';
+import type { Stock } from '../models/models';
 
 export const api = axios.create({
   baseURL: 'http://localhost:5296/api', // adjust port if needed
@@ -88,4 +89,22 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
   
   export async function deleteRentalProperty(id: number): Promise<void> {
     await api.delete(`/RentalProperties/${id}`);
+  }
+
+  export async function fetchStocks(): Promise<Stock[]> {
+    const response = await api.get<Stock[]>('/Stocks');
+    return response.data;
+  }
+  
+  export async function createStock(stock: Stock): Promise<Stock> {
+    const response = await api.post<Stock>('/Stocks', stock);
+    return response.data;
+  }
+  
+  export async function updateStock(id: number, stock: Stock): Promise<void> {
+    await api.put(`/Stocks/${id}`, stock);
+  }
+  
+  export async function deleteStock(id: number): Promise<void> {
+    await api.delete(`/Stocks/${id}`);
   }
