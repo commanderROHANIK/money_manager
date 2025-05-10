@@ -112,6 +112,7 @@ MoneyManager.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.Workspac
 MoneyManager.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.resources.dll
 MoneyManager.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 MoneyManager.Api/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.resources.dll
+MoneyManager.Api/obj/*
 MoneyManager.Api/obj/MoneyManager.Api.csproj.EntityFrameworkCore.targets
 MoneyManager.Api/obj/MoneyManager.Api.csproj.nuget.dgspec.json
 MoneyManager.Api/obj/MoneyManager.Api.csproj.nuget.g.props
