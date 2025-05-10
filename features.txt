@@ -1,0 +1,12 @@
+1. Feature Definition
+Start by defining what your app should offer. Example core features:
+
+Dashboard overview: total balance, loans due, rents due, investments
+
+Reporting: monthly income vs. expense, loan trends, rent collection
+
+Reminders/alerts for due dates (loans, rent)
+
+Search/filtering on all entities
+
+User roles: e.g. admin vs regular user (for multi-user support)
