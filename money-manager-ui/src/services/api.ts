@@ -41,6 +41,11 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
     const response = await api.get<BankAccount[]>('/BankAccounts');
     return response.data;
   }
+
+  export async function fetchBankAccountsTotalBalance(): Promise<number | null> {
+    const response = await api.get<number | null>('/BankAccounts/summary/total-balance');
+    return response.data["totalBalance"] || null; 
+  }
   
   export async function createBankAccount(newBankAccount: BankAccount): Promise<BankAccount> {
     const response = await api.post<BankAccount>('/BankAccounts', newBankAccount);

@@ -37,6 +37,16 @@ namespace MoneyManager.Api.Controllers
             return bankAccount;
         }
 
+        [HttpGet("summary/total-balance")]
+        public async Task<IActionResult> GetTotalBalance()
+        {
+            var accounts = await _context.BankAccounts.ToListAsync();
+
+            decimal accountTotal = accounts.Sum(a => a.Balance);
+            
+            return Ok(new { totalBalance = accountTotal});
+        }
+
         // Create a new bank account
         [HttpPost]
         public async Task<ActionResult<BankAccount>> CreateBankAccount([FromBody] BankAccount bankAccount)
