@@ -11,7 +11,6 @@ import type {
   ChartData,
   ChartOptions
 } from 'chart.js';
-
 import { computed, defineProps } from 'vue';
 import type { BankAccount } from '../../models/models';
 
@@ -23,17 +22,25 @@ const props = defineProps<{
 
 // Chart Data
 const data = computed<ChartData<'pie'>>(() => {
-  const total = props.accounts.reduce((sum, acc) => sum + acc.balance, 0);
   return {
     labels: props.accounts.map(acc => acc.accountName),
     datasets: [
       {
         data: props.accounts.map(acc => acc.balance),
         backgroundColor: [
-          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-          '#B3E283', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+          '#e74c3c', // Alizarin Red
+          '#f39c12', // Orange
+          '#f1c40f', // Bright Yellow
+          '#2ecc71', // Emerald Green
+          '#1abc9c', // Aqua
+          '#3498db', // Bright Blue
+          '#9b59b6', // Amethyst Purple
+          '#e67e22', // Carrot Orange
+          '#16a085', // Dark Aqua
+          '#2980b9', // Belize Hole Blue
         ],
-        borderWidth: 1
+        borderWidth: 4,
+        borderColor: '#ffffff' // White border for separation
       }
     ]
   };
@@ -58,7 +65,8 @@ const options: ChartOptions<'pie'> = {
         }
       }
     }
-  }
+  },
+  cutout: '78%' // Makes it a donut shape
 };
 </script>
 
