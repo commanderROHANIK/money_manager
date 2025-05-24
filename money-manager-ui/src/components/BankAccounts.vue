@@ -1,83 +1,80 @@
 <template>
-  <div class="p-4">
-    <h2 class="text-2xl font-bold mb-4">Manage Bank Accounts</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
+    <!-- Total Balance Widget -->
+    <TotalBalanceWidget />
 
-    <!-- Create Bank Account Form -->
-    <form @submit.prevent="_createBankAccount" class="mb-4">
-      <input v-model="newBankAccount.accountName" placeholder="Account Name" class="p-2 border rounded mr-2" required />
-      <input v-model="newBankAccount.balance" type="number" placeholder="Balance" class="p-2 border rounded mr-2" required />
-      <input v-model="newBankAccount.bankName" placeholder="Bank Name" class="p-2 border rounded mr-2" required />
-      <input v-model="newBankAccount.accountNumber" placeholder="Account Number" class="p-2 border rounded mr-2" required />
-      <input v-model="newBankAccount.accountType" placeholder="Account Type (Checking/Savings)" class="p-2 border rounded" required />
-      <button type="submit" class="p-2 bg-blue-500 text-white rounded">Create Bank Account</button>
-    </form>
+    <!-- Bank Accounts List Widget -->
+    <div class="bg-white p-6 rounded-2xl shadow-md col-span-1 md:col-span-2">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-semibold">Connected Bank Accounts</h2>
+        <button
+          class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded"
+          @click="showAddModal = true"
+        >
+          + Add Account
+        </button>
+      </div>
+      <ul class="divide-y text-sm">
+        <li
+          v-for="account in bankAccounts"
+          :key="account.id"
+          class="flex justify-between items-center py-2"
+        >
+          <div>
+            <p class="font-medium">{{ account.accountName }} - {{ account.bankName }}</p>
+            <p class="text-gray-500 text-xs">{{ account.accountType }} • {{ formatCurrency(account.balance) }}</p>
+          </div>
+          <button
+            class="text-red-500 hover:text-red-700"
+            @click="deleteAccount(account.id)"
+          >
+            ➖
+          </button>
+        </li>
+      </ul>
+    </div>
 
-    <!-- Display Bank Accounts -->
-    <ul>
-      <li v-for="bankAccount in bankAccounts" :key="bankAccount.id" class="mb-2">
-        <div class="bg-white p-4 rounded shadow">
-          <strong>{{ bankAccount.accountName }}</strong> - 
-          <span>{{ bankAccount.bankName }}</span> - 
-          <span>{{ bankAccount.accountType }}</span> - 
-          <span>{{ bankAccount.balance }}</span>
-          <button @click="editBankAccount(bankAccount)" class="ml-2 text-blue-500">Edit</button>
-          <button @click="_deleteBankAccount(bankAccount.id)" class="ml-2 text-red-500">Delete</button>
-        </div>
-      </li>
-    </ul>
+    <!-- Pie Chart Widget -->
+    <div class="bg-white p-6 rounded-2xl shadow-md col-span-1">
+      <h2 class="text-lg font-semibold mb-2">Balance Distribution</h2>
+      <BankAccountPieChart :accounts="bankAccounts" />
+    </div>
+
+    <!-- Add Modal (Placeholder) -->
+    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+      <div class="bg-white rounded-xl shadow-lg p-6 w-96">
+        <h3 class="text-lg font-semibold mb-4">Add Bank Account</h3>
+        <!-- Form fields go here -->
+        <button class="bg-blue-500 text-white px-4 py-1 rounded" @click="showAddModal = false">Close</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from '../services/api';
+import { fetchBankAccounts, deleteBankAccount } from '../services/api';
 import type { BankAccount } from '../models/models';
+import TotalBalanceWidget from '../components/Widgets/TotalBalance.vue';
+import BankAccountPieChart from '../components/Widgets/BankAccountPieChart.vue'; // You’ll create this
 
 const bankAccounts = ref<BankAccount[]>([]);
-const newBankAccount = ref<BankAccount>({
-  id: 0,
-  accountName: '',
-  balance: 0,
-  bankName: '',
-  accountNumber: '',
-  accountType: '',
-});
+const showAddModal = ref(false);
 
 onMounted(async () => {
-  try {
-    bankAccounts.value = await fetchBankAccounts();
-  } catch (err) {
-    console.error('Failed to load bank accounts', err);
-  }
+  bankAccounts.value = await fetchBankAccounts();
 });
 
-async function _createBankAccount() {
-  try {
-    const createdBankAccount = await createBankAccount(newBankAccount.value);
-    bankAccounts.value.push(createdBankAccount);  // Add the newly created account to the list
-    newBankAccount.value = { id: 0, accountName: '', balance: 0, bankName: '', accountNumber: '', accountType: '' };
-  } catch (err) {
-    console.error('Failed to create bank account', err);
-  }
+async function deleteAccount(id: number) {
+  await deleteBankAccount(id);
+  bankAccounts.value = bankAccounts.value.filter(acc => acc.id !== id);
 }
 
-async function editBankAccount(bankAccount: BankAccount) {
-  const updatedBankAccount: BankAccount = { ...bankAccount, accountName: 'Updated Account Name' };  // Example
-  
-  try {
-    await updateBankAccount(bankAccount.id, updatedBankAccount);
-    bankAccounts.value = bankAccounts.value.map(acc => acc.id === bankAccount.id ? updatedBankAccount : acc);
-  } catch (err) {
-    console.error('Failed to update bank account', err);
-  }
-}
-
-async function _deleteBankAccount(id: number) {
-  try {
-    await deleteBankAccount(id);
-    bankAccounts.value = bankAccounts.value.filter(acc => acc.id !== id);
-  } catch (err) {
-    console.error('Failed to delete bank account', err);
-  }
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('hu-HU', {
+    style: 'currency',
+    currency: 'HUF',
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 </script>
