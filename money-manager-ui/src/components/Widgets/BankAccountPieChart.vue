@@ -28,18 +28,17 @@ const data = computed<ChartData<'pie'>>(() => {
       {
         data: props.accounts.map(acc => acc.balance),
         backgroundColor: [
+          '#2ecc71', // Emerald Green
+          '#3498db', // Bright Blue
+          '#e67e22', // Carrot Orange
           '#e74c3c', // Alizarin Red
           '#f39c12', // Orange
-          '#f1c40f', // Bright Yellow
-          '#2ecc71', // Emerald Green
           '#1abc9c', // Aqua
-          '#3498db', // Bright Blue
           '#9b59b6', // Amethyst Purple
-          '#e67e22', // Carrot Orange
           '#16a085', // Dark Aqua
           '#2980b9', // Belize Hole Blue
         ],
-        borderWidth: 4,
+        borderWidth: 2,
         borderColor: '#ffffff' // White border for separation
       }
     ]

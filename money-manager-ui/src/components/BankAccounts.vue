@@ -37,7 +37,7 @@
     <!-- Pie Chart Widget -->
     <div class="bg-white p-6 rounded-2xl shadow-md col-span-1">
       <h2 class="text-lg font-semibold mb-2">Balance Distribution</h2>
-      <BankAccountPieChart :accounts="bankAccounts" />
+      <BankAccountPieChart :accounts="sortedAccounts" />
     </div>
 
     <!-- Add Modal (Placeholder) -->
@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { fetchBankAccounts, deleteBankAccount } from '../services/api';
 import type { BankAccount } from '../models/models';
 import TotalBalanceWidget from '../components/Widgets/TotalBalance.vue';
@@ -77,4 +77,8 @@ function formatCurrency(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+const sortedAccounts = computed(() => {
+  return bankAccounts.value.sort((a, b) => b.balance - a.balance);
+});
 </script>
