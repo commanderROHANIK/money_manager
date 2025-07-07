@@ -40,7 +40,7 @@ import TotalLoanAmountWidget from '../components/Widgets/TotalLoanAmountWidget.v
 import LoanStatusPieWidget from '../components/Widgets/LoanStatusPieWidget.vue';
 import MonthlyRepaymentChartWidget from '../components/Widgets/MonthlyRepaymentChartWidget.vue';
 import LoanListWidget from '../components/Widgets/LoanListWidget.vue';
-// import NextDueRepaymentWidget from '../components/Widgets/NextDueRepaymentWidget.vue';
+import NextDueRepaymentWidget from '../components/Widgets/NextDueRepaymentWidget.vue';
 // import TopLoansWidget from '../components/Widgets/TopLoansWidget.vue';
 
 const loans = ref<Loan[]>([]);
