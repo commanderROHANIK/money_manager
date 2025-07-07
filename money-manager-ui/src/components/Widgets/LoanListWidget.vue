@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-md col-span-1 md:col-span-3">
+  <div class="p-6 col-span-1 md:col-span-3">
     <h2 class="text-lg font-semibold mb-4">All Loans</h2>
 
     <!-- Add Loan Form -->

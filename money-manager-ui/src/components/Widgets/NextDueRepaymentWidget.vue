@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-md">
+  <div class="p-6">
     <h2 class="text-lg font-semibold mb-2">Next Due Repayments</h2>
     <ul v-if="nextPayments.length" class="space-y-2 text-sm">
       <li v-for="loan in nextPayments" :key="loan.id" class="flex justify-between">
