@@ -27,13 +27,13 @@
 
 <script setup lang="ts">
 // Import placeholder or implemented widgets
-import TotalPortfolioValueWidget from '../components/widgets/TotalPortfolioValueWidget.vue';
-import CashVsInvestedWidget from '../components/widgets/CashVsInvestedWidget.vue';
-import PortfolioPerformanceChartWidget from '../components/widgets/PortfolioPerformanceChartWidget.vue';
-import SectorDistributionPieWidget from '../components/widgets/SectorDistributionPieWidget.vue';
-import TopGainersAndLosersWidget from '../components/widgets/TopGainersAndLosersWidget.vue';
-import DividendIncomeWidget from '../components/widgets/DividendIncomeWidget.vue';
-import HoldingsListWidget from '../components/widgets/HoldingsListWidget.vue';
+import TotalPortfolioValueWidget from '../components/Widgets/Stocks/TotalPortfolioValueWidget.vue';
+import CashVsInvestedWidget from './Widgets/Stocks/CashVsInvestedWidget.vue';
+import PortfolioPerformanceChartWidget from './Widgets/Stocks/PortfolioPerformanceChartWidget.vue';
+import SectorDistributionPieWidget from '../components/Widgets/Stocks/SectorDistributionPieWidget.vue';
+import TopGainersAndLosersWidget from '../components/Widgets/Stocks/TopGainersAndLosersWidget.vue';
+import DividendIncomeWidget from '../components/Widgets/Stocks/DividendIncomeWidget.vue';
+import HoldingsListWidget from '../components/Widgets/Stocks/HoldingsListWidget.vue';
 </script>
 
 <style scoped>

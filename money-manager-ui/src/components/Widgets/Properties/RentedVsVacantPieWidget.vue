@@ -14,7 +14,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import type { RentalProperty } from '../../models/models';
+import type { RentalProperty } from '../../../models/models';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

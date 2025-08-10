@@ -9,8 +9,8 @@
   
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
-  import { fetchLoans } from '../../services/api';
-  import type { Loan } from '../../models/models';
+  import { fetchLoans } from '../../../services/api';
+  import type { Loan } from '../../../models/models';
   
   const loans = ref<Loan[]>([]);
   

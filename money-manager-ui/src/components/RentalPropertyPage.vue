@@ -34,12 +34,12 @@ import { fetchRentalProperties, deleteRentalProperty } from '../services/api';
 import type { RentalProperty } from '../models/models';
 
 // Widgets
-import TotalRentWidget from '../components/Widgets/TotalRentWidget.vue';
-import RentedVsVacantPieWidget from '../components/Widgets/RentedVsVacantPieWidget.vue';
-import UpcomingRentDueWidget from '../components/Widgets/UpcomingRentDueWidget.vue';
-import PropertyListWidget from '../components/Widgets/PropertyListWidget.vue';
-import MostExpensivePropertyWidget from '../components/Widgets/MostExpensivePropertyWidget.vue';
-import RentByMonthChartWidget from '../components/Widgets/RentByMonthChartWidget.vue';
+import TotalRentWidget from '../components/Widgets/Properties/TotalRentWidget.vue';
+import RentedVsVacantPieWidget from '../components/Widgets/Properties/RentedVsVacantPieWidget.vue';
+import UpcomingRentDueWidget from '../components/Widgets/Properties/UpcomingRentDueWidget.vue';
+import PropertyListWidget from '../components/Widgets/Properties/PropertyListWidget.vue';
+import MostExpensivePropertyWidget from '../components/Widgets/Properties/MostExpensivePropertyWidget.vue';
+import RentByMonthChartWidget from '../components/Widgets/Properties/RentByMonthChartWidget.vue';
 
 const properties = ref<RentalProperty[]>([]);
 

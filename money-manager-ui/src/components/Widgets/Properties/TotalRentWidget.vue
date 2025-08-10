@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { RentalProperty } from '../../models/models';
+import type { RentalProperty } from '../../../models/models';
 
 const props = defineProps<{
   properties: RentalProperty[];

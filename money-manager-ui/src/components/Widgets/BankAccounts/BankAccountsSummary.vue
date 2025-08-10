@@ -7,8 +7,8 @@
   
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
-  import { fetchBankAccounts } from '../../services/api';
-  import type { BankAccount } from '../../models/models';
+  import { fetchBankAccounts } from '../../../services/api';
+  import type { BankAccount } from '../../../models/models';
   
   const accounts = ref<BankAccount[]>([]);
   

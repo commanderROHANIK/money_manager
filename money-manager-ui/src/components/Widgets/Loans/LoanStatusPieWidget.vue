@@ -16,7 +16,7 @@
 import { Doughnut } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { computed } from 'vue';
-import type { Loan } from '../../models/models';
+import type { Loan } from '../../../models/models';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

@@ -7,8 +7,8 @@
   
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
-  import { fetchRentalProperties } from '../../services/api';
-  import type { RentalProperty } from '../../models/models';
+  import { fetchRentalProperties } from '../../../services/api';
+  import type { RentalProperty } from '../../../models/models';
   
   const properties = ref<RentalProperty[]>([]);
   

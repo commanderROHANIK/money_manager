@@ -17,11 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import EventSummaryStatsWidget from '../components/widgets/EventSummaryStatsWidget.vue';
-import UpcomingEventsWidget from '../components/widgets/UpcomingEventsWidget.vue';
-import PastEventsWidget from '../components/widgets/PastEventsWidget.vue';
+import EventSummaryStatsWidget from '../components/Widgets/Events/EventSummaryStatsWidget.vue';
+import UpcomingEventsWidget from '../components/Widgets/Events/UpcomingEventsWidget.vue';
+import PastEventsWidget from './Widgets/Events/PastEventsWidget.vue';
 </script>
-
-<style scoped>
-/* Optional: custom styling if needed */
-</style>

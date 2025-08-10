@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchLoans, createLoan, deleteLoan } from '../../services/api';
-import type { Loan } from '../../models/models';
+import { fetchLoans, createLoan, deleteLoan } from '../../../services/api';
+import type { Loan } from '../../../models/models';
 
 const loans = ref<Loan[]>([]);
 

@@ -22,8 +22,8 @@
   
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
-  import { fetchStocks } from '../../services/api';
-  import type { Stock } from '../../models/models';
+  import { fetchStocks } from '../../../services/api';
+  import type { Stock } from '../../../models/models';
   
   const stocks = ref<Stock[]>([]);
   

@@ -36,12 +36,12 @@ import { fetchLoans, deleteLoan } from '../services/api';
 import type { Loan } from '../models/models';
 
 // Widgets
-import TotalLoanAmountWidget from '../components/Widgets/TotalLoanAmountWidget.vue';
-import LoanStatusPieWidget from '../components/Widgets/LoanStatusPieWidget.vue';
-import MonthlyRepaymentChartWidget from '../components/Widgets/MonthlyRepaymentChartWidget.vue';
-import LoanListWidget from '../components/Widgets/LoanListWidget.vue';
-import NextDueRepaymentWidget from '../components/Widgets/NextDueRepaymentWidget.vue';
-import TopLoansWidget from '../components/Widgets/TopLoansWidget.vue';
+import TotalLoanAmountWidget from '../components/Widgets/Loans/TotalLoanAmountWidget.vue';
+import LoanStatusPieWidget from '../components/Widgets/Loans/LoanStatusPieWidget.vue';
+import MonthlyRepaymentChartWidget from '../components/Widgets/Loans/MonthlyRepaymentChartWidget.vue';
+import LoanListWidget from '../components/Widgets/Loans/LoanListWidget.vue';
+import NextDueRepaymentWidget from '../components/Widgets/Loans/NextDueRepaymentWidget.vue';
+import TopLoansWidget from '../components/Widgets/Loans/TopLoansWidget.vue';
 
 const loans = ref<Loan[]>([]);
 

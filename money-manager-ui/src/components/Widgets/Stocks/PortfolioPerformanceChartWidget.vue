@@ -11,8 +11,8 @@ import {
   LinearScale,
   CategoryScale
 } from 'chart.js';
-import { fetchStocks } from '../../services/api';
-import type { Stock } from '../../models/models';
+import { fetchStocks } from '../../../services/api';
+import type { Stock } from '../../../models/models';
 import type { ChartData, ChartOptions } from 'chart.js';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale);

@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { fetchBankAccountsTotalBalance } from '../../services/api'; // Adjust the import path as necessary
+import { fetchBankAccountsTotalBalance } from '../../../services/api'; // Adjust the import path as necessary
 
 const balance = ref<number | null>(null);
 

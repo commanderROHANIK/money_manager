@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import type { RentalProperty } from '../../models/models';
+import type { RentalProperty } from '../../../models/models';
 import { computed, defineProps } from 'vue';
 
 const props = defineProps<{

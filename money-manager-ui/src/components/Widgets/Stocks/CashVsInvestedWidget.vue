@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { fetchBankAccountsTotalBalance, fetchStocks } from '../../services/api';
-import type { Stock } from '../../models/models';
+import { fetchBankAccountsTotalBalance, fetchStocks } from '../../../services/api';
+import type { Stock } from '../../../models/models';
 
 const cash = ref<number | null>(null);
 const stocks = ref<Stock[]>([]);

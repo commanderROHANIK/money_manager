@@ -12,21 +12,21 @@ import type {
   ChartOptions
 } from 'chart.js';
 import { computed, defineProps } from 'vue';
-import type { BankAccount } from '../../models/models';
+import type { Loan } from '../../../models/models';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
 const props = defineProps<{
-  accounts: BankAccount[]
+  accounts: Loan[]
 }>();
 
 // Chart Data
 const data = computed<ChartData<'pie'>>(() => {
   return {
-    labels: props.accounts.map(acc => acc.accountName),
+    labels: props.accounts.map(acc => acc.loanName),
     datasets: [
       {
-        data: props.accounts.map(acc => acc.balance),
+        data: props.accounts.map(acc => acc.loanAmount),
         backgroundColor: [
           '#2ecc71', // Emerald Green
           '#3498db', // Bright Blue
@@ -70,7 +70,7 @@ const options: ChartOptions<'pie'> = {
 </script>
 
 <template>
-  <div>
+   <div class="p-4 w-64 h-64 flex flex-col justify-between">
     <Pie :data="data" :options="options" />
   </div>
 </template>

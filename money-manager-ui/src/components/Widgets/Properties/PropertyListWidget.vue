@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import type { RentalProperty } from '../../models/models';
+import type { RentalProperty } from '../../../models/models';
 
 defineProps<{
   properties: RentalProperty[];

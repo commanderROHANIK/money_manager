@@ -22,12 +22,12 @@
   </template>
   
   <script setup lang="ts">
-    import UpcomingEvents from './Widgets/UpcomingEvents.vue';
-    import TotalBalance from './Widgets/TotalBalance.vue';
-    import StockSummary from './Widgets/StockSummary.vue';
-    import LoanSummary from './Widgets/LoanSummary.vue';
-    import PropertySummary from './Widgets/PropertySummary.vue';
-    import BankAccountsSummary from './Widgets/BankAccountsSummary.vue';
+    import UpcomingEvents from './Widgets/Events/UpcomingEvents.vue';
+    import TotalBalance from './Widgets/BankAccounts/TotalBalance.vue';
+    import StockSummary from './Widgets/Stocks/StockSummary.vue';
+    import LoanSummary from './Widgets/Loans/LoanSummary.vue';
+    import PropertySummary from './Widgets/Properties/PropertySummary.vue';
+    import BankAccountsSummary from './Widgets/BankAccounts/BankAccountsSummary.vue';
   </script>
   
   <style scoped>

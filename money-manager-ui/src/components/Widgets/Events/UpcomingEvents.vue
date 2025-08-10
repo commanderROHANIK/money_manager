@@ -15,8 +15,8 @@
   
   <script setup lang="ts">
   import { ref, onMounted } from 'vue';
-  import { fetchUpcomingEvents } from '../../services/api'; // Adjust the import path as necessary
-  import type { UpcomingEvent } from '../../models/models';
+  import { fetchUpcomingEvents } from '../../../services/api'; // Adjust the import path as necessary
+  import type { UpcomingEvent } from '../../../models/models';
   
   const events = ref<UpcomingEvent[]>([]);
   

@@ -55,8 +55,8 @@
 import { ref, onMounted, computed } from 'vue';
 import { fetchBankAccounts, deleteBankAccount } from '../services/api';
 import type { BankAccount } from '../models/models';
-import TotalBalanceWidget from '../components/Widgets/TotalBalance.vue';
-import BankAccountPieChart from '../components/Widgets/BankAccountPieChart.vue'; // You’ll create this
+import TotalBalanceWidget from '../components/Widgets/BankAccounts/TotalBalance.vue';
+import BankAccountPieChart from '../components/Widgets/BankAccounts/BankAccountPieChart.vue'; // You’ll create this
 
 const bankAccounts = ref<BankAccount[]>([]);
 const showAddModal = ref(false);

@@ -55,8 +55,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { fetchUpcomingEvents, updateUpcomingEvent, deleteUpcomingEvent } from '../../services/api';
-import type { UpcomingEvent } from '../../models/models';
+import { fetchUpcomingEvents, updateUpcomingEvent, deleteUpcomingEvent } from '../../../services/api';
+import type { UpcomingEvent } from '../../../models/models';
 
 const events = ref<UpcomingEvent[]>([]);
 const loading = ref(true);

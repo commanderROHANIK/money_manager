@@ -16,7 +16,7 @@ import {
   Legend
 } from 'chart.js';
 import { Bar } from 'vue-chartjs';
-import type { RentalProperty } from '../../models/models';
+import type { RentalProperty } from '../../../models/models';
 import { computed, defineProps } from 'vue';
 
 
