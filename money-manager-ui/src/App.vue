@@ -8,5 +8,5 @@
 </template>
 
 <script setup lang="ts">
-import Menu from './components/Dashboard/Menu.vue'; // Adjust path if needed
+  import Menu from './components/Menu.vue'; 
 </script>
