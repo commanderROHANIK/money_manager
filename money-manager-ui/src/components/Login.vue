@@ -45,10 +45,11 @@ export default {
   methods: {
     handleLogin() {
       login(this.username, this.password)
-        .then(() => this.$router.push('/'))
+        .then(() => {
+          this.$router.push('/'); 
+          window.location.reload();
+        })
         .catch(() => this.error = 'Invalid login');
-
-        window.location.reload();
     }
   }
 };
