@@ -15,14 +15,16 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   username: string;
+  email: string;
   password: string;
 }
 
 export function register(
   username: string,
+  email: string,
   password: string
 ): Promise<AxiosResponse<{ message: string }>> {
-  const payload: RegisterRequest = { username, password };
+  const payload: RegisterRequest = { username, email, password };
   return axios.post(API_URL + 'register', payload);
 }
 

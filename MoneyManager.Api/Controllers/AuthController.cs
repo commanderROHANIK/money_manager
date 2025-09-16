@@ -30,9 +30,13 @@ namespace MoneyManager.Api.Controllers
             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
                 return BadRequest(new { message = "Username already exists" });
 
+                if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+                return BadRequest(new { message = "Email address already used" });
+
             var user = new User
             {
                 Username = request.Username,
+                Email = request.Email,
                 Password = request.Password,
             };
 
@@ -86,6 +90,6 @@ namespace MoneyManager.Api.Controllers
         }
     }
 
-    public record RegisterRequest(string Username, string Password);
+    public record RegisterRequest(string Username, string Email, string Password);
     public record LoginRequest(string Username, string Password);
 }
