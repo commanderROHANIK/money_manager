@@ -20,9 +20,6 @@ namespace MoneyManager.Api.Data
 
         public DbSet<UpcomingEvent> UpcomingEvents { get; set; }
 
-
-        // We'll add DbSet<> properties later like:
-        // public DbSet<BankAccount> BankAccounts { get; set; }
-        // public DbSet<Loan> Loans { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }
