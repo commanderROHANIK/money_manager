@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using MoneyManager.Api.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Infrastructure;
 
 
 namespace MoneyManager.Api.Controllers
@@ -17,11 +14,13 @@ namespace MoneyManager.Api.Controllers
     {
         private readonly MoneyManagerDbContext _context;
         private readonly IConfiguration _config;
+        private readonly TokenProvider _tokenProvider;
 
-        public AuthController(MoneyManagerDbContext context, IConfiguration config)
+        public AuthController(MoneyManagerDbContext context, IConfiguration config, TokenProvider tokenProvider)
         {
             _context = context;
             _config = config;
+            _tokenProvider = tokenProvider;
         }
 
         [HttpPost("register")]
@@ -53,7 +52,7 @@ namespace MoneyManager.Api.Controllers
             if (user == null || !string.Equals(request.Password, user.Password))
                 return Unauthorized(new { message = "Invalid username or password" });
 
-            var token = GenerateJwtToken(user);
+            var token = _tokenProvider.Create(user);
             return Ok(new { token });
         }
 
@@ -65,28 +64,6 @@ namespace MoneyManager.Api.Controllers
             {
                 username = User.Identity?.Name
             });
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var jwtSettings = _config.GetSection("JwtSettings");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Name, user.Username)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 
