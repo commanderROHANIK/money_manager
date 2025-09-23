@@ -1,8 +1,10 @@
 using MoneyManager.Api.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Text;
+using dotenv.net;
+using MoneyManager.Api.Infrastructure;
+
+DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,9 +14,6 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<MoneyManagerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -34,6 +33,8 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+
+builder.Services.AddSingleton<TokenProvider>();
 
 var app = builder.Build();
 
