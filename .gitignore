@@ -13,6 +13,7 @@
 # Ignore Rider/VS Code settings
 .idea/
 .vscode/
+.vs/
 
 # Ignore compiled DLLs and EXEs
 *.dll
