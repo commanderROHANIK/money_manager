@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<MoneyManagerDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseInMemoryDatabase("MoneyManagerDb"));
 
 builder.Services.AddAuthentication(options =>
 {
