@@ -26,6 +26,16 @@ namespace MoneyManager.Api.Data
 
         public DbSet<User> Users { get; set; }
 
+        public DbSet<Lease> Leases { get; set; }
+
+        public DbSet<PropertyTransaction> PropertyTransactions { get; set; }
+
+        public DbSet<PropertyValuation> PropertyValuations { get; set; }
+
+        public DbSet<RentPricePoint> RentPricePoints { get; set; }
+
+        public DbSet<PropertyEvent> PropertyEvents { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -46,6 +56,77 @@ namespace MoneyManager.Api.Data
             ConfigureOwnership<RentalProperty>(modelBuilder);
             ConfigureOwnership<Stock>(modelBuilder);
             ConfigureOwnership<UpcomingEvent>(modelBuilder);
+            ConfigureOwnership<Lease>(modelBuilder);
+            ConfigureOwnership<PropertyTransaction>(modelBuilder);
+            ConfigureOwnership<PropertyValuation>(modelBuilder);
+            ConfigureOwnership<RentPricePoint>(modelBuilder);
+            ConfigureOwnership<PropertyEvent>(modelBuilder);
+
+            modelBuilder.Entity<RentalProperty>(entity =>
+            {
+                entity.Property(p => p.CurrencyCode).HasMaxLength(3);
+                entity.HasIndex(p => new { p.UserId, p.City });
+
+                entity.HasMany(p => p.Leases)
+                      .WithOne(l => l.RentalProperty!)
+                      .HasForeignKey(l => l.RentalPropertyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(p => p.Transactions)
+                      .WithOne(t => t.RentalProperty!)
+                      .HasForeignKey(t => t.RentalPropertyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(p => p.Valuations)
+                      .WithOne(v => v.RentalProperty!)
+                      .HasForeignKey(v => v.RentalPropertyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(p => p.RentPricePoints)
+                      .WithOne(r => r.RentalProperty!)
+                      .HasForeignKey(r => r.RentalPropertyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(p => p.Events)
+                      .WithOne(e => e.RentalProperty!)
+                      .HasForeignKey(e => e.RentalPropertyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Loan>(entity =>
+            {
+                // A mortgage is optional on a loan, and deleting a property should not
+                // silently delete the debt that funded it.
+                entity.HasOne(l => l.RentalProperty)
+                      .WithMany()
+                      .HasForeignKey(l => l.RentalPropertyId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<PropertyTransaction>(entity =>
+            {
+                entity.HasIndex(t => new { t.RentalPropertyId, t.Date });
+            });
+
+            modelBuilder.Entity<RentPricePoint>(entity =>
+            {
+                entity.HasIndex(r => new { r.RentalPropertyId, r.Source, r.EffectiveFrom });
+            });
+
+            modelBuilder.Entity<PropertyValuation>(entity =>
+            {
+                entity.HasIndex(v => new { v.RentalPropertyId, v.ValuedOn });
+            });
+
+            modelBuilder.Entity<Lease>(entity =>
+            {
+                entity.HasIndex(l => new { l.RentalPropertyId, l.StartDate });
+            });
+
+            modelBuilder.Entity<PropertyEvent>(entity =>
+            {
+                entity.HasIndex(e => new { e.RentalPropertyId, e.OccurredOn });
+            });
         }
 
         private void ConfigureOwnership<TEntity>(ModelBuilder modelBuilder)

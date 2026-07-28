@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.Analytics;
 
 DotEnv.Load();
 
@@ -80,6 +81,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddScoped<TokenProvider>();
+builder.Services.AddScoped<PropertyAnalyticsService>();
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // Credential stuffing is the obvious attack on a login form. A fixed window on the auth

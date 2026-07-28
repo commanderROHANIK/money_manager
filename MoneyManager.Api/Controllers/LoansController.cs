@@ -38,6 +38,9 @@ namespace MoneyManager.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Loan>> CreateLoan([FromBody] LoanRequest request)
         {
+            if (!await PropertyLinkIsValid(request))
+                return BadRequest(new { message = "The property this loan is secured on was not found." });
+
             var loan = new Loan();
             Apply(request, loan);
 
@@ -54,6 +57,9 @@ namespace MoneyManager.Api.Controllers
 
             if (loan == null)
                 return NotFound();
+
+            if (!await PropertyLinkIsValid(request))
+                return BadRequest(new { message = "The property this loan is secured on was not found." });
 
             Apply(request, loan);
             await _context.SaveChangesAsync();
@@ -83,9 +89,26 @@ namespace MoneyManager.Api.Controllers
             loan.InterestRate = request.InterestRate;
             loan.DueDate = request.DueDate;
             loan.IsPaidOff = request.IsPaidOff;
+            loan.LoanType = request.LoanType;
+            loan.RentalPropertyId = request.RentalPropertyId;
+            loan.MonthlyPayment = request.MonthlyPayment;
+            loan.StartDate = request.StartDate;
+            loan.TermMonths = request.TermMonths;
             loan.CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode)
                 ? loan.CurrencyCode
                 : request.CurrencyCode.ToUpperInvariant();
+        }
+
+        /// <summary>
+        /// Guards the mortgage link. The tenant query filter means an id belonging to
+        /// another user simply is not found, so this both validates and isolates.
+        /// </summary>
+        private async Task<bool> PropertyLinkIsValid(LoanRequest request)
+        {
+            if (request.RentalPropertyId is not { } propertyId)
+                return true;
+
+            return await _context.RentalProperties.AnyAsync(p => p.Id == propertyId);
         }
     }
 
@@ -96,5 +119,10 @@ namespace MoneyManager.Api.Controllers
         decimal InterestRate,
         DateTime DueDate,
         bool IsPaidOff,
-        string? CurrencyCode = null);
+        string? CurrencyCode = null,
+        LoanType LoanType = LoanType.Personal,
+        int? RentalPropertyId = null,
+        decimal? MonthlyPayment = null,
+        DateTime? StartDate = null,
+        int? TermMonths = null);
 }
