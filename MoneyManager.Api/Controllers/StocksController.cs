@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
@@ -6,6 +7,7 @@ using MoneyManager.Api.Models;
 namespace MoneyManager.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class StocksController : ControllerBase
     {
@@ -25,43 +27,68 @@ namespace MoneyManager.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Stock>> GetById(int id)
         {
-            var stock = await _context.Stocks.FindAsync(id);
+            var stock = await _context.Stocks.FirstOrDefaultAsync(s => s.Id == id);
             if (stock == null)
                 return NotFound();
             return stock;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Stock>> Create(Stock stock)
+        public async Task<ActionResult<Stock>> Create([FromBody] StockRequest request)
         {
-            stock.PurchaseDate = DateTime.SpecifyKind(stock.PurchaseDate, DateTimeKind.Utc);
+            var stock = new Stock();
+            Apply(request, stock);
 
             _context.Stocks.Add(stock);
             await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetById), new { id = stock.Id }, stock);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Stock stock)
+        public async Task<IActionResult> Update(int id, [FromBody] StockRequest request)
         {
-            if (id != stock.Id)
-                return BadRequest();
+            var stock = await _context.Stocks.FirstOrDefaultAsync(s => s.Id == id);
+            if (stock == null)
+                return NotFound();
 
-            _context.Entry(stock).State = EntityState.Modified;
+            Apply(request, stock);
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var stock = await _context.Stocks.FindAsync(id);
+            var stock = await _context.Stocks.FirstOrDefaultAsync(s => s.Id == id);
             if (stock == null)
                 return NotFound();
 
             _context.Stocks.Remove(stock);
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
+
+        private static void Apply(StockRequest request, Stock stock)
+        {
+            stock.Ticker = request.Ticker.ToUpperInvariant();
+            stock.SharesOwned = request.SharesOwned;
+            stock.PurchasePrice = request.PurchasePrice;
+            stock.CurrentPrice = request.CurrentPrice;
+            stock.PurchaseDate = request.PurchaseDate;
+            stock.CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode)
+                ? stock.CurrencyCode
+                : request.CurrencyCode.ToUpperInvariant();
+        }
     }
+
+    public record StockRequest(
+        string Ticker,
+        int SharesOwned,
+        decimal PurchasePrice,
+        decimal CurrentPrice,
+        DateTime PurchaseDate,
+        string? CurrencyCode = null);
 }

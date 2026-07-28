@@ -5,6 +5,7 @@ export interface BankAccount {
     bankName: string;
     accountNumber: string;
     accountType: string; // e.g. "Checking", "Savings"
+    currencyCode: string; // ISO 4217
 }
 
 export interface Loan {
@@ -15,6 +16,7 @@ export interface Loan {
     interestRate: number;
     dueDate: string; // ISO string format (DateTime in C#)
     isPaidOff: boolean;
+    currencyCode: string;
 }
 
 export interface RentalProperty {
@@ -24,8 +26,9 @@ export interface RentalProperty {
     rentAmount: number;
     rentDueDate: string; // ISO date string from the backend
     isRented: boolean;
+    currencyCode: string;
 }
-  
+
 export interface Stock {
     id: number;
     ticker: string;
@@ -33,6 +36,7 @@ export interface Stock {
     purchasePrice: number;
     currentPrice: number;
     purchaseDate: string; // ISO date string
+    currencyCode: string;
 }
 
 export interface UpcomingEvent {
@@ -42,5 +46,6 @@ export interface UpcomingEvent {
     eventDate: string; // ISO date string
     isRecurring: boolean;
     isNotified: boolean;
+    rentalPropertyId?: number | null;
+    loanId?: number | null;
 }
-  

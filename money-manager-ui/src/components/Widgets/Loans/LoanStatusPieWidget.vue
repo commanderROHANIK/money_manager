@@ -45,10 +45,10 @@ const chartOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'bottom',
+      position: 'bottom' as const,
       labels: {
         color: '#333',
-        font: { size: 12, weight: 'bold' },
+        font: { size: 12, weight: 'bold' as const },
       },
     },
     tooltip: {

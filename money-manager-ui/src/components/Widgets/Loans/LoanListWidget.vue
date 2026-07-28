@@ -9,6 +9,9 @@
       <input v-model.number="newLoan.remainingBalance" placeholder="Remaining" class="p-2 border rounded w-28" type="number" required />
       <input v-model.number="newLoan.interestRate" placeholder="Interest Rate (%)" class="p-2 border rounded w-32" type="number" required />
       <input v-model="newLoan.dueDate" type="date" class="p-2 border rounded" required />
+      <select v-model="newLoan.currencyCode" class="p-2 border rounded w-24">
+        <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
+      </select>
       <label class="flex items-center space-x-1">
         <input v-model="newLoan.isPaidOff" type="checkbox" />
         <span>Paid Off</span>
@@ -26,7 +29,10 @@
         class="py-4 flex justify-between items-center"
       >
         <div>
-          <p class="font-medium">{{ loan.loanName }} – {{ formatCurrency(loan.remainingBalance) }} / {{ formatCurrency(loan.loanAmount) }}</p>
+          <p class="font-medium">
+            {{ loan.loanName }} – {{ formatMoney(loan.remainingBalance, loan.currencyCode) }}
+            / {{ formatMoney(loan.loanAmount, loan.currencyCode) }}
+          </p>
           <p class="text-sm text-gray-500">Due: {{ formatDate(loan.dueDate) }} • Rate: {{ loan.interestRate }}%</p>
           <p v-if="loan.isPaidOff" class="text-green-600 font-semibold">(Paid Off)</p>
         </div>
@@ -42,18 +48,25 @@
 import { ref, onMounted } from 'vue';
 import { fetchLoans, createLoan, deleteLoan } from '../../../services/api';
 import type { Loan } from '../../../models/models';
+import { formatMoney } from '../../../utils/money';
+import { CURRENCIES } from '../../../utils/currencies';
 
 const loans = ref<Loan[]>([]);
 
-const newLoan = ref<Loan>({
-  id: 0,
-  loanName: '',
-  loanAmount: 0,
-  remainingBalance: 0,
-  interestRate: 0,
-  dueDate: '',
-  isPaidOff: false,
-});
+function emptyLoan(): Loan {
+  return {
+    id: 0,
+    loanName: '',
+    loanAmount: 0,
+    remainingBalance: 0,
+    interestRate: 0,
+    dueDate: '',
+    isPaidOff: false,
+    currencyCode: 'EUR',
+  };
+}
+
+const newLoan = ref<Loan>(emptyLoan());
 
 onMounted(async () => {
   loans.value = await fetchLoans();
@@ -62,28 +75,12 @@ onMounted(async () => {
 async function addLoan() {
   const created = await createLoan(newLoan.value);
   loans.value.push(created);
-  resetForm();
+  newLoan.value = emptyLoan();
 }
 
 async function removeLoan(id: number) {
   await deleteLoan(id);
   loans.value = loans.value.filter(l => l.id !== id);
-}
-
-function resetForm() {
-  newLoan.value = {
-    id: 0,
-    loanName: '',
-    loanAmount: 0,
-    remainingBalance: 0,
-    interestRate: 0,
-    dueDate: '',
-    isPaidOff: false,
-  };
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(amount);
 }
 
 function formatDate(date: string): string {
