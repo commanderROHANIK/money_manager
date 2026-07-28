@@ -4,6 +4,7 @@ import Dashboard from '../components/Dashboard.vue';
 import AccountsView from '../components/BankAccounts.vue';
 import LoansView from '../components/LoanPage.vue';
 import PropertiesView from '../components/RentalPropertyPage.vue';
+import PropertyDetailView from '../components/PropertyDetailPage.vue';
 import StocksView from '../components/StockPage.vue';
 import EventsView from '../components/UpcomingEvents.vue';
 
@@ -17,6 +18,12 @@ const routes = [
   { path: '/accounts', name: 'Accounts', component: AccountsView, meta: { requiresAuth: true } },
   { path: '/loans', name: 'Loans', component: LoansView, meta: { requiresAuth: true } },
   { path: '/properties', name: 'Properties', component: PropertiesView, meta: { requiresAuth: true } },
+  {
+    path: '/properties/:id',
+    name: 'PropertyDetail',
+    component: PropertyDetailView,
+    meta: { requiresAuth: true },
+  },
   { path: '/stocks', name: 'Stocks', component: StocksView, meta: { requiresAuth: true } },
   { path: '/events', name: 'Events', component: EventsView, meta: { requiresAuth: true } },
 
