@@ -141,8 +141,14 @@ namespace MoneyManager.Api.Controllers
             return NoContent();
         }
 
+        // Ordered by most recent start date so that overlapping leases (a data-entry error,
+        // or an intentional handover) resolve to the newest tenancy rather than an arbitrary
+        // one determined by insertion order.
         private static Lease? ActiveLeaseFor(List<Lease> leases, int propertyId, DateTime on) =>
-            leases.FirstOrDefault(l => l.RentalPropertyId == propertyId && l.IsActiveOn(on));
+            leases
+                .Where(l => l.RentalPropertyId == propertyId && l.IsActiveOn(on))
+                .OrderByDescending(l => l.StartDate)
+                .FirstOrDefault();
 
         private static void Apply(RentalPropertyRequest request, RentalProperty property)
         {

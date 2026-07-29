@@ -67,6 +67,9 @@ namespace MoneyManager.Api.Controllers
                 });
             }
 
+            if (!await LeaseBelongsToProperty(request.LeaseId, propertyId))
+                return BadRequest(new { message = "The given lease does not belong to this property." });
+
             var transaction = new PropertyTransaction
             {
                 RentalPropertyId = propertyId,
@@ -117,6 +120,9 @@ namespace MoneyManager.Api.Controllers
             if (request.Amount <= 0)
                 return BadRequest(new { message = "Amount must be positive." });
 
+            if (!await LeaseBelongsToProperty(request.LeaseId, propertyId))
+                return BadRequest(new { message = "The given lease does not belong to this property." });
+
             transaction.Date = request.Date;
             transaction.Amount = request.Amount;
             transaction.Category = request.Category;
@@ -143,6 +149,14 @@ namespace MoneyManager.Api.Controllers
 
         private Task<bool> OwnsProperty(int propertyId) =>
             _context.RentalProperties.AnyAsync(p => p.Id == propertyId);
+
+        // A null LeaseId is valid (not every transaction is tied to a tenancy); a non-null one
+        // must reference a lease on this property, otherwise a transaction could be tagged
+        // against a lease belonging to a different property the caller owns.
+        private Task<bool> LeaseBelongsToProperty(int? leaseId, int propertyId) =>
+            leaseId is null
+                ? Task.FromResult(true)
+                : _context.Leases.AnyAsync(l => l.Id == leaseId && l.RentalPropertyId == propertyId);
     }
 
     public record PropertyTransactionRequest(
