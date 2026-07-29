@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-3">Portfolio</h2>
+    <h2 class="text-lg font-semibold mb-3">Portfolio</h2>
 
     <p v-if="!portfolio || portfolio.propertyCount === 0" class="text-sm text-gray-500">
       No properties yet. Add one below to start tracking what it returns.
@@ -13,8 +13,8 @@
       </p>
 
       <div v-else class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-          <p class="text-xs text-gray-500 dark:text-gray-300">{{ tile.label }}</p>
+        <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50">
+          <p class="text-xs text-gray-500">{{ tile.label }}</p>
           <p class="text-lg font-bold" :class="tile.tone">{{ tile.value }}</p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 <template>
-  <div class="p-4 rounded-lg shadow bg-white dark:bg-gray-800 chart-box">
-    <h2 class="text-xl font-semibold mb-4">Rent Collected by Month</h2>
+  <div class="p-4 rounded-lg shadow bg-white chart-box">
+    <h2 class="text-lg font-semibold mb-4">Rent Collected by Month</h2>
 
     <Bar v-if="hasData" :data="chartData" :options="chartOptions" />
     <p v-else class="text-sm text-gray-500">

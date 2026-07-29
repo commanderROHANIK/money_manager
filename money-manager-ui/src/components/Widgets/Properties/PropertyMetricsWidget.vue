@@ -1,13 +1,13 @@
 <template>
   <div>
     <div class="flex items-baseline justify-between mb-4">
-      <h2 class="text-xl font-semibold">Investment performance</h2>
+      <h2 class="text-lg font-semibold">Investment performance</h2>
       <span class="text-xs text-gray-500">as of {{ formatDate(metrics.asOf) }}</span>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-        <p class="text-xs text-gray-500 dark:text-gray-300">{{ tile.label }}</p>
+      <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50">
+        <p class="text-xs text-gray-500">{{ tile.label }}</p>
         <p class="text-lg font-bold" :class="tile.tone">{{ tile.value }}</p>
         <p v-if="tile.hint" class="text-[11px] text-gray-400 mt-0.5">{{ tile.hint }}</p>
       </div>

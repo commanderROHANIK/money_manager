@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-2">Total Monthly Rent</h2>
+    <h2 class="text-lg font-semibold mb-2">Total Monthly Rent</h2>
     <p class="text-3xl font-bold text-green-600">
       {{ formattedTotal }}
     </p>

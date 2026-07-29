@@ -26,24 +26,24 @@
         </span>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+      <div class="bg-white p-4 rounded-2xl shadow-md">
         <PropertyMetricsWidget :metrics="metrics" />
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+        <div class="bg-white p-4 rounded-2xl shadow-md">
           <RentVsMarketWidget :metrics="metrics" @add-estimate="onAddEstimate" />
         </div>
-        <div class="xl:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+        <div class="xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
           <RentOverTimeChartWidget :history="rentHistory" :currency-code="property.currencyCode" />
         </div>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+        <div class="bg-white p-4 rounded-2xl shadow-md">
           <TenancyWidget :leases="leases" @create="onCreateLease" />
         </div>
-        <div class="xl:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+        <div class="xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
           <TransactionLedgerWidget
             :transactions="transactions"
             @create="onCreateTransaction"
@@ -53,14 +53,14 @@
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+        <div class="bg-white p-4 rounded-2xl shadow-md">
           <ValuationWidget
             :valuations="valuations"
             :currency-code="property.currencyCode"
             @create="onCreateValuation"
           />
         </div>
-        <div class="xl:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+        <div class="xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
           <PropertyTimelineWidget :events="events" />
         </div>
       </div>

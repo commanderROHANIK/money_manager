@@ -1,28 +1,10 @@
 <template>
-  <div class="p-6 col-span-1 md:col-span-3">
+  <div>
     <h2 class="text-lg font-semibold mb-4">All Loans</h2>
 
-    <!-- Add Loan Form -->
-    <form @submit.prevent="addLoan" class="flex flex-wrap gap-2 mb-6">
-      <input v-model="newLoan.loanName" placeholder="Loan Name" class="p-2 border rounded flex-1 min-w-[120px]" required />
-      <input v-model.number="newLoan.loanAmount" placeholder="Amount" class="p-2 border rounded w-28" type="number" required />
-      <input v-model.number="newLoan.remainingBalance" placeholder="Remaining" class="p-2 border rounded w-28" type="number" required />
-      <input v-model.number="newLoan.interestRate" placeholder="Interest Rate (%)" class="p-2 border rounded w-32" type="number" required />
-      <input v-model="newLoan.dueDate" type="date" class="p-2 border rounded" required />
-      <select v-model="newLoan.currencyCode" class="p-2 border rounded w-24">
-        <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
-      </select>
-      <label class="flex items-center space-x-1">
-        <input v-model="newLoan.isPaidOff" type="checkbox" />
-        <span>Paid Off</span>
-      </label>
-      <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-        Add
-      </button>
-    </form>
+    <p v-if="loans.length === 0" class="text-sm text-gray-500">No loans yet.</p>
 
-    <!-- Loan List -->
-    <ul class="divide-y">
+    <ul v-else class="divide-y">
       <li
         v-for="loan in loans"
         :key="loan.id"
@@ -36,7 +18,7 @@
           <p class="text-sm text-gray-500">Due: {{ formatDate(loan.dueDate) }} • Rate: {{ loan.interestRate }}%</p>
           <p v-if="loan.isPaidOff" class="text-green-600 font-semibold">(Paid Off)</p>
         </div>
-        <button @click="removeLoan(loan.id)" class="text-red-500 hover:text-red-700">
+        <button @click="confirmDelete(loan)" class="text-red-500 hover:text-red-700">
           Delete
         </button>
       </li>
@@ -45,42 +27,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { fetchLoans, createLoan, deleteLoan } from '../../../services/api';
 import type { Loan } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
-import { CURRENCIES } from '../../../utils/currencies';
 
-const loans = ref<Loan[]>([]);
+defineProps<{
+  loans: Loan[];
+}>();
 
-function emptyLoan(): Loan {
-  return {
-    id: 0,
-    loanName: '',
-    loanAmount: 0,
-    remainingBalance: 0,
-    interestRate: 0,
-    dueDate: '',
-    isPaidOff: false,
-    currencyCode: 'EUR',
-  };
-}
+const emit = defineEmits<{ (e: 'delete-loan', id: number): void }>();
 
-const newLoan = ref<Loan>(emptyLoan());
-
-onMounted(async () => {
-  loans.value = await fetchLoans();
-});
-
-async function addLoan() {
-  const created = await createLoan(newLoan.value);
-  loans.value.push(created);
-  newLoan.value = emptyLoan();
-}
-
-async function removeLoan(id: number) {
-  await deleteLoan(id);
-  loans.value = loans.value.filter(l => l.id !== id);
+function confirmDelete(loan: Loan) {
+  if (window.confirm(`Delete "${loan.loanName}"?`)) {
+    emit('delete-loan', loan.id);
+  }
 }
 
 function formatDate(date: string): string {

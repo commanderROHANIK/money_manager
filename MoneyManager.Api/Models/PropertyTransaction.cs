@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MoneyManager.Api.Models
 {
     /// <summary>
@@ -11,6 +13,8 @@ namespace MoneyManager.Api.Models
         public int UserId { get; set; }
 
         public int RentalPropertyId { get; set; }
+
+        [JsonIgnore]
         public RentalProperty? RentalProperty { get; set; }
 
         /// <summary>Set when the payment is attributable to a specific tenancy.</summary>

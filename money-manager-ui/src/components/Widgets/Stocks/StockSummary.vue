@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white p-6 rounded-2xl shadow-md">
+    <div class="bg-white p-4 rounded-2xl shadow-md">
       <h2 class="text-lg font-semibold mb-2">Stock Overview</h2>
   
       <div v-if="stocks.length > 0" class="space-y-1 text-sm">

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- The heading was text-white on a white card, so it was invisible in light mode. -->
-    <h2 class="text-xl font-semibold mb-4">Highest Rent</h2>
+    <h2 class="text-lg font-semibold mb-4">Highest Rent</h2>
 
     <div v-if="mostExpensive" class="space-y-2">
       <router-link
@@ -10,27 +10,27 @@
       >
         {{ mostExpensive.propertyName }}
       </router-link>
-      <div class="text-sm text-gray-500 dark:text-gray-400">
+      <div class="text-sm text-gray-500">
         {{ mostExpensive.address }}
       </div>
-      <div class="text-sm text-gray-600 dark:text-gray-300">
+      <div class="text-sm text-gray-600">
         Monthly Rent:
-        <span class="font-semibold text-green-700 dark:text-green-300">
+        <span class="font-semibold text-green-700">
           {{ formatMoney(mostExpensive.rentAmount, mostExpensive.currencyCode) }}
         </span>
       </div>
       <span
         class="inline-block text-xs font-medium px-2 py-1 rounded-full"
         :class="{
-          'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100': mostExpensive.isRented,
-          'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': !mostExpensive.isRented,
+          'bg-green-100 text-green-800': mostExpensive.isRented,
+          'bg-yellow-100 text-yellow-800': !mostExpensive.isRented,
         }"
       >
         {{ mostExpensive.isRented ? 'Rented' : 'Vacant' }}
       </span>
     </div>
 
-    <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+    <div v-else class="text-sm text-gray-500">
       No properties available.
     </div>
   </div>

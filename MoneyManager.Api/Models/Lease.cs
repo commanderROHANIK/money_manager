@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MoneyManager.Api.Models
 {
     /// <summary>
@@ -10,6 +12,8 @@ namespace MoneyManager.Api.Models
         public int UserId { get; set; }
 
         public int RentalPropertyId { get; set; }
+
+        [JsonIgnore]
         public RentalProperty? RentalProperty { get; set; }
 
         public string TenantName { get; set; } = string.Empty;

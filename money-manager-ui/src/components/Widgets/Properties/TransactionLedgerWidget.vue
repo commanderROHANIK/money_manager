@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-4">Ledger</h2>
+    <h2 class="text-lg font-semibold mb-4">Ledger</h2>
 
     <form @submit.prevent="submit" class="flex flex-wrap gap-2 mb-4">
       <input v-model="form.date" type="date" class="p-2 border rounded" required />

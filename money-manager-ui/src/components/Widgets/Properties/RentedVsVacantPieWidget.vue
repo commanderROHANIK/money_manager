@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-4">Rented vs Vacant</h2>
+    <h2 class="text-lg font-semibold mb-4">Rented vs Vacant</h2>
     <Doughnut :data="chartData" :options="chartOptions" />
   </div>
 </template>

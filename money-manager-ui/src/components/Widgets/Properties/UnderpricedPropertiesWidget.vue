@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-1">Money left on the table</h2>
+    <h2 class="text-lg font-semibold mb-1">Money left on the table</h2>
     <p class="text-xs text-gray-500 mb-3">Properties let below their estimated market rent.</p>
 
     <p v-if="underpriced.length === 0" class="text-sm text-gray-500">

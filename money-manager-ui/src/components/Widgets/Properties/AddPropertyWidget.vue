@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-1">Add a property</h2>
+    <h2 class="text-lg font-semibold mb-1">Add a property</h2>
     <p class="text-xs text-gray-500 mb-4">
       The purchase price and date are what every return figure is measured against — worth
       entering even if they are approximate.

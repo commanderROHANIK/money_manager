@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MoneyManager.Api.Models
 {
     public class Loan : IOwnedByUser
@@ -20,6 +22,8 @@ namespace MoneyManager.Api.Models
         /// were previously unrelated tables with no way to say which debt funded which asset.
         /// </summary>
         public int? RentalPropertyId { get; set; }
+
+        [JsonIgnore]
         public RentalProperty? RentalProperty { get; set; }
 
         /// <summary>Contractual repayment. Needed for cash flow and cash-on-cash return.</summary>
