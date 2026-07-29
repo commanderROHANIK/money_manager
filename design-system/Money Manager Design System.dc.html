@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+@keyframes shimmer{0%{background-position:-300px 0}100%{background-position:300px 0}}
+a{color:var(--primary);text-decoration:none}
+a:hover{color:var(--primary-strong)}
+</style>
+</helmet>
+<div style="{{ rootVars }} min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;transition:background .25s ease,color .25s ease;">
+
+  <header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:32px;height:32px;border-radius:10px;background:var(--primary);"></div>
+      <div>
+        <div style="font-family:'Manrope',sans-serif;font-weight:800;font-size:16px;line-height:1.2;">Money Manager</div>
+        <div style="font-size:12px;color:var(--text-muted);">Design system &amp; UI plan</div>
+      </div>
+    </div>
+    <nav style="display:flex;gap:22px;font-size:14px;font-weight:600;">
+      <a href="#foundations">Foundations</a>
+      <a href="#components">Components</a>
+      <a href="#patterns">Patterns</a>
+      <a href="#screens">Screens</a>
+    </nav>
+    <button onClick="{{ toggleDark }}" style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">{{ toggleLabel }}</button>
+  </header>
+
+  <main style="max-width:1280px;margin:0 auto;padding:56px 32px 140px;display:flex;flex-direction:column;gap:104px;">
+
+    <section style="display:flex;flex-direction:column;gap:18px;">
+      <h1 style="font-family:'Manrope',sans-serif;font-size:38px;font-weight:800;margin:0;letter-spacing:-0.5px;">A warmer, calmer way to see your money</h1>
+      <p style="font-size:16px;line-height:1.65;color:var(--text-muted);max-width:680px;margin:0;">This system keeps the density power users want &mdash; balances, due dates, portfolio detail &mdash; but wraps it in a softer palette, rounder shapes and encouraging copy, so daily check-ins feel supportive rather than clinical. Charts lead each dashboard, multi-currency and dark mode are first-class, and every screen defines what happens before there's data to show.</p>
+    </section>
+
+    <section id="foundations" style="display:flex;flex-direction:column;gap:56px;scroll-margin-top:90px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.06em;">01</span>
+        <h2 style="font-family:'Manrope',sans-serif;font-size:28px;font-weight:800;margin:0;">Foundations</h2>
+        <p style="font-size:15px;color:var(--text-muted);margin:0;max-width:640px;">Tokens every screen pulls from &mdash; change them here and the app follows.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Color</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">Sage green carries growth and positive balances; warm coral flags anything needing attention. Neutrals lean warm, never cold gray, to match the coaching tone. Every token has a light and dark value &mdash; toggle the switch above.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+          <sc-for list="{{ colorSwatches }}" as="c" hint-placeholder-count="10">
+            <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);">
+              <div style="height:64px;background:{{ c.varCss }};"></div>
+              <div style="padding:10px 12px;">
+                <div style="font-weight:600;font-size:13px;">{{ c.name }}</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">{{ c.varName }}</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.4;">{{ c.desc }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Typography</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">Manrope for headings and numbers that need presence; Inter for body copy and lists, set with tabular figures so amounts always line up.</p>
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{ typeScale }}" as="tItem" hint-placeholder-count="6">
+            <div style="display:flex;align-items:baseline;gap:24px;padding:18px 0;border-bottom:1px solid var(--border);">
+              <div style="width:170px;font-size:12px;color:var(--text-muted);font-family:monospace;flex-shrink:0;">{{ tItem.label }} &middot; {{ tItem.size }}</div>
+              <div style="font-family:{{ tItem.family }};font-size:{{ tItem.sizePx }}px;font-weight:{{ tItem.weight }};font-variant-numeric:tabular-nums;">{{ tItem.sample }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Spacing</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">4px base unit. Sections breathe at 24&ndash;48px; list rows stay tight at 8&ndash;16px so dense data stays scannable.</p>
+        <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;">
+          <sc-for list="{{ spacingScale }}" as="s" hint-placeholder-count="8">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <div style="width:{{ s }}px;height:{{ s }}px;background:var(--primary-soft);border:1px solid var(--primary);border-radius:4px;"></div>
+              <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">{{ s }}px</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Radius &amp; elevation</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">Rounder corners on anything you tap or read as a container reinforce the friendly tone; shadows stay soft and low-contrast.</p>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <sc-for list="{{ radii }}" as="r" hint-placeholder-count="4">
+            <div style="width:130px;height:92px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:{{ r.val }}px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);text-align:center;padding:10px;">{{ r.name }}</div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="components" style="display:flex;flex-direction:column;gap:56px;scroll-margin-top:90px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.06em;">02</span>
+        <h2 style="font-family:'Manrope',sans-serif;font-size:28px;font-weight:800;margin:0;">Components</h2>
+        <p style="font-size:15px;color:var(--text-muted);margin:0;max-width:640px;">The pieces every screen is assembled from.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Buttons</h3>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+          <button style="padding:12px 22px;border-radius:14px;border:none;background:var(--primary);color:white;font-size:14px;font-weight:700;cursor:pointer;">Add account</button>
+          <button style="padding:12px 22px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;">Secondary</button>
+          <button style="padding:12px 22px;border-radius:14px;border:none;background:transparent;color:var(--primary);font-size:14px;font-weight:700;cursor:pointer;">Ghost</button>
+          <button style="padding:12px 22px;border-radius:14px;border:none;background:var(--danger-soft);color:var(--danger);font-size:14px;font-weight:700;cursor:pointer;">Delete property</button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Inputs</h3>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="display:flex;flex-direction:column;gap:6px;width:220px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-muted);">Property name</label>
+            <input placeholder="e.g. Maple St. Duplex" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;width:220px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-muted);">Monthly rent</label>
+            <input placeholder="450,000" style="padding:11px 14px;border-radius:12px;border:1.5px solid var(--primary);background:var(--surface);color:var(--text);font-size:14px;"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;width:220px;">
+            <label style="font-size:12px;font-weight:600;color:var(--danger);">Account number</label>
+            <input placeholder="Required" style="padding:11px 14px;border-radius:12px;border:1.5px solid var(--danger);background:var(--surface);color:var(--text);font-size:14px;"/>
+            <span style="font-size:11px;color:var(--danger);">This field is required.</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Status badges &amp; currency chips</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <span style="padding:6px 14px;border-radius:999px;background:var(--primary-soft);color:var(--primary-strong);font-size:12px;font-weight:700;">Rented</span>
+          <span style="padding:6px 14px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;">Due soon</span>
+          <span style="padding:6px 14px;border-radius:999px;background:var(--danger-soft);color:var(--danger);font-size:12px;font-weight:700;">Overdue</span>
+          <span style="padding:6px 14px;border-radius:999px;background:var(--surface-2);color:var(--text-muted);font-size:12px;font-weight:700;">Vacant</span>
+          <span style="padding:6px 14px;border-radius:999px;border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:700;font-family:monospace;">HUF</span>
+          <span style="padding:6px 14px;border-radius:999px;border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:700;font-family:monospace;">EUR</span>
+          <span style="padding:6px 14px;border-radius:999px;border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:700;font-family:monospace;">USD</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Stat card &amp; chart card</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;">
+            <span style="font-size:12px;color:var(--text-muted);font-weight:600;">Total balance</span>
+            <span style="font-family:'Manrope',sans-serif;font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;">1,842,300 HUF</span>
+            <span style="font-size:12px;color:var(--primary);font-weight:700;">&#8593; 4.2% this month</span>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:var(--shadow);grid-column:span 2;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Balance distribution</div>
+            <div style="display:flex;align-items:center;gap:20px;">
+              <div style="width:88px;height:88px;border-radius:50%;background:conic-gradient(var(--primary) 0 55%, var(--accent) 55% 80%, var(--surface-2) 80% 100%);flex-shrink:0;"></div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--primary);"></span>Checking &middot; 55%</span>
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></span>Savings &middot; 25%</span>
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);"></span>Investing &middot; 20%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">List row &amp; sidebar nav item</h3>
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:8px 20px;box-shadow:var(--shadow);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-weight:600;font-size:14px;">Everyday Checking &mdash; OTP Bank</div>
+                <div style="font-size:12px;color:var(--text-muted);">Checking &middot; 842,300 HUF</div>
+              </div>
+              <span style="padding:5px 12px;border-radius:999px;background:var(--primary-soft);color:var(--primary-strong);font-size:11px;font-weight:700;">HUF</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;">
+              <div>
+                <div style="font-weight:600;font-size:14px;">Brokerage Cash &mdash; Interactive Brokers</div>
+                <div style="font-size:12px;color:var(--text-muted);">Investing &middot; $3,180</div>
+              </div>
+              <span style="padding:5px 12px;border-radius:999px;border:1px solid var(--border);color:var(--text-muted);font-size:11px;font-weight:700;">USD</span>
+            </div>
+          </div>
+          <div style="background:var(--sidebar-bg);color:var(--sidebar-text);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:4px;">
+            <div style="padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.12);font-size:13px;font-weight:700;">Dashboard</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Accounts</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Properties</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="patterns" style="display:flex;flex-direction:column;gap:32px;scroll-margin-top:90px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.06em;">03</span>
+        <h2 style="font-family:'Manrope',sans-serif;font-size:28px;font-weight:800;margin:0;">Patterns &amp; states</h2>
+        <p style="font-size:15px;color:var(--text-muted);margin:0;max-width:640px;">Every card in this app can be empty, loading, or wrong &mdash; those states get the same care as the happy path.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+        <div style="background:var(--surface);border:1px dashed var(--border);border-radius:20px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--primary-soft);"></div>
+          <div style="font-weight:700;font-size:14px;">No properties yet</div>
+          <div style="font-size:13px;color:var(--text-muted);">Add your first rental to start tracking rent and occupancy.</div>
+          <button style="margin-top:6px;padding:9px 18px;border-radius:12px;border:none;background:var(--primary);color:white;font-size:13px;font-weight:700;">Add property</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px;">
+          <div style="height:16px;width:60%;border-radius:6px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--border) 37%,var(--surface-2) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;"></div>
+          <div style="height:32px;width:80%;border-radius:8px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--border) 37%,var(--surface-2) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;"></div>
+          <div style="height:16px;width:40%;border-radius:6px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--border) 37%,var(--surface-2) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;"></div>
+        </div>
+        <div style="background:var(--danger-soft);border:1px solid var(--danger);border-radius:20px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;">
+          <div style="font-weight:700;font-size:14px;color:var(--danger);">Couldn't load your accounts</div>
+          <div style="font-size:13px;color:var(--text);opacity:0.8;">Check your connection and try again.</div>
+          <button style="margin-top:6px;padding:9px 18px;border-radius:12px;border:1px solid var(--danger);background:transparent;color:var(--danger);font-size:13px;font-weight:700;">Retry</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens" style="display:flex;flex-direction:column;gap:64px;scroll-margin-top:90px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.06em;">04</span>
+        <h2 style="font-family:'Manrope',sans-serif;font-size:28px;font-weight:800;margin:0;">Screens</h2>
+        <p style="font-size:15px;color:var(--text-muted);margin:0;max-width:640px;">The three priority screens, assembled from the system above.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Login &amp; Register</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">Warm one-column card, centered; a single tab switches Login/Register instead of a separate page, keeping the flow short for the handful of people you'll onboard.</p>
+        <div style="border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:var(--shadow);background:var(--surface-2);padding:80px 24px;display:flex;justify-content:center;">
+          <div style="background:var(--surface);border-radius:24px;padding:40px;width:360px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:20px;">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;">
+              <div style="width:40px;height:40px;border-radius:12px;background:var(--primary);margin-bottom:8px;"></div>
+              <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">Welcome back</div>
+              <div style="font-size:13px;color:var(--text-muted);">Good to see you &mdash; let's check your money.</div>
+            </div>
+            <div style="display:flex;background:var(--surface-2);border-radius:12px;padding:4px;">
+              <div style="flex:1;text-align:center;padding:8px;border-radius:9px;background:var(--surface);font-size:13px;font-weight:700;box-shadow:var(--shadow);">Login</div>
+              <div style="flex:1;text-align:center;padding:8px;border-radius:9px;font-size:13px;font-weight:700;color:var(--text-muted);">Register</div>
+            </div>
+            <input placeholder="Username" style="padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;"/>
+            <input placeholder="Password" type="password" style="padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;"/>
+            <button style="padding:13px;border-radius:12px;border:none;background:var(--primary);color:white;font-size:14px;font-weight:700;">Log in</button>
+            <div style="text-align:center;font-size:12px;color:var(--text-muted);">New here? <a href="#screens">Create an account</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Dashboard</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">A warm greeting up top, four stat cards for the totals people check daily, two charts leading the fold, then dense lists for loans and events underneath.</p>
+        <div style="border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:var(--shadow);display:flex;height:640px;">
+          <aside style="width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);flex-shrink:0;display:flex;flex-direction:column;padding:20px 14px;gap:4px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px 20px;font-weight:800;font-family:'Manrope',sans-serif;font-size:15px;">
+              <div style="width:22px;height:22px;border-radius:7px;background:var(--primary);"></div>Money Manager
+            </div>
+            <div style="padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.12);font-size:13px;font-weight:700;">Dashboard</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Accounts</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Loans</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Properties</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Stocks</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Events</div>
+            <div style="margin-top:auto;padding:10px 14px;font-size:12px;opacity:0.6;">&#8592; Log out</div>
+          </aside>
+          <div style="flex:1;background:var(--bg);padding:28px;overflow:hidden;display:flex;flex-direction:column;gap:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">Good afternoon, Alex</div>
+                <div style="font-size:12px;color:var(--text-muted);">Here's where things stand today</div>
+              </div>
+              <button style="padding:9px 16px;border-radius:12px;border:none;background:var(--primary);color:white;font-size:13px;font-weight:700;">+ Add</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Total balance</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">1,842,300 HUF</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Rent this month</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">770,000 HUF</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Portfolio value</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">$18,240</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Loans remaining</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">5,040,000 HUF</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:14px;flex:1;min-height:0;">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow);">
+                <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Upcoming</div>
+                <div style="display:flex;flex-direction:column;">
+                  <sc-for list="{{ events }}" as="ev" hint-placeholder-count="4">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;">
+                      <span>{{ ev.title }}</span>
+                      <span style="color:var(--text-muted);font-family:monospace;font-size:12px;">{{ ev.date }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow);">
+                <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Loan payoff progress</div>
+                <div style="display:flex;flex-direction:column;gap:14px;">
+                  <sc-for list="{{ loans }}" as="ln" hint-placeholder-count="3">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">
+                        <span style="font-weight:600;">{{ ln.name }}</span>
+                        <span style="color:var(--text-muted);">{{ ln.remaining }}</span>
+                      </div>
+                      <div style="height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;">
+                        <div style="height:100%;background:var(--primary);width:{{ ln.pct }}%;"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-muted);">
+          <span style="font-weight:700;">Mobile (&lt;640px):</span> the four stat cards stack to a single column above the charts, the sidebar collapses into a bottom tab bar with the same six items.
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h3 style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;margin:0;">Rental Properties</h3>
+        <p style="font-size:14px;color:var(--text-muted);margin:0;max-width:640px;">Occupancy and rent-collected totals lead, then every property is a card &mdash; photo, address, status and next rent date at a glance instead of a dense table.</p>
+        <div style="border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:var(--shadow);display:flex;">
+          <aside style="width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);flex-shrink:0;display:flex;flex-direction:column;padding:20px 14px;gap:4px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px 20px;font-weight:800;font-family:'Manrope',sans-serif;font-size:15px;">
+              <div style="width:22px;height:22px;border-radius:7px;background:var(--primary);"></div>Money Manager
+            </div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Dashboard</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Accounts</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Loans</div>
+            <div style="padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.12);font-size:13px;font-weight:700;">Properties</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Stocks</div>
+            <div style="padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;opacity:0.75;">Events</div>
+          </aside>
+          <div style="flex:1;background:var(--bg);padding:28px;display:flex;flex-direction:column;gap:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">Properties</div>
+              <button style="padding:9px 16px;border-radius:12px;border:none;background:var(--primary);color:white;font-size:13px;font-weight:700;">+ Add property</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Occupancy</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">75%</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Rent collected</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">770,000 HUF</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Overdue</div>
+                <div style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;color:var(--danger);">1 property</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+              <sc-for list="{{ properties }}" as="p" hint-placeholder-count="4">
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);">
+                  <div style="height:90px;background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 10px,var(--border) 10px,var(--border) 20px);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:monospace;color:var(--text-muted);">photo: exterior</div>
+                  <div style="padding:14px;display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                      <div>
+                        <div style="font-weight:700;font-size:14px;">{{ p.name }}</div>
+                        <div style="font-size:12px;color:var(--text-muted);">{{ p.address }}</div>
+                      </div>
+                      <span style="padding:4px 10px;border-radius:999px;background:{{ p.statusBg }};color:{{ p.statusColor }};font-size:11px;font-weight:700;white-space:nowrap;">{{ p.status }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                      <span style="font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;">{{ p.rent }}</span>
+                      <span style="font-size:12px;color:var(--text-muted);">{{ p.note }}</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { dark: false };
+
+  toggleDark = () => this.setState(s => ({ dark: !s.dark }));
+
+  renderVals() {
+    const dark = this.state.dark;
+    const light = {
+      bg:'oklch(97.5% 0.012 85)', surface:'oklch(99% 0.006 85)', surface2:'oklch(94% 0.015 85)',
+      border:'oklch(89% 0.016 85)', text:'oklch(22% 0.015 80)', textMuted:'oklch(48% 0.02 80)',
+      primary:'oklch(58% 0.12 160)', primaryStrong:'oklch(48% 0.13 160)', primarySoft:'oklch(92% 0.05 160)',
+      accent:'oklch(72% 0.13 55)', accentSoft:'oklch(93% 0.06 55)',
+      danger:'oklch(56% 0.19 25)', dangerSoft:'oklch(94% 0.05 25)',
+      sidebarBg:'oklch(24% 0.03 160)', sidebarText:'oklch(93% 0.01 160)',
+      shadow:'0 1px 2px oklch(20% 0.02 80 / 0.07), 0 10px 28px oklch(20% 0.02 80 / 0.09)'
+    };
+    const darkT = {
+      bg:'oklch(19% 0.014 80)', surface:'oklch(24% 0.015 80)', surface2:'oklch(28% 0.015 80)',
+      border:'oklch(33% 0.016 80)', text:'oklch(93% 0.01 80)', textMuted:'oklch(68% 0.015 80)',
+      primary:'oklch(72% 0.12 160)', primaryStrong:'oklch(80% 0.12 160)', primarySoft:'oklch(32% 0.06 160)',
+      accent:'oklch(75% 0.13 55)', accentSoft:'oklch(33% 0.07 55)',
+      danger:'oklch(68% 0.18 25)', dangerSoft:'oklch(32% 0.08 25)',
+      sidebarBg:'oklch(13% 0.02 160)', sidebarText:'oklch(90% 0.01 160)',
+      shadow:'0 1px 2px oklch(0% 0 0 / 0.35), 0 10px 28px oklch(0% 0 0 / 0.45)'
+    };
+    const t = dark ? darkT : light;
+    const rootVars = `--bg:${t.bg};--surface:${t.surface};--surface-2:${t.surface2};--border:${t.border};--text:${t.text};--text-muted:${t.textMuted};--primary:${t.primary};--primary-strong:${t.primaryStrong};--primary-soft:${t.primarySoft};--accent:${t.accent};--accent-soft:${t.accentSoft};--danger:${t.danger};--danger-soft:${t.dangerSoft};--sidebar-bg:${t.sidebarBg};--sidebar-text:${t.sidebarText};--shadow:${t.shadow};`;
+
+    const colorSwatches = [
+      {name:'Primary', varName:'--primary', varCss:'var(--primary)', desc:'CTAs, positive values, active nav'},
+      {name:'Primary Strong', varName:'--primary-strong', varCss:'var(--primary-strong)', desc:'Hover / pressed states'},
+      {name:'Primary Soft', varName:'--primary-soft', varCss:'var(--primary-soft)', desc:'Badge fills, chart segments'},
+      {name:'Accent', varName:'--accent', varCss:'var(--accent)', desc:'Reminders, highlights, secondary CTA'},
+      {name:'Danger', varName:'--danger', varCss:'var(--danger)', desc:'Overdue, negative deltas'},
+      {name:'Surface', varName:'--surface', varCss:'var(--surface)', desc:'Cards, panels'},
+      {name:'Surface 2', varName:'--surface-2', varCss:'var(--surface-2)', desc:'Page background, subtle fills'},
+      {name:'Border', varName:'--border', varCss:'var(--border)', desc:'Dividers, input outlines'},
+      {name:'Text', varName:'--text', varCss:'var(--text)', desc:'Primary text'},
+      {name:'Text Muted', varName:'--text-muted', varCss:'var(--text-muted)', desc:'Secondary text, captions'}
+    ];
+
+    const typeScale = [
+      {label:'Display', sample:'$48,320.00', size:'40 / 700', family:"'Manrope',sans-serif", sizePx:40, weight:700},
+      {label:'H1', sample:'Dashboard', size:'28 / 700', family:"'Manrope',sans-serif", sizePx:28, weight:700},
+      {label:'H2', sample:'Connected Accounts', size:'20 / 600', family:"'Manrope',sans-serif", sizePx:20, weight:600},
+      {label:'Body', sample:'Your rent from Maple St. is due in 3 days.', size:'15 / 400', family:"'Inter',sans-serif", sizePx:15, weight:400},
+      {label:'Caption', sample:'Updated 2 minutes ago', size:'13 / 500', family:"'Inter',sans-serif", sizePx:13, weight:500},
+      {label:'Tabular numeral', sample:'1,204,500 HUF', size:'18 / 600', family:"'Inter',sans-serif", sizePx:18, weight:600}
+    ];
+
+    const spacingScale = [4,8,12,16,24,32,48,64];
+
+    const radii = [
+      {name:'sm — 8px', val:8},
+      {name:'md — 14px', val:14},
+      {name:'lg — 20px', val:20},
+      {name:'xl — 28px', val:28}
+    ];
+
+    const properties = [
+      {name:'Maple St. Duplex', address:'12 Maple St, Unit A', rent:'450,000 HUF / mo', note:'Due in 3 days', status:'Rented', statusBg:'var(--primary-soft)', statusColor:'var(--primary-strong)'},
+      {name:'Birch Ave Cottage', address:'88 Birch Ave', rent:'320,000 HUF / mo', note:'Paid this month', status:'Rented', statusBg:'var(--primary-soft)', statusColor:'var(--primary-strong)'},
+      {name:'Downtown Loft 3B', address:'201 Center Sq', rent:'Not listed', note:'Vacant since Jun 1', status:'Vacant', statusBg:'var(--surface-2)', statusColor:'var(--text-muted)'},
+      {name:'Lakeview House', address:'4 Lake Rd', rent:'610,000 HUF / mo', note:'Overdue 5 days', status:'Overdue', statusBg:'var(--danger-soft)', statusColor:'var(--danger)'}
+    ];
+
+    const events = [
+      {title:'Rent due — Maple St. Duplex', date:'Jul 31'},
+      {title:'Loan payment — Car Loan', date:'Aug 4'},
+      {title:'Dividend — VOO', date:'Aug 15'},
+      {title:'Lease renewal — Lakeview House', date:'Aug 20'}
+    ];
+
+    const loans = [
+      {name:'Car Loan — Toyota', remaining:'1,240,000 HUF', pct:64},
+      {name:'Home Renovation', remaining:'3,800,000 HUF', pct:38},
+      {name:'Personal Loan', remaining:'0 HUF', pct:100}
+    ];
+
+    return {
+      dark,
+      toggleDark: this.toggleDark,
+      toggleLabel: dark ? '● Dark mode' : '○ Light mode',
+      rootVars,
+      colorSwatches, typeScale, spacingScale, radii,
+      properties, events, loans
+    };
+  }
+}
+</script>
+</body>
+</html>
