@@ -183,11 +183,23 @@ namespace MoneyManager.Api.Data
             {
                 switch (entry.State)
                 {
-                    case EntityState.Added:
-                        entry.Entity.UserId = _currentUser.UserId
-                            ?? throw new InvalidOperationException(
-                                "Cannot persist a user-owned entity outside an authenticated request.");
+                    case EntityState.Added when _currentUser.UserId is { } currentUserId:
+                        // Inside a request the owner always comes from the token, so a
+                        // UserId in the payload is overwritten rather than honoured.
+                        entry.Entity.UserId = currentUserId;
                         break;
+
+                    case EntityState.Added when entry.Entity.UserId > 0:
+                        // No authenticated user: background work writing on a known user's
+                        // behalf. Reachable only outside a request — every HTTP endpoint is
+                        // behind the fallback authorization policy — so this cannot be used
+                        // to smuggle an owner in through a request body.
+                        break;
+
+                    case EntityState.Added:
+                        throw new InvalidOperationException(
+                            "Cannot persist a user-owned entity outside an authenticated request "
+                            + "without an explicit owner.");
 
                     case EntityState.Modified:
                         entry.Property(nameof(IOwnedByUser.UserId)).IsModified = false;

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.MarketRent;
 
 namespace MoneyManager.Api.Controllers
 {
@@ -125,6 +126,24 @@ namespace MoneyManager.Api.Controllers
             await context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAll), new { propertyId }, point);
+        }
+
+        /// <summary>
+        /// Asks the market rent providers for a fresh estimate now, rather than waiting for
+        /// the background refresh. A 204 means no provider had enough evidence — normally
+        /// too few comparable lettings in that city — which is a valid answer, not an error.
+        /// </summary>
+        [HttpPost("refresh")]
+        public async Task<ActionResult<RentPricePoint>> Refresh(
+            int propertyId, [FromServices] MarketRentService marketRent)
+        {
+            var property = await context.RentalProperties.FirstOrDefaultAsync(p => p.Id == propertyId);
+            if (property is null)
+                return NotFound();
+
+            var point = await marketRent.RefreshAsync(property, HttpContext.RequestAborted);
+
+            return point is null ? NoContent() : Ok(point);
         }
     }
 

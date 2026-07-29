@@ -1,9 +1,21 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-3">Rent vs market</h2>
+    <div class="flex items-baseline justify-between gap-2 mb-3">
+      <h2 class="text-xl font-semibold">Rent vs market</h2>
+      <button
+        class="text-xs text-blue-600 hover:underline disabled:opacity-50"
+        :disabled="refreshing"
+        @click="emit('refresh')"
+      >
+        {{ refreshing ? 'Checking…' : 'Check market' }}
+      </button>
+    </div>
 
     <div v-if="metrics.marketMonthlyRent === null" class="text-sm text-gray-500">
-      <p class="mb-2">No market estimate on record for this property.</p>
+      <p class="mb-2">
+        No market estimate yet. "Check market" compares this property against similar
+        lettings; if there are too few nearby, enter your own estimate below.
+      </p>
       <form @submit.prevent="submitEstimate" class="flex gap-2">
         <input
           v-model.number="estimate"
@@ -20,10 +32,7 @@
     </div>
 
     <div v-else>
-      <p
-        class="text-3xl font-bold"
-        :class="isBelowMarket ? 'text-amber-600' : 'text-green-600'"
-      >
+      <p class="text-3xl font-bold" :class="isBelowMarket ? 'text-amber-600' : 'text-green-600'">
         {{ headline }}
       </p>
 
@@ -36,18 +45,33 @@
         You charge {{ money(metrics.contractedMonthlyRent) }} against an estimated
         {{ money(metrics.marketMonthlyRent) }} — at or above market.
       </p>
+
+      <!-- Provenance is never optional: a market figure without its source and date is
+           an authoritative-looking guess. -->
+      <p v-if="marketPoint" class="text-[11px] text-gray-500 mt-3">
+        {{ sourceLabel }} · as at {{ formatDate(marketPoint.effectiveFrom) }}
+        <span v-if="marketPoint.notes"><br />{{ marketPoint.notes }}</span>
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { PropertyMetrics } from '../../../models/models';
+import type { PropertyMetrics, RentPricePoint } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
-import { formatPercent } from '../../../utils/labels';
+import { formatDate, formatPercent } from '../../../utils/labels';
 
-const props = defineProps<{ metrics: PropertyMetrics }>();
-const emit = defineEmits<{ (e: 'add-estimate', amount: number): void }>();
+const props = defineProps<{
+  metrics: PropertyMetrics;
+  marketPoint?: RentPricePoint | null;
+  refreshing?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'add-estimate', amount: number): void;
+  (e: 'refresh'): void;
+}>();
 
 const estimate = ref<number | null>(null);
 
@@ -64,6 +88,12 @@ const headline = computed(() => {
   if (gap < 0) return `${formatPercent(Math.abs(gap))} above market`;
   return 'At market';
 });
+
+const sourceLabel = computed(() =>
+  props.marketPoint?.providerKey === 'peer-comparables'
+    ? 'Comparable lettings'
+    : 'Your own estimate'
+);
 
 function submitEstimate() {
   if (estimate.value && estimate.value > 0) {

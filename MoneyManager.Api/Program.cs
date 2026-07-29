@@ -14,6 +14,7 @@ using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
 using MoneyManager.Api.Services.Currency;
+using MoneyManager.Api.Services.MarketRent;
 
 DotEnv.Load();
 
@@ -84,6 +85,13 @@ builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<PropertyAnalyticsService>();
 builder.Services.AddScoped<ExchangeRateService>();
+
+// Market rent. Providers are resolved as a set and asked in priority order, so adding a
+// paid HTTP-backed source later is a registration rather than a change at any call site.
+builder.Services.Configure<MarketRentOptions>(builder.Configuration.GetSection(MarketRentOptions.SectionName));
+builder.Services.AddScoped<IMarketRentProvider, PeerComparableRentProvider>();
+builder.Services.AddScoped<MarketRentService>();
+builder.Services.AddHostedService<MarketRentRefreshService>();
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // Credential stuffing is the obvious attack on a login form. A fixed window on the auth

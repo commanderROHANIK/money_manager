@@ -32,7 +32,14 @@
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
-          <RentVsMarketWidget :metrics="metrics" @add-estimate="onAddEstimate" />
+          <RentVsMarketWidget
+            :metrics="metrics"
+            :market-point="latestMarketPoint"
+            :refreshing="refreshingMarket"
+            @add-estimate="onAddEstimate"
+            @refresh="onRefreshMarket"
+          />
+          <p v-if="marketMessage" class="text-xs text-gray-500 mt-2">{{ marketMessage }}</p>
         </div>
         <div class="xl:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
           <RentOverTimeChartWidget :history="rentHistory" :currency-code="property.currencyCode" />
@@ -69,8 +76,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { RentPriceSource } from '../models/models';
 import type {
   Lease,
   PropertyEvent,
@@ -93,6 +101,7 @@ import {
   fetchRentHistory,
   fetchTransactions,
   fetchValuations,
+  refreshMarketRent,
 } from '../services/propertyApi';
 import type { LeaseRequest } from '../services/propertyApi';
 import { PROPERTY_TYPE_LABELS } from '../utils/labels';
@@ -118,6 +127,16 @@ const leases = ref<Lease[]>([]);
 const rentHistory = ref<RentPricePoint[]>([]);
 const valuations = ref<PropertyValuation[]>([]);
 const events = ref<PropertyEvent[]>([]);
+
+const refreshingMarket = ref(false);
+const marketMessage = ref('');
+
+/** Newest market estimate, which carries the provider and date shown beside the gap. */
+const latestMarketPoint = computed(() =>
+  rentHistory.value
+    .filter((p) => p.source === RentPriceSource.MarketEstimate)
+    .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))[0] ?? null
+);
 
 // The page owns every fetch and passes data down, keeping the widgets presentational.
 async function load() {
@@ -176,6 +195,26 @@ async function onCreateLease(payload: LeaseRequest) {
 async function onAddEstimate(amount: number) {
   await addMarketEstimate(propertyId, amount);
   await load();
+}
+
+async function onRefreshMarket() {
+  refreshingMarket.value = true;
+  marketMessage.value = '';
+
+  try {
+    const point = await refreshMarketRent(propertyId);
+
+    // No estimate is an ordinary outcome, not an error — say why rather than failing quietly.
+    marketMessage.value = point
+      ? ''
+      : 'Not enough comparable lettings nearby yet to estimate a market rent.';
+
+    if (point) await load();
+  } catch {
+    marketMessage.value = 'Could not check the market just now.';
+  } finally {
+    refreshingMarket.value = false;
+  }
 }
 
 async function onCreateValuation(payload: { valuedOn: string; value: number }) {

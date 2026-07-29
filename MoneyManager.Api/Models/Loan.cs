@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MoneyManager.Api.Models
 {
     public class Loan : IOwnedByUser
@@ -20,6 +22,12 @@ namespace MoneyManager.Api.Models
         /// were previously unrelated tables with no way to say which debt funded which asset.
         /// </summary>
         public int? RentalPropertyId { get; set; }
+        /// <summary>
+        /// Navigation for queries only. Excluded from responses: EF fixes it up when the
+        /// parent is tracked in the same context, which would otherwise serialise the whole
+        /// property graph back — bloated, and a cycle the serialiser cannot resolve.
+        /// </summary>
+        [JsonIgnore]
         public RentalProperty? RentalProperty { get; set; }
 
         /// <summary>Contractual repayment. Needed for cash flow and cash-on-cash return.</summary>
