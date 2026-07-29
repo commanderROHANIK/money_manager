@@ -86,16 +86,53 @@ number, and saying which inputs are soft is most of what makes the output worth 
 Cap rate excludes financing so it stays comparable between properties; deposits are
 excluded from income because they are repayable.
 
-### Multi-tenancy
+### Currency
 
 Each property is denominated in a single currency, fixed at creation, so per-property
-analytics involve no FX at all. Portfolio totals refuse to add across currencies and say so
-rather than producing a plausible wrong number.
+analytics involve no FX at all. Conversion happens only at the portfolio rollup, against the
+user's base currency, using rates from the `ExchangeRate` table — set them under **Settings**.
+
+Only one direction of each pair is stored; the inverse is derived, and unrelated pairs are
+crossed through EUR. An unreachable pair yields **null, never 1:1** — treating an unknown
+rate as parity would report a forint portfolio as though forints were euros. Where a held
+currency has no rate, portfolio totals are withheld entirely and that currency is named,
+because a total covering only the properties there happen to be rates for reads as a
+portfolio total without being one.
+
+### Market rent
+
+`IMarketRentProvider` produces estimates; `PeerComparableRentProvider` is the default and
+needs no external service. It takes the median rent per square metre of comparable let
+properties — same city, same type, bedrooms within one, same currency — from across the
+whole userbase, and returns nothing below three comparables.
+
+This is the one place that deliberately reads across the tenant boundary. Only aggregates
+leave it: a median, a range and a count, never an address, a name or a row. The minimum
+sample size is what stops an estimate being a restatement of one neighbour's rent. Both
+properties are covered by tests, and both must survive any change here.
+
+A background service refreshes stale estimates. Because it runs with no authenticated user,
+it reads with `IgnoreQueryFilters()` and writes with an explicit owner — without that the
+tenant filter turns it into a job that silently does nothing.
+
+Every market figure is rendered with its provider, as-at date and sample size. An
+authoritative-looking wrong rent is worse than no rent at all.
+
+### Multi-tenancy
 
 Tenant isolation is enforced in the data layer, not in controllers: every owned entity has a
 global query filter, and the owner is stamped in `SaveChanges` and pinned on update. A
 controller that forgets to filter still cannot read across the boundary, and ownership can
 never be supplied through a request body. `TenantIsolationTests` covers this.
+
+One deliberate exception: with no authenticated user at all, `SaveChanges` accepts an
+explicitly assigned owner, which is what lets background work write on a user's behalf.
+Inside a request there is always a current user, so the owner still always comes from the
+token.
+
+Entities' parent navigation properties are excluded from responses. EF fixes them up when
+the parent is tracked in the same context, and serialising one would return the entire
+property graph — bloated, cyclic, and disclosing more than the endpoint intended.
 
 Two consequences to respect when extending it:
 
@@ -113,6 +150,7 @@ later is a provider swap.
 
 ## Not built yet
 
-Exchange rates for consolidated multi-currency totals; an automatic market-rent feed
-(market estimates are entered by hand today, behind the same `RentPricePoint` model a feed
-would write to); IRR; tax and depreciation modelling; billing and subscriptions.
+An automatic exchange-rate feed (rates are entered by hand; an ECB-backed provider would
+write the same rows with a different `Source`); a paid market-rent data source behind the
+existing `IMarketRentProvider` seam; IRR; tax and depreciation modelling; refresh tokens and
+password reset; billing and subscriptions.
