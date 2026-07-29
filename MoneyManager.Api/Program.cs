@@ -95,16 +95,21 @@ builder.Services.AddHostedService<MarketRentRefreshService>();
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // Credential stuffing is the obvious attack on a login form. A fixed window on the auth
-// endpoints costs nothing and is table stakes for anything sold as a service.
+// endpoints costs nothing and is table stakes for anything sold as a service. Partitioned
+// by client IP so one caller hitting the limit can't lock everyone else out of login —
+// AddFixedWindowLimiter's overload without a partition key hands out one shared bucket for
+// the whole app, which is a self-inflicted denial of service rather than a mitigation.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("auth", limiter =>
-    {
-        limiter.PermitLimit = 10;
-        limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.QueueLimit = 0;
-    });
+    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        }));
 });
 
 builder.Services.AddEndpointsApiExplorer();

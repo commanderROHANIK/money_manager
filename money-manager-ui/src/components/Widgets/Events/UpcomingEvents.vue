@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white p-6 rounded-2xl shadow-md">
+    <div class="bg-white p-4 rounded-2xl shadow-md">
       <h2 class="text-lg font-semibold mb-2">Upcoming Events</h2>
   
       <ul v-if="events.length > 0" class="text-sm space-y-1">

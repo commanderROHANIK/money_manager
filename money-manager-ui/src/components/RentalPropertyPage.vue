@@ -1,38 +1,38 @@
 <template>
   <div class="p-4 grid grid-cols-1 xl:grid-cols-3 gap-4">
     <!-- Portfolio headline -->
-    <div class="col-span-1 xl:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
       <PortfolioSummaryWidget :portfolio="portfolio" />
     </div>
 
     <!-- Top Row Widgets -->
-    <div class="col-span-1 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
       <TotalRentWidget :properties="properties" />
     </div>
 
-    <div class="col-span-1 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
       <RentedVsVacantPieWidget :properties="properties" />
     </div>
 
-    <div class="col-span-1 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
       <UpcomingRentDueWidget :properties="properties" />
     </div>
 
     <!-- The commercial hook: where rent is trailing the market -->
-    <div class="col-span-1 xl:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
       <UnderpricedPropertiesWidget :metrics="portfolio?.properties ?? []" />
     </div>
 
-    <div class="col-span-1 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
       <MostExpensivePropertyWidget :properties="properties" />
     </div>
 
     <!-- Properties List -->
-    <div class="col-span-1 xl:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
       <PropertyListWidget :properties="properties" @delete-property="_deleteProperty" />
     </div>
 
-    <div class="col-span-1 xl:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
+    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
       <AddPropertyWidget @create="_addProperty" />
     </div>
   </div>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-4">Tenancies</h2>
+    <h2 class="text-lg font-semibold mb-4">Tenancies</h2>
 
     <div v-if="active" class="p-3 rounded-lg bg-green-50 border border-green-200 mb-4">
       <p class="font-medium text-green-900">{{ active.tenantName }}</p>

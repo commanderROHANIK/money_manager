@@ -36,12 +36,12 @@
         {{ headline }}
       </p>
 
-      <p v-if="isBelowMarket" class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+      <p v-if="isBelowMarket" class="text-sm text-gray-700 mt-2">
         You charge {{ money(metrics.contractedMonthlyRent) }} against an estimated
         {{ money(metrics.marketMonthlyRent) }}. Closing the gap is worth
         <strong>{{ money(metrics.annualRentUplift) }}</strong> a year.
       </p>
-      <p v-else class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+      <p v-else class="text-sm text-gray-700 mt-2">
         You charge {{ money(metrics.contractedMonthlyRent) }} against an estimated
         {{ money(metrics.marketMonthlyRent) }} — at or above market.
       </p>

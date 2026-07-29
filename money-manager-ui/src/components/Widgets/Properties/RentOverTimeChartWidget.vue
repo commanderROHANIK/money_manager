@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-4">Rent over time</h2>
+    <h2 class="text-lg font-semibold mb-4">Rent over time</h2>
 
     <div v-if="hasData" class="chart-box">
       <Line :data="chartData" :options="chartOptions" />

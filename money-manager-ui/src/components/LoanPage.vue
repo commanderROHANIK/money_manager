@@ -17,7 +17,11 @@
     <!-- Loans List -->
     <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
        <LoanListWidget :loans="loans" @delete-loan="_deleteLoan" />
+    </div>
 
+    <!-- Add Loan -->
+    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
+      <AddLoanWidget @create="_addLoan" />
     </div>
 
     <!-- Bottom Row -->
@@ -32,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchLoans, deleteLoan } from '../services/api';
+import { fetchLoans, createLoan, deleteLoan } from '../services/api';
 import type { Loan } from '../models/models';
 
 // Widgets
@@ -40,17 +44,25 @@ import TotalLoanAmountWidget from '../components/Widgets/Loans/TotalLoanAmountWi
 import LoanStatusPieWidget from '../components/Widgets/Loans/LoanStatusPieWidget.vue';
 import MonthlyRepaymentChartWidget from '../components/Widgets/Loans/MonthlyRepaymentChartWidget.vue';
 import LoanListWidget from '../components/Widgets/Loans/LoanListWidget.vue';
+import AddLoanWidget from '../components/Widgets/Loans/AddLoanWidget.vue';
 import NextDueRepaymentWidget from '../components/Widgets/Loans/NextDueRepaymentWidget.vue';
 import TopLoansWidget from '../components/Widgets/Loans/TopLoansWidget.vue';
 
 const loans = ref<Loan[]>([]);
 
-onMounted(async () => {
+async function load() {
   loans.value = await fetchLoans();
-});
+}
+
+onMounted(load);
 
 async function _deleteLoan(id: number) {
   await deleteLoan(id);
-  loans.value = loans.value.filter(l => l.id !== id);
+  await load();
+}
+
+async function _addLoan(payload: Omit<Loan, 'id'>) {
+  await createLoan({ id: 0, ...payload });
+  await load();
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold mb-1">Valuations</h2>
+    <h2 class="text-lg font-semibold mb-1">Valuations</h2>
     <p class="text-xs text-gray-500 mb-3">
       Equity and appreciation are measured against the most recent figure here.
     </p>
