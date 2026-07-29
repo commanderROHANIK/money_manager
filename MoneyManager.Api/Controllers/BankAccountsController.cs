@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
@@ -6,6 +7,7 @@ using MoneyManager.Api.Models;
 namespace MoneyManager.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class BankAccountsController : ControllerBase
     {
@@ -16,18 +18,18 @@ namespace MoneyManager.Api.Controllers
             _context = context;
         }
 
-        // Get all bank accounts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BankAccount>>> GetBankAccounts()
         {
             return await _context.BankAccounts.ToListAsync();
         }
 
-        // Get a specific bank account by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<BankAccount>> GetBankAccount(int id)
         {
-            var bankAccount = await _context.BankAccounts.FindAsync(id);
+            // FirstOrDefaultAsync, not FindAsync: Find can return a change-tracked instance
+            // without querying, which would sidestep the tenant query filter entirely.
+            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
 
             if (bankAccount == null)
             {
@@ -40,21 +42,18 @@ namespace MoneyManager.Api.Controllers
         [HttpGet("summary/total-balance")]
         public async Task<IActionResult> GetTotalBalance()
         {
+            // Materialized before summing on purpose: SQLite has no native decimal type, so
+            // aggregating decimals in SQL either fails or loses precision.
             var accounts = await _context.BankAccounts.ToListAsync();
 
-            decimal accountTotal = accounts.Sum(a => a.Balance);
-            
-            return Ok(new { totalBalance = accountTotal});
+            return Ok(new { totalBalance = accounts.Sum(a => a.Balance) });
         }
 
-        // Create a new bank account
         [HttpPost]
-        public async Task<ActionResult<BankAccount>> CreateBankAccount([FromBody] BankAccount bankAccount)
+        public async Task<ActionResult<BankAccount>> CreateBankAccount([FromBody] BankAccountRequest request)
         {
-            if (bankAccount == null)
-            {
-                return BadRequest("Bank account data is required.");
-            }
+            var bankAccount = new BankAccount();
+            Apply(request, bankAccount);
 
             _context.BankAccounts.Add(bankAccount);
             await _context.SaveChangesAsync();
@@ -62,26 +61,28 @@ namespace MoneyManager.Api.Controllers
             return CreatedAtAction(nameof(GetBankAccount), new { id = bankAccount.Id }, bankAccount);
         }
 
-        // Update an existing bank account
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBankAccount(int id, [FromBody] BankAccount bankAccount)
+        public async Task<IActionResult> UpdateBankAccount(int id, [FromBody] BankAccountRequest request)
         {
-            if (id != bankAccount.Id)
+            // Load through the filtered set, then copy the permitted fields across. Attaching
+            // a client-supplied entity would let a caller write to any row id they guessed.
+            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (bankAccount == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(bankAccount).State = EntityState.Modified;
+            Apply(request, bankAccount);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // Delete a bank account
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBankAccount(int id)
         {
-            var bankAccount = await _context.BankAccounts.FindAsync(id);
+            var bankAccount = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
 
             if (bankAccount == null)
             {
@@ -93,5 +94,25 @@ namespace MoneyManager.Api.Controllers
 
             return NoContent();
         }
+
+        private static void Apply(BankAccountRequest request, BankAccount account)
+        {
+            account.AccountName = request.AccountName;
+            account.Balance = request.Balance;
+            account.BankName = request.BankName;
+            account.AccountNumber = request.AccountNumber;
+            account.AccountType = request.AccountType;
+            account.CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode)
+                ? account.CurrencyCode
+                : request.CurrencyCode.ToUpperInvariant();
+        }
     }
+
+    public record BankAccountRequest(
+        string AccountName,
+        decimal Balance,
+        string BankName,
+        string AccountNumber,
+        string AccountType,
+        string? CurrencyCode = null);
 }

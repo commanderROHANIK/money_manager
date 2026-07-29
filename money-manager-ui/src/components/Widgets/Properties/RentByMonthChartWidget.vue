@@ -1,8 +1,11 @@
 <template>
-  <div class="p-4 rounded-lg shadow bg-white dark:bg-gray-800">
-    <h2 class="text-xl font-semibold mb-4">Rent Collected by Month</h2>
+  <div class="p-4 rounded-lg shadow bg-white chart-box">
+    <h2 class="text-lg font-semibold mb-4">Rent Collected by Month</h2>
 
-    <Bar :data="chartData" :options="chartOptions" />
+    <Bar v-if="hasData" :data="chartData" :options="chartOptions" />
+    <p v-else class="text-sm text-gray-500">
+      No rent payments recorded yet for these {{ properties.length }} properties.
+    </p>
   </div>
 </template>
 
@@ -15,42 +18,56 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import type { ChartOptions } from 'chart.js';
 import { Bar } from 'vue-chartjs';
+import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
-import { computed, defineProps } from 'vue';
-
+import { formatMoney } from '../../../utils/money';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const props = defineProps<{
-  properties: RentalProperty[];
-}>();
-
-// Group rent by month
-function groupRentByMonth(properties: RentalProperty[]) {
-  const monthlyTotals: Record<string, number> = {};
-
-//   for (const property of properties) {
-//     for (const payment of property.rentHistory) {
-//       const month = new Date(payment.datePaid).toLocaleString('default', {
-//         year: 'numeric',
-//         month: 'short'
-//       });
-
-//       monthlyTotals[month] = (monthlyTotals[month] || 0) + payment.amount;
-//     }
-//   }
-
-  return monthlyTotals;
+/**
+ * A rent payment that has actually been received. Until the transaction ledger exists there
+ * is no source for these, so the widget renders an empty state rather than a blank chart.
+ */
+export interface RentPayment {
+  datePaid: string;
+  amount: number;
+  currencyCode: string;
 }
 
-const rentByMonth = computed(() => groupRentByMonth(props.properties));
+const props = withDefaults(
+  defineProps<{
+    properties: RentalProperty[];
+    payments?: RentPayment[];
+  }>(),
+  { payments: () => [] }
+);
+
+const currency = computed(
+  () => props.payments[0]?.currencyCode ?? props.properties[0]?.currencyCode ?? 'EUR'
+);
+
+const rentByMonth = computed(() => {
+  const monthlyTotals: Record<string, number> = {};
+
+  for (const payment of props.payments) {
+    const month = new Date(payment.datePaid).toLocaleString('default', {
+      year: 'numeric',
+      month: 'short'
+    });
+    monthlyTotals[month] = (monthlyTotals[month] || 0) + payment.amount;
+  }
+
+  return monthlyTotals;
+});
+
+const hasData = computed(() => Object.keys(rentByMonth.value).length > 0);
 
 const chartData = computed(() => {
   const labels = Object.keys(rentByMonth.value).sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
   );
-  const data = labels.map((label) => rentByMonth.value[label]);
 
   return {
     labels,
@@ -59,39 +76,31 @@ const chartData = computed(() => {
         label: 'Rent Collected',
         backgroundColor: '#4ADE80',
         borderRadius: 6,
-        data
+        data: labels.map((label) => rentByMonth.value[label])
       }
     ]
   };
 });
 
-const chartOptions = {
+const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     y: {
       beginAtZero: true,
       ticks: {
-        callback: (value: number) =>
-          new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 0
-          }).format(value)
+        callback: (value) => formatMoney(Number(value), currency.value)
       }
     }
   },
   plugins: {
-    legend: {
-      display: false
-    }
+    legend: { display: false }
   }
-};
+}));
 </script>
 
 <style scoped>
-/* Optional: set a fixed height for the chart */
-div {
+.chart-box {
   height: 300px;
 }
 </style>

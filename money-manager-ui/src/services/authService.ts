@@ -1,11 +1,15 @@
-import axios from 'axios';
-import type { AxiosResponse } from 'axios';
 import router from '../router';
-
-const API_URL = 'http://localhost:5296/api/auth/';
+import { api, TOKEN_STORAGE_KEY } from './api';
 
 export interface AuthResponse {
   token: string;
+}
+
+export interface CurrentUser {
+  id: number;
+  username: string;
+  email: string;
+  baseCurrency: string;
 }
 
 export interface LoginRequest {
@@ -19,43 +23,37 @@ export interface RegisterRequest {
   password: string;
 }
 
-export function register(
+export async function register(
   username: string,
   email: string,
   password: string
-): Promise<AxiosResponse<{ message: string }>> {
+): Promise<{ message: string }> {
   const payload: RegisterRequest = { username, email, password };
-  return axios.post(API_URL + 'register', payload);
+  const response = await api.post<{ message: string }>('/auth/register', payload);
+  return response.data;
 }
 
-export function login(
-  username: string,
-  password: string
-): Promise<AuthResponse> {
+export async function login(username: string, password: string): Promise<AuthResponse> {
   const payload: LoginRequest = { username, password };
-  return axios.post<AuthResponse>(API_URL + 'login', payload)
-    .then((response) => {
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-      return response.data;
-    });
+  const response = await api.post<AuthResponse>('/auth/login', payload);
+
+  if (response.data.token) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, response.data.token);
+  }
+
+  return response.data;
+}
+
+export async function fetchCurrentUser(): Promise<CurrentUser> {
+  const response = await api.get<CurrentUser>('/auth/me');
+  return response.data;
 }
 
 export function logout(): void {
-  localStorage.removeItem('token');
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
   router.push('/login');
-  console.log('Logged out, token removed from localStorage');
-}
-
-export function getAuthHeader(): { Authorization?: string } {
-  const token = localStorage.getItem('token');
-  if (token) {
-    return { Authorization: `Bearer ${token}` };
-  }
-  return {};
 }
 
 export function isLoggedIn(): boolean {
-  return !!localStorage.getItem('token');
+  return !!localStorage.getItem(TOKEN_STORAGE_KEY);
 }
