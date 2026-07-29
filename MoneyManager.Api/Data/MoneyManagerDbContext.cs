@@ -36,6 +36,9 @@ namespace MoneyManager.Api.Data
 
         public DbSet<PropertyEvent> PropertyEvents { get; set; }
 
+        /// <summary>Shared reference data — intentionally not tenant-scoped. See <see cref="ExchangeRate"/>.</summary>
+        public DbSet<ExchangeRate> ExchangeRates { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -126,6 +129,16 @@ namespace MoneyManager.Api.Data
             modelBuilder.Entity<PropertyEvent>(entity =>
             {
                 entity.HasIndex(e => new { e.RentalPropertyId, e.OccurredOn });
+            });
+
+            modelBuilder.Entity<ExchangeRate>(entity =>
+            {
+                entity.Property(r => r.FromCurrency).HasMaxLength(3);
+                entity.Property(r => r.ToCurrency).HasMaxLength(3);
+
+                // One rate per pair per day. Re-entering a correction updates in place
+                // rather than leaving two contradictory rows for the same date.
+                entity.HasIndex(r => new { r.FromCurrency, r.ToCurrency, r.AsOf }).IsUnique();
             });
         }
 

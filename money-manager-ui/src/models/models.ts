@@ -229,14 +229,36 @@ export interface PropertyMetrics {
 export interface PortfolioAnalytics {
     properties: PropertyMetrics[];
     propertyCount: number;
-    currency: string | null;
+    /** The base currency totals are expressed in. */
+    currency: string;
+    /** True when the portfolio spans more than one currency. */
     mixedCurrency: boolean;
+    /** Date of the stalest exchange rate used, or null when no conversion was needed. */
+    fxAsOf: string | null;
+    /** Currencies held with no rate to the base currency; totals are withheld while non-empty. */
+    unconvertedCurrencies: string[];
     totalInvested: number | null;
     totalCurrentValue: number | null;
     totalEquity: number | null;
     totalMonthlyCashFlow: number | null;
     totalAnnualRentUplift: number | null;
     portfolioRoi: number | null;
+}
+
+export interface ExchangeRate {
+    id: number;
+    fromCurrency: string;
+    toCurrency: string;
+    rate: number;
+    asOf: string;
+    source: string;
+}
+
+export interface CurrentUser {
+    id: number;
+    username: string;
+    email: string;
+    baseCurrency: string;
 }
 
 export interface UpcomingEvent {

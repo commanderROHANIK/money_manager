@@ -22,7 +22,7 @@ import { formatMoney, sumSameCurrency } from '../../../utils/money';
  */
 const ASSUMED_YIELD = 0.02;
 
-const annualDividend = ref(0);
+const annualDividend = ref<number | null>(0);
 const currency = ref('EUR');
 
 onMounted(async () => {
@@ -33,12 +33,14 @@ onMounted(async () => {
       (s) => s.currentPrice * s.sharesOwned,
       (s) => s.currencyCode
     );
-    annualDividend.value = summed.total * ASSUMED_YIELD;
+    annualDividend.value = summed.total === null ? null : summed.total * ASSUMED_YIELD;
     currency.value = summed.currency;
   } catch (error) {
     console.error('Failed to load stocks:', error);
   }
 });
 
-const formattedDividend = computed(() => formatMoney(annualDividend.value, currency.value));
+const formattedDividend = computed(() =>
+  annualDividend.value === null ? '—' : formatMoney(annualDividend.value, currency.value)
+);
 </script>

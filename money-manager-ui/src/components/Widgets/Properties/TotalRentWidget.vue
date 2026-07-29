@@ -5,7 +5,8 @@
       {{ formattedTotal }}
     </p>
     <p v-if="mixed" class="text-xs text-gray-500 mt-1">
-      Properties span multiple currencies — showing the unconverted sum.
+      Your properties are let in {{ summed.currency }}. Rents in different currencies are
+      not added together — see the portfolio totals above for a converted figure.
     </p>
   </div>
 </template>
@@ -32,6 +33,6 @@ const summed = computed(() =>
 const mixed = computed(() => summed.value.mixed);
 
 const formattedTotal = computed(() =>
-  formatMoney(summed.value.total, summed.value.currency)
+  summed.value.total === null ? '—' : formatMoney(summed.value.total, summed.value.currency)
 );
 </script>
