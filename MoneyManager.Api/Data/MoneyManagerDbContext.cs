@@ -36,6 +36,8 @@ namespace MoneyManager.Api.Data
 
         public DbSet<PropertyEvent> PropertyEvents { get; set; }
 
+        public DbSet<RentCharge> RentCharges { get; set; }
+
         /// <summary>Shared reference data — intentionally not tenant-scoped. See <see cref="ExchangeRate"/>.</summary>
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
@@ -64,6 +66,7 @@ namespace MoneyManager.Api.Data
             ConfigureOwnership<PropertyValuation>(modelBuilder);
             ConfigureOwnership<RentPricePoint>(modelBuilder);
             ConfigureOwnership<PropertyEvent>(modelBuilder);
+            ConfigureOwnership<RentCharge>(modelBuilder);
 
             modelBuilder.Entity<RentalProperty>(entity =>
             {
@@ -129,6 +132,21 @@ namespace MoneyManager.Api.Data
             modelBuilder.Entity<PropertyEvent>(entity =>
             {
                 entity.HasIndex(e => new { e.RentalPropertyId, e.OccurredOn });
+            });
+
+            modelBuilder.Entity<RentCharge>(entity =>
+            {
+                entity.HasOne(c => c.Lease)
+                      .WithMany()
+                      .HasForeignKey(c => c.LeaseId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // One charge per tenancy per period. This constraint — not a flag on the
+                // job — is what makes charge generation safe to re-run.
+                entity.HasIndex(c => new { c.LeaseId, c.PeriodStart }).IsUnique();
+
+                // Arrears is "unsettled charges, oldest first" across a portfolio.
+                entity.HasIndex(c => new { c.UserId, c.DueDate });
             });
 
             modelBuilder.Entity<ExchangeRate>(entity =>
