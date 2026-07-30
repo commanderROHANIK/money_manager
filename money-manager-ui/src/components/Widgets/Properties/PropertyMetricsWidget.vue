@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="flex items-baseline justify-between mb-4">
-      <h2 class="text-lg font-semibold">Investment performance</h2>
-      <span class="text-xs text-gray-500">as of {{ formatDate(metrics.asOf) }}</span>
+      <h2 class="font-heading text-lg font-bold">Investment performance</h2>
+      <span class="text-xs text-text-muted">as of {{ formatDate(metrics.asOf) }}</span>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50">
-        <p class="text-xs text-gray-500">{{ tile.label }}</p>
-        <p class="text-lg font-bold" :class="tile.tone">{{ tile.value }}</p>
-        <p v-if="tile.hint" class="text-[11px] text-gray-400 mt-0.5">{{ tile.hint }}</p>
+      <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-surface-2">
+        <p class="text-xs text-text-muted">{{ tile.label }}</p>
+        <p class="text-lg font-bold tabular-nums" :class="tile.tone">{{ tile.value }}</p>
+        <p v-if="tile.hint" class="text-[11px] text-text-muted mt-0.5">{{ tile.hint }}</p>
       </div>
     </div>
 
@@ -19,7 +19,7 @@
       <li
         v-for="warning in metrics.warnings"
         :key="warning.code"
-        class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1"
+        class="text-xs text-accent bg-accent-soft border border-border rounded px-2 py-1"
       >
         {{ warning.message }}
       </li>
@@ -41,7 +41,7 @@ function money(value: number | null): string {
 
 function sign(value: number | null): string {
   if (value === null) return '';
-  return value >= 0 ? 'text-green-600' : 'text-red-600';
+  return value >= 0 ? 'text-primary' : 'text-danger';
 }
 
 const tiles = computed(() => [

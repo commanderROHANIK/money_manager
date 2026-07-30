@@ -1,38 +1,36 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-3">Rent vs market</h2>
+    <h2 class="font-heading text-lg font-bold mb-3">Rent vs market</h2>
 
-    <div v-if="metrics.marketMonthlyRent === null" class="text-sm text-gray-500">
+    <div v-if="metrics.marketMonthlyRent === null" class="text-sm text-text-muted">
       <p class="mb-2">No market estimate on record for this property.</p>
       <form @submit.prevent="submitEstimate" class="flex gap-2">
-        <input
+        <BaseInput
           v-model.number="estimate"
           type="number"
           min="1"
           placeholder="Market rent / month"
-          class="p-2 border rounded flex-1 min-w-0"
+          class="flex-1 min-w-0"
           required
         />
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 rounded text-sm">
-          Save
-        </button>
+        <BaseButton type="submit" size="sm">Save</BaseButton>
       </form>
     </div>
 
     <div v-else>
       <p
-        class="text-3xl font-bold"
-        :class="isBelowMarket ? 'text-amber-600' : 'text-green-600'"
+        class="font-heading text-3xl font-extrabold tabular-nums"
+        :class="isBelowMarket ? 'text-accent' : 'text-primary'"
       >
         {{ headline }}
       </p>
 
-      <p v-if="isBelowMarket" class="text-sm text-gray-700 mt-2">
+      <p v-if="isBelowMarket" class="text-sm text-text mt-2">
         You charge {{ money(metrics.contractedMonthlyRent) }} against an estimated
         {{ money(metrics.marketMonthlyRent) }}. Closing the gap is worth
         <strong>{{ money(metrics.annualRentUplift) }}</strong> a year.
       </p>
-      <p v-else class="text-sm text-gray-700 mt-2">
+      <p v-else class="text-sm text-text mt-2">
         You charge {{ money(metrics.contractedMonthlyRent) }} against an estimated
         {{ money(metrics.marketMonthlyRent) }} — at or above market.
       </p>
@@ -45,6 +43,8 @@ import { computed, ref } from 'vue';
 import type { PropertyMetrics } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatPercent } from '../../../utils/labels';
+import BaseInput from '../../ui/BaseInput.vue';
+import BaseButton from '../../ui/BaseButton.vue';
 
 const props = defineProps<{ metrics: PropertyMetrics }>();
 const emit = defineEmits<{ (e: 'add-estimate', amount: number): void }>();

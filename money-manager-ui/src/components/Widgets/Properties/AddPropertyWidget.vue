@@ -1,37 +1,35 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-1">Add a property</h2>
-    <p class="text-xs text-gray-500 mb-4">
+    <h2 class="font-heading text-lg font-bold mb-1">Add a property</h2>
+    <p class="text-xs text-text-muted mb-4">
       The purchase price and date are what every return figure is measured against — worth
       entering even if they are approximate.
     </p>
 
     <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <input v-model="form.propertyName" placeholder="Name" class="p-2 border rounded md:col-span-2" required />
-      <select v-model.number="form.propertyType" class="p-2 border rounded">
+      <BaseInput v-model="form.propertyName" placeholder="Name" class="md:col-span-2" required />
+      <BaseSelect v-model.number="form.propertyType">
         <option v-for="(label, value) in PROPERTY_TYPE_LABELS" :key="value" :value="Number(value)">
           {{ label }}
         </option>
-      </select>
+      </BaseSelect>
 
-      <input v-model="form.address" placeholder="Address" class="p-2 border rounded md:col-span-2" required />
-      <input v-model="form.city" placeholder="City" class="p-2 border rounded" />
+      <BaseInput v-model="form.address" placeholder="Address" class="md:col-span-2" required />
+      <BaseInput v-model="form.city" placeholder="City" />
 
-      <input v-model.number="form.purchasePrice" type="number" min="0" placeholder="Purchase price" class="p-2 border rounded" />
-      <input v-model="form.purchaseDate" type="date" class="p-2 border rounded" />
-      <select v-model="form.currencyCode" class="p-2 border rounded">
+      <BaseInput v-model.number="form.purchasePrice" type="number" min="0" placeholder="Purchase price" />
+      <BaseInput v-model="form.purchaseDate" type="date" />
+      <BaseSelect v-model="form.currencyCode">
         <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
-      </select>
+      </BaseSelect>
 
-      <input v-model.number="form.sizeSqm" type="number" min="0" placeholder="Size (m²)" class="p-2 border rounded" />
-      <input v-model.number="form.bedrooms" type="number" min="0" placeholder="Bedrooms" class="p-2 border rounded" />
+      <BaseInput v-model.number="form.sizeSqm" type="number" min="0" placeholder="Size (m²)" />
+      <BaseInput v-model.number="form.bedrooms" type="number" min="0" placeholder="Bedrooms" />
 
-      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white py-2 rounded">
-        Add property
-      </button>
+      <BaseButton type="submit" class="md:col-span-3">Add property</BaseButton>
     </form>
 
-    <p v-if="error" class="mt-3 text-sm text-red-600">{{ error }}</p>
+    <p v-if="error" class="mt-3 text-sm text-danger">{{ error }}</p>
   </div>
 </template>
 
@@ -40,6 +38,9 @@ import { reactive, ref } from 'vue';
 import { PROPERTY_TYPE_LABELS } from '../../../utils/labels';
 import { CURRENCIES } from '../../../utils/currencies';
 import type { RentalPropertyRequest } from '../../../services/propertyApi';
+import BaseInput from '../../ui/BaseInput.vue';
+import BaseSelect from '../../ui/BaseSelect.vue';
+import BaseButton from '../../ui/BaseButton.vue';
 
 const emit = defineEmits<{ (e: 'create', payload: RentalPropertyRequest): void }>();
 

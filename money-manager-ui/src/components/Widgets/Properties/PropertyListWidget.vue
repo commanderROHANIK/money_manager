@@ -1,60 +1,49 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-4">All Properties</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">All Properties</h2>
 
-    <p v-if="properties.length === 0" class="text-sm text-gray-500">
+    <p v-if="properties.length === 0" class="text-sm text-text-muted">
       No properties yet.
     </p>
 
-    <ul v-else class="space-y-2 max-h-[360px] overflow-y-auto">
-      <li
-        v-for="property in properties"
-        :key="property.id"
-        class="p-3 rounded-lg shadow bg-white"
-      >
-        <div class="flex justify-between items-center gap-3">
-          <div class="min-w-0">
-            <router-link
-              :to="`/properties/${property.id}`"
-              class="font-medium text-blue-600 hover:underline"
-            >
-              {{ property.propertyName }}
-            </router-link>
-            <div class="text-sm text-gray-500 truncate">
-              {{ property.address }}
-            </div>
-            <div v-if="property.isRented" class="text-sm text-gray-500">
-              {{ formatMoney(property.rentAmount, property.currencyCode) }} / month
-              <span v-if="property.tenantName">· {{ property.tenantName }}</span>
-            </div>
+    <ul v-else class="max-h-[360px] overflow-y-auto">
+      <ListRow v-for="property in properties" :key="property.id">
+        <template #title>
+          <router-link
+            :to="`/properties/${property.id}`"
+            class="font-medium text-primary hover:underline"
+          >
+            {{ property.propertyName }}
+          </router-link>
+        </template>
+        <template #subtitle>
+          <div class="text-sm text-text-muted truncate">
+            {{ property.address }}
           </div>
-
-          <div class="flex items-center gap-3 whitespace-nowrap">
-            <span
-              class="text-sm font-medium px-2 py-1 rounded-full"
-              :class="{
-                'bg-green-100 text-green-800': property.isRented,
-                'bg-yellow-100 text-yellow-800': !property.isRented,
-              }"
-            >
-              {{ property.isRented ? 'Rented' : 'Vacant' }}
-            </span>
-            <router-link
-              :to="`/properties/${property.id}`"
-              class="text-sm text-blue-600 hover:underline whitespace-nowrap"
-            >
-              {{ property.isRented ? 'Manage rent' : 'Set rent' }}
-            </router-link>
-            <button
-              class="text-gray-400 hover:text-red-600 text-sm"
-              :aria-label="`Delete ${property.propertyName}`"
-              @click="confirmDelete(property)"
-            >
-              Delete
-            </button>
+          <div v-if="property.isRented" class="text-sm text-text-muted">
+            {{ formatMoney(property.rentAmount, property.currencyCode) }} / month
+            <span v-if="property.tenantName">· {{ property.tenantName }}</span>
           </div>
-        </div>
-      </li>
+        </template>
+        <template #trailing>
+          <Badge :variant="property.isRented ? 'primary' : 'neutral'">
+            {{ property.isRented ? 'Rented' : 'Vacant' }}
+          </Badge>
+          <router-link
+            :to="`/properties/${property.id}`"
+            class="text-sm text-primary hover:underline whitespace-nowrap"
+          >
+            {{ property.isRented ? 'Manage rent' : 'Set rent' }}
+          </router-link>
+          <button
+            class="text-text-muted hover:text-danger text-sm"
+            :aria-label="`Delete ${property.propertyName}`"
+            @click="confirmDelete(property)"
+          >
+            Delete
+          </button>
+        </template>
+      </ListRow>
     </ul>
   </div>
 </template>
@@ -62,6 +51,8 @@
 <script setup lang="ts">
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
+import ListRow from '../../ui/ListRow.vue';
+import Badge from '../../ui/Badge.vue';
 
 defineProps<{
   properties: RentalProperty[];

@@ -1,19 +1,19 @@
 <template>
-  <div>
-    <h2 class="text-lg font-semibold mb-2">Total Monthly Rent</h2>
-    <p class="text-3xl font-bold text-green-600">
+  <StatCard label="Total Monthly Rent" :value="formattedTotal">
+    <template v-if="mixed" #value>
       {{ formattedTotal }}
-    </p>
-    <p v-if="mixed" class="text-xs text-gray-500 mt-1">
-      Properties span multiple currencies — showing the unconverted sum.
-    </p>
-  </div>
+      <span class="block text-xs font-normal text-text-muted mt-1">
+        Properties span multiple currencies — showing the unconverted sum.
+      </span>
+    </template>
+  </StatCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney, sumSameCurrency } from '../../../utils/money';
+import StatCard from '../../ui/StatCard.vue';
 
 const props = defineProps<{
   properties: RentalProperty[];

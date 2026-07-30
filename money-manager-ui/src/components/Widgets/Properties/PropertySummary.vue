@@ -1,15 +1,15 @@
 <template>
-    <div class="bg-white p-4 rounded-2xl shadow-md">
-      <h2 class="text-lg font-semibold mb-2">Rental Properties</h2>
-      <p class="text-sm">{{ rentedCount }} Rented | {{ vacantCount }} Vacant</p>
-    </div>
+    <StatCard label="Rental Properties">
+      <template #value>{{ rentedCount }} Rented | {{ vacantCount }} Vacant</template>
+    </StatCard>
   </template>
-  
+
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import { fetchRentalProperties } from '../../../services/api';
   import type { RentalProperty } from '../../../models/models';
-  
+  import StatCard from '../../ui/StatCard.vue';
+
   const properties = ref<RentalProperty[]>([]);
   
   onMounted(async () => {

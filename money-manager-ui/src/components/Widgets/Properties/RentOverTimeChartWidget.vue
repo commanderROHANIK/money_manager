@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-4">Rent over time</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">Rent over time</h2>
 
     <div v-if="hasData" class="chart-box">
       <Line :data="chartData" :options="chartOptions" />
     </div>
-    <p v-else class="text-sm text-gray-500">
+    <p v-else class="text-sm text-text-muted">
       No rent history yet. It fills in automatically as tenancies start and rents change.
     </p>
   </div>
@@ -26,6 +26,7 @@ import {
 import type { ChartOptions } from 'chart.js';
 import { RentPriceSource, type RentPricePoint } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
+import { chartColors } from '../../../utils/chartTheme';
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -68,16 +69,16 @@ const chartData = computed(() => ({
     {
       label: 'Rent charged',
       data: stepSeries(RentPriceSource.Contracted),
-      borderColor: '#10B981',
-      backgroundColor: '#10B981',
+      borderColor: chartColors.primary,
+      backgroundColor: chartColors.primary,
       stepped: true,
       tension: 0,
     },
     {
       label: 'Market estimate',
       data: stepSeries(RentPriceSource.MarketEstimate),
-      borderColor: '#F59E0B',
-      backgroundColor: '#F59E0B',
+      borderColor: chartColors.accent,
+      backgroundColor: chartColors.accent,
       borderDash: [6, 4],
       stepped: true,
       tension: 0,
