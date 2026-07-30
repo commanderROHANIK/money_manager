@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MoneyManager.Api.Data;
 
@@ -10,9 +11,11 @@ using MoneyManager.Api.Data;
 namespace MoneyManager.Api.Migrations
 {
     [DbContext(typeof(MoneyManagerDbContext))]
-    partial class MoneyManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729051743_ExchangeRates")]
+    partial class ExchangeRates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -390,9 +393,6 @@ namespace MoneyManager.Api.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("NormalizedCity")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
@@ -430,8 +430,6 @@ namespace MoneyManager.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("NormalizedCity", "PropertyType", "CurrencyCode");
 
                     b.HasIndex("UserId", "City");
 
@@ -530,9 +528,6 @@ namespace MoneyManager.Api.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()

@@ -27,25 +27,31 @@ export function formatMoney(
 }
 
 /**
- * Totals a mixed-currency list only when every entry shares one currency, and reports the
- * currency it used. Summing across currencies is meaningless without an exchange rate, so
- * this returns `mixed` instead of a fabricated number and the caller can say so.
+ * Totals a list only when every entry shares one currency.
+ *
+ * When they do not, `total` is null and `mixed` is true. Adding unlike currencies would
+ * produce a number that looks authoritative and is meaningless, so the caller has to render
+ * the ambiguity instead. Converted totals come from the server, which has the rates —
+ * these client-side widgets deliberately do not guess.
  */
 export function sumSameCurrency<T>(
   items: T[],
   amountOf: (item: T) => number,
   currencyOf: (item: T) => string
-): { total: number; currency: string; mixed: boolean } {
+): { total: number | null; currency: string; mixed: boolean } {
   if (items.length === 0) {
     return { total: 0, currency: 'EUR', mixed: false };
   }
 
   const currencies = new Set(items.map((i) => (currencyOf(i) ?? 'EUR').toUpperCase()));
-  const total = items.reduce((sum, item) => sum + (amountOf(item) || 0), 0);
+
+  if (currencies.size > 1) {
+    return { total: null, currency: [...currencies].sort().join(', '), mixed: true };
+  }
 
   return {
-    total,
-    currency: currencies.size === 1 ? [...currencies][0] : 'EUR',
-    mixed: currencies.size > 1,
+    total: items.reduce((sum, item) => sum + (amountOf(item) || 0), 0),
+    currency: [...currencies][0],
+    mixed: false,
   };
 }

@@ -1,16 +1,39 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-3">Portfolio</h2>
+    <div class="flex items-baseline justify-between gap-2 mb-3">
+      <h2 class="text-xl font-semibold">Portfolio</h2>
+      <!-- Only when totals are actually being shown. A missing rate does not stop the
+           convertible currencies resolving a date, so this and the withheld-totals notice
+           below could both appear at once and contradict each other. -->
+      <span
+        v-if="portfolio?.fxAsOf && !portfolio.unconvertedCurrencies.length"
+        class="text-xs text-gray-500"
+      >
+        converted to {{ portfolio.currency }} at rates as at {{ formatDate(portfolio.fxAsOf) }}
+      </span>
+    </div>
 
     <p v-if="!portfolio || portfolio.propertyCount === 0" class="text-sm text-gray-500">
       No properties yet. Add one below to start tracking what it returns.
     </p>
 
     <template v-else>
-      <p v-if="portfolio.mixedCurrency" class="text-sm text-amber-700 mb-3">
-        Your properties span several currencies, so they are not totalled here — exchange
-        rates are not applied yet. Each property's own figures are still exact.
-      </p>
+      <!-- Totals are withheld rather than partially summed, so the message has to say
+           exactly what is missing and what to do about it. -->
+      <div
+        v-if="portfolio.unconvertedCurrencies.length"
+        class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded p-3"
+      >
+        <p>
+          No exchange rate for
+          <strong>{{ portfolio.unconvertedCurrencies.join(', ') }}</strong>
+          against {{ portfolio.currency }}, so portfolio totals are not shown — adding up
+          unlike currencies would give a confident wrong number.
+        </p>
+        <router-link to="/settings" class="text-blue-600 hover:underline">
+          Add a rate →
+        </router-link>
+      </div>
 
       <div v-else class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50">
@@ -26,7 +49,7 @@
 import { computed } from 'vue';
 import type { PortfolioAnalytics } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
-import { formatPercent } from '../../../utils/labels';
+import { formatDate, formatPercent } from '../../../utils/labels';
 
 const props = defineProps<{ portfolio: PortfolioAnalytics | null }>();
 

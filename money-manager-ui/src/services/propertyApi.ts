@@ -119,6 +119,17 @@ export async function addMarketEstimate(
   return response.data;
 }
 
+/**
+ * Asks the market rent providers for a fresh estimate now. Resolves to null when no
+ * provider had enough evidence — a valid answer, not a failure.
+ */
+export async function refreshMarketRent(propertyId: number): Promise<RentPricePoint | null> {
+  const response = await api.post<RentPricePoint | ''>(
+    `/RentalProperties/${propertyId}/rent-history/refresh`
+  );
+  return response.status === 204 || !response.data ? null : (response.data as RentPricePoint);
+}
+
 export async function fetchValuations(propertyId: number): Promise<PropertyValuation[]> {
   const response = await api.get<PropertyValuation[]>(`/RentalProperties/${propertyId}/valuations`);
   return response.data;

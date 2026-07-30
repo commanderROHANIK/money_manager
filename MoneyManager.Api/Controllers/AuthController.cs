@@ -61,6 +61,12 @@ namespace MoneyManager.Api.Controllers
 
             user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
+            // The first account on an instance administers it, so a fresh deployment can
+            // maintain exchange rates without a separate provisioning step. Racing
+            // registrations could in principle both see an empty table; the loser is a
+            // second admin on a brand-new instance, which is not worth a transaction.
+            user.IsAdmin = !await _context.Users.AnyAsync();
+
             _context.Users.Add(user);
 
             try
@@ -122,10 +128,45 @@ namespace MoneyManager.Api.Controllers
                 id = user.Id,
                 username = user.Username,
                 email = user.Email,
-                baseCurrency = user.BaseCurrency
+                baseCurrency = user.BaseCurrency,
+                isAdmin = user.IsAdmin
+            });
+        }
+
+        /// <summary>
+        /// Changes the currency consolidated portfolio totals are reported in. Individual
+        /// properties keep their own currency — only the rollup is affected.
+        /// </summary>
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileRequest request)
+        {
+            var userId = _currentUser.UserId;
+            if (userId is null)
+                return Unauthorized();
+
+            var currency = (request.BaseCurrency ?? string.Empty).Trim().ToUpperInvariant();
+            if (currency.Length != 3)
+                return BadRequest(new { message = "Base currency must be a three-letter ISO 4217 code." });
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user is null)
+                return Unauthorized();
+
+            user.BaseCurrency = currency;
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                id = user.Id,
+                username = user.Username,
+                email = user.Email,
+                baseCurrency = user.BaseCurrency,
+                isAdmin = user.IsAdmin
             });
         }
     }
+
+    public record UpdateProfileRequest(string BaseCurrency);
 
     public record RegisterRequest(string Username, string Email, string Password, string? BaseCurrency = null);
     public record LoginRequest(string Username, string Password);

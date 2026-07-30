@@ -1,9 +1,9 @@
 <template>
-    <aside class="w-64 bg-gray-900 text-white flex flex-col" :hidden="loggedIn">
+    <aside class="w-64 bg-gray-900 text-white flex flex-col" :hidden="!showMenu">
       <div class="p-6 text-xl font-bold border-b border-gray-700">
         <span class="flex items-center space-x-2">
             <Logout :size="24" @click="handleLogout"/>
-            <h1 >Money Manager</h1>
+            <h1>Money Manager</h1>
         </span>
       </div>
       <nav class="flex-1 p-4 space-y-4">
@@ -13,20 +13,28 @@
         <RouterLink to="/properties" class="block py-2 px-4 rounded hover:bg-gray-800">Properties</RouterLink>
         <RouterLink to="/stocks" class="block py-2 px-4 rounded hover:bg-gray-800">Stocks</RouterLink>
         <RouterLink to="/events" class="block py-2 px-4 rounded hover:bg-gray-800">Events</RouterLink>
+        <RouterLink to="/settings" class="block py-2 px-4 rounded hover:bg-gray-800">Settings</RouterLink>
       </nav>
     </aside>
   </template>
-  
+
   <script setup lang="ts">
-  import { RouterLink } from 'vue-router';
+  import { computed } from 'vue';
+  import { RouterLink, useRoute } from 'vue-router';
   import Logout from '../components/LogoutIcon.vue';
   import { isLoggedIn, logout } from '../services/authService';
 
-  const loggedIn = !isLoggedIn();
+  const route = useRoute();
+
+  // Previously `const loggedIn = !isLoggedIn()` — evaluated once at setup, and named the
+  // opposite of what it held. Depending on the route makes it re-evaluate on navigation,
+  // which is exactly when the answer can change.
+  const showMenu = computed(() => {
+    void route.path;
+    return isLoggedIn();
+  });
 
   function handleLogout() {
     logout();
-    window.location.reload();
   }
   </script>
-  

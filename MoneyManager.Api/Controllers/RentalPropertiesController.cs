@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
+using MoneyManager.Api.Services.Currency;
 
 namespace MoneyManager.Api.Controllers
 {
@@ -14,11 +16,19 @@ namespace MoneyManager.Api.Controllers
     {
         private readonly MoneyManagerDbContext _context;
         private readonly PropertyAnalyticsService _analytics;
+        private readonly ExchangeRateService _exchangeRates;
+        private readonly ICurrentUser _currentUser;
 
-        public RentalPropertiesController(MoneyManagerDbContext context, PropertyAnalyticsService analytics)
+        public RentalPropertiesController(
+            MoneyManagerDbContext context,
+            PropertyAnalyticsService analytics,
+            ExchangeRateService exchangeRates,
+            ICurrentUser currentUser)
         {
             _context = context;
             _analytics = analytics;
+            _exchangeRates = exchangeRates;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -60,15 +70,23 @@ namespace MoneyManager.Api.Controllers
         }
 
         /// <summary>
-        /// Per-property metrics for the whole portfolio, plus totals. Totals are only summed
-        /// across properties sharing a currency; mixed portfolios report which currencies
-        /// are present rather than adding unlike amounts together.
+        /// Per-property metrics for the whole portfolio, plus totals in the user's base
+        /// currency. Where a rate is missing for one of the currencies held, totals are
+        /// withheld and the currencies are named — a total covering only the properties
+        /// there happen to be rates for would read as a portfolio total without being one.
         /// </summary>
         [HttpGet("analytics/portfolio")]
         public async Task<ActionResult<PortfolioAnalyticsDto>> GetPortfolioAnalytics([FromQuery] DateTime? asOf = null)
         {
             var all = await _analytics.GetForAllAsync(asOf);
-            return Ok(PortfolioAnalyticsDto.From(all));
+            var converter = await _exchangeRates.GetConverterAsync(HttpContext.RequestAborted);
+
+            var baseCurrency = await _context.Users
+                .Where(u => u.Id == _currentUser.UserId)
+                .Select(u => u.BaseCurrency)
+                .FirstOrDefaultAsync() ?? "EUR";
+
+            return Ok(PortfolioAnalyticsDto.From(all, converter, baseCurrency));
         }
 
         [HttpPost]
@@ -254,8 +272,10 @@ namespace MoneyManager.Api.Controllers
     public record PortfolioAnalyticsDto(
         IReadOnlyList<PropertyMetrics> Properties,
         int PropertyCount,
-        string? Currency,
+        string Currency,
         bool MixedCurrency,
+        DateOnly? FxAsOf,
+        IReadOnlyList<string> UnconvertedCurrencies,
         decimal? TotalInvested,
         decimal? TotalCurrentValue,
         decimal? TotalEquity,
@@ -263,24 +283,54 @@ namespace MoneyManager.Api.Controllers
         decimal? TotalAnnualRentUplift,
         decimal? PortfolioRoi)
     {
-        public static PortfolioAnalyticsDto From(IReadOnlyList<PropertyMetrics> metrics)
+        public static PortfolioAnalyticsDto From(
+            IReadOnlyList<PropertyMetrics> metrics,
+            CurrencyConverter converter,
+            string baseCurrency)
         {
             var currencies = metrics.Select(m => m.CurrencyCode).Distinct().ToList();
             var mixed = currencies.Count > 1;
 
-            // Adding amounts in different currencies would produce a confident nonsense
-            // number. Until exchange rates land, say so instead.
-            if (mixed || metrics.Count == 0)
+            if (metrics.Count == 0)
             {
                 return new PortfolioAnalyticsDto(
-                    metrics, metrics.Count, mixed ? null : currencies.FirstOrDefault(),
-                    mixed, null, null, null, null, null, null);
+                    metrics, 0, baseCurrency, false, null, [],
+                    null, null, null, null, null, null);
             }
 
-            var invested = SumOrNull(metrics.Select(m => m.CashInvested));
-            var equity = SumOrNull(metrics.Select(m => m.Equity));
-            var cashFlow = SumOrNull(metrics.Select(m => m.MonthlyCashFlow));
-            var netCashFlow = SumOrNull(metrics.Select(m => m.CumulativeNetCashFlow)) ?? 0m;
+            // Resolve one factor per currency up front, so every figure in a total is
+            // converted at the same rate rather than each being looked up independently.
+            var factors = new Dictionary<string, decimal>();
+            var unconverted = new List<string>();
+            DateOnly? fxAsOf = null;
+
+            foreach (var currency in currencies)
+            {
+                if (converter.Convert(1m, currency, baseCurrency) is not { } converted)
+                {
+                    unconverted.Add(currency);
+                    continue;
+                }
+
+                factors[currency] = converted.Amount;
+
+                // A total is only as current as the stalest rate that went into it.
+                if (converted.RateAsOf is { } asOf && (fxAsOf is null || asOf < fxAsOf))
+                    fxAsOf = asOf;
+            }
+
+            // A total covering only the properties we happen to have rates for reads as a
+            // portfolio total but is not one. Withhold it and name what is missing instead.
+            if (unconverted.Count > 0)
+            {
+                return new PortfolioAnalyticsDto(
+                    metrics, metrics.Count, baseCurrency, mixed, fxAsOf, unconverted,
+                    null, null, null, null, null, null);
+            }
+
+            var invested = SumConverted(metrics, m => m.CashInvested, factors);
+            var equity = SumConverted(metrics, m => m.Equity, factors);
+            var netCashFlow = SumConverted(metrics, m => m.CumulativeNetCashFlow, factors) ?? 0m;
 
             decimal? roi = invested is > 0 && equity is not null
                 ? Math.Round((equity.Value + netCashFlow - invested.Value) / invested.Value, 4)
@@ -289,20 +339,36 @@ namespace MoneyManager.Api.Controllers
             return new PortfolioAnalyticsDto(
                 metrics,
                 metrics.Count,
-                currencies.FirstOrDefault(),
-                false,
+                baseCurrency,
+                mixed,
+                fxAsOf,
+                [],
                 invested,
-                SumOrNull(metrics.Select(m => m.CurrentValue)),
+                SumConverted(metrics, m => m.CurrentValue, factors),
                 equity,
-                cashFlow,
-                SumOrNull(metrics.Select(m => m.AnnualRentUplift)),
+                SumConverted(metrics, m => m.MonthlyCashFlow, factors),
+                SumConverted(metrics, m => m.AnnualRentUplift, factors),
                 roi);
         }
 
-        private static decimal? SumOrNull(IEnumerable<decimal?> values)
+        private static decimal? SumConverted(
+            IEnumerable<PropertyMetrics> metrics,
+            Func<PropertyMetrics, decimal?> select,
+            IReadOnlyDictionary<string, decimal> factors)
         {
-            var present = values.Where(v => v is not null).Select(v => v!.Value).ToList();
-            return present.Count == 0 ? null : Math.Round(present.Sum(), 2);
+            decimal total = 0m;
+            var any = false;
+
+            foreach (var metric in metrics)
+            {
+                if (select(metric) is not { } value)
+                    continue;
+
+                total += value * factors[metric.CurrencyCode];
+                any = true;
+            }
+
+            return any ? Math.Round(total, 2) : null;
         }
     }
 }

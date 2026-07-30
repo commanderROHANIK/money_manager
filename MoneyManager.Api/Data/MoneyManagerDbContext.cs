@@ -36,6 +36,9 @@ namespace MoneyManager.Api.Data
 
         public DbSet<PropertyEvent> PropertyEvents { get; set; }
 
+        /// <summary>Shared reference data — intentionally not tenant-scoped. See <see cref="ExchangeRate"/>.</summary>
+        public DbSet<ExchangeRate> ExchangeRates { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -66,6 +69,10 @@ namespace MoneyManager.Api.Data
             {
                 entity.Property(p => p.CurrencyCode).HasMaxLength(3);
                 entity.HasIndex(p => new { p.UserId, p.City });
+
+                // Covers the peer-comparable lookup, which runs with the tenant filter off
+                // and so cannot lean on the UserId index above.
+                entity.HasIndex(p => new { p.NormalizedCity, p.PropertyType, p.CurrencyCode });
 
                 entity.HasMany(p => p.Leases)
                       .WithOne(l => l.RentalProperty!)
@@ -127,6 +134,16 @@ namespace MoneyManager.Api.Data
             {
                 entity.HasIndex(e => new { e.RentalPropertyId, e.OccurredOn });
             });
+
+            modelBuilder.Entity<ExchangeRate>(entity =>
+            {
+                entity.Property(r => r.FromCurrency).HasMaxLength(3);
+                entity.Property(r => r.ToCurrency).HasMaxLength(3);
+
+                // One rate per pair per day. Re-entering a correction updates in place
+                // rather than leaving two contradictory rows for the same date.
+                entity.HasIndex(r => new { r.FromCurrency, r.ToCurrency, r.AsOf }).IsUnique();
+            });
         }
 
         private void ConfigureOwnership<TEntity>(ModelBuilder modelBuilder)
@@ -146,6 +163,35 @@ namespace MoneyManager.Api.Data
                 // the cached model.
                 entity.HasQueryFilter(e => e.UserId == _currentUser.UserId);
             });
+        }
+
+        private bool _explicitOwnerAllowed;
+
+        /// <summary>
+        /// Opens the one window in which an owner assigned in code is honoured instead of
+        /// taken from the token, for background work that legitimately writes on a known
+        /// user's behalf outside any request.
+        ///
+        /// This is an explicit opt-in rather than an inference from "there is no current
+        /// user" on purpose. Treating the absence of a user as permission fails open: it
+        /// would silently extend to any future endpoint that ends up without a resolvable
+        /// principal, turning a payload-supplied <c>UserId</c> into a cross-tenant write
+        /// with nothing in the type system or the tests to notice.
+        /// </summary>
+        public IDisposable AllowExplicitOwnerAssignment()
+        {
+            if (_currentUser.UserId is not null)
+                throw new InvalidOperationException(
+                    "Explicit owner assignment is for background work only; inside a request "
+                    + "the owner always comes from the token.");
+
+            _explicitOwnerAllowed = true;
+            return new ExplicitOwnerScope(this);
+        }
+
+        private sealed class ExplicitOwnerScope(MoneyManagerDbContext context) : IDisposable
+        {
+            public void Dispose() => context._explicitOwnerAllowed = false;
         }
 
         public override int SaveChanges()
@@ -170,11 +216,23 @@ namespace MoneyManager.Api.Data
             {
                 switch (entry.State)
                 {
-                    case EntityState.Added:
-                        entry.Entity.UserId = _currentUser.UserId
-                            ?? throw new InvalidOperationException(
-                                "Cannot persist a user-owned entity outside an authenticated request.");
+                    case EntityState.Added when _currentUser.UserId is { } currentUserId:
+                        // Inside a request the owner always comes from the token, so a
+                        // UserId in the payload is overwritten rather than honoured.
+                        entry.Entity.UserId = currentUserId;
                         break;
+
+                    case EntityState.Added when _explicitOwnerAllowed && entry.Entity.UserId > 0:
+                        // Background work writing on a known user's behalf, inside a scope
+                        // that had to be opened deliberately. A request can never reach this
+                        // branch: opening the scope throws while a current user exists.
+                        break;
+
+                    case EntityState.Added:
+                        throw new InvalidOperationException(
+                            "Cannot persist a user-owned entity outside an authenticated request "
+                            + "without an explicit owner. Background work must write inside "
+                            + nameof(AllowExplicitOwnerAssignment) + ".");
 
                     case EntityState.Modified:
                         entry.Property(nameof(IOwnedByUser.UserId)).IsModified = false;

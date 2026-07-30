@@ -15,6 +15,11 @@ namespace MoneyManager.Api.Models
 
         public int RentalPropertyId { get; set; }
 
+        /// <summary>
+        /// Navigation for queries only. Excluded from responses: EF fixes it up when the
+        /// parent is tracked in the same context, which would otherwise serialise the whole
+        /// property graph back — bloated, and a cycle the serialiser cannot resolve.
+        /// </summary>
         [JsonIgnore]
         public RentalProperty? RentalProperty { get; set; }
 

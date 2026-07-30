@@ -9,8 +9,11 @@
     </p>
 
     <div v-else>
-      <p class="text-3xl font-bold text-amber-600 mb-3">
+      <p class="text-3xl font-bold text-amber-600 mb-1">
         {{ totalUpliftLabel }}<span class="text-base font-normal text-gray-500"> / year</span>
+      </p>
+      <p v-if="summedUplift.mixed" class="text-xs text-gray-500 mb-3">
+        Spans {{ summedUplift.currency }} — the per-property figures below are exact.
       </p>
 
       <ul class="divide-y">
@@ -47,13 +50,18 @@ const underpriced = computed(() =>
     .sort((a, b) => (b.annualRentUplift ?? 0) - (a.annualRentUplift ?? 0))
 );
 
-const totalUpliftLabel = computed(() => {
-  const summed = sumSameCurrency(
+const summedUplift = computed(() =>
+  sumSameCurrency(
     underpriced.value,
     (m) => m.annualRentUplift ?? 0,
     (m) => m.currencyCode
-  );
-  const label = formatMoney(summed.total, summed.currency);
-  return summed.mixed ? `${label} (mixed currencies)` : label;
-});
+  )
+);
+
+// Per-property uplifts below are always exact; only the headline needs a shared currency.
+const totalUpliftLabel = computed(() =>
+  summedUplift.value.total === null
+    ? '—'
+    : formatMoney(summedUplift.value.total, summedUplift.value.currency)
+);
 </script>
