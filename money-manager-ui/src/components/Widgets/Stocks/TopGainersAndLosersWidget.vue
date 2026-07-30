@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import type { Stock } from '../../../models/models';
 import { fetchStocks } from '../../../services/api';
+import BaseCard from '../../ui/BaseCard.vue';
 
 const stocks = ref<Stock[]>([]);
 const isLoading = ref(true);
@@ -24,31 +25,29 @@ const topLosers = computed(() => sortedStocks.value.slice(-3).reverse());
 </script>
 
 <template>
-  <div class="rounded-2xl shadow-md bg-white p-4">
-    <h2 class="text-xl font-semibold mb-2">Top Gainers & Losers</h2>
-
-    <div v-if="isLoading" class="text-gray-500">Loading...</div>
+  <BaseCard title="Top Gainers & Losers">
+    <div v-if="isLoading" class="text-sm text-text-muted">Loading...</div>
 
     <div v-else class="grid grid-cols-2 gap-4">
       <div>
-        <h3 class="text-lg font-medium mb-1">Top Gainers</h3>
+        <h3 class="font-heading text-sm font-bold text-text-muted mb-1">Top Gainers</h3>
         <ul>
-          <li v-for="stock in topGainers" :key="stock.id" class="text-green-600">
+          <li v-for="stock in topGainers" :key="stock.id" class="text-primary text-sm tabular-nums">
             {{ stock.ticker }} +{{ ((stock.currentPrice - stock.purchasePrice) / stock.purchasePrice * 100).toFixed(2) }}%
           </li>
         </ul>
       </div>
 
       <div>
-        <h3 class="text-lg font-medium mb-1">Top Losers</h3>
+        <h3 class="font-heading text-sm font-bold text-text-muted mb-1">Top Losers</h3>
         <ul>
-          <li v-for="stock in topLosers" :key="stock.id" class="text-red-600">
+          <li v-for="stock in topLosers" :key="stock.id" class="text-danger text-sm tabular-nums">
             {{ stock.ticker }} {{ ((stock.currentPrice - stock.purchasePrice) / stock.purchasePrice * 100).toFixed(2) }}%
           </li>
         </ul>
       </div>
     </div>
-  </div>
+  </BaseCard>
 </template>
 
 <style scoped>

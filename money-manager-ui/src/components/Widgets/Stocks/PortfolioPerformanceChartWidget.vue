@@ -14,6 +14,7 @@ import {
 import { fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
 import type { ChartData, ChartOptions } from 'chart.js';
+import { chartColors } from '../../../utils/chartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale);
 
@@ -46,9 +47,9 @@ const data = computed<ChartData<'line'>>(() => {
         label: 'Portfolio Value (Ft)',
         data: values,
         fill: false,
-        borderColor: '#3498db',
+        borderColor: chartColors.primary,
         tension: 0.4,
-        pointBackgroundColor: '#3498db',
+        pointBackgroundColor: chartColors.primary,
         pointRadius: 5
       }
     ]
@@ -82,7 +83,7 @@ const options: ChartOptions<'line'> = {
 
 <template>
   <div>
-    <div v-if="loading">Loading...</div>
+    <div v-if="loading" class="text-sm text-text-muted">Loading...</div>
     <div v-else>
       <Line :data="data" :options="options" />
     </div>

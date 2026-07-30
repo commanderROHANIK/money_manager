@@ -1,16 +1,12 @@
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-md">
-    <h2 class="text-lg font-semibold mb-2">Total Portfolio Value</h2>
-    <p class="text-2xl font-bold text-green-600">
-      {{ formattedValue }}
-    </p>
-  </div>
+  <StatCard label="Total Portfolio Value" :value="formattedValue" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
+import StatCard from '../../ui/StatCard.vue';
 
 const stocks = ref<Stock[]>([]);
 
