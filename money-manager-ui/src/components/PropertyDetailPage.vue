@@ -1,68 +1,65 @@
 <template>
   <div class="p-4 space-y-4">
-    <p v-if="loading" class="text-gray-500">Loading…</p>
-    <p v-else-if="error" class="text-red-600">{{ error }}</p>
+    <LoadingSkeleton v-if="loading" />
+    <ErrorState v-else-if="error" title="Could not load this property" :description="error" />
 
     <template v-else-if="property && metrics">
       <!-- Header -->
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <router-link to="/properties" class="text-sm text-blue-600 hover:underline">
+          <router-link to="/properties" class="text-sm text-primary hover:underline">
             ← All properties
           </router-link>
-          <h1 class="text-2xl font-bold mt-1">{{ property.propertyName }}</h1>
-          <p class="text-sm text-gray-500">
+          <h1 class="font-heading text-2xl font-bold mt-1">{{ property.propertyName }}</h1>
+          <p class="text-sm text-text-muted">
             {{ property.address }}<span v-if="property.city">, {{ property.city }}</span>
             · {{ PROPERTY_TYPE_LABELS[property.propertyType] }}
             <span v-if="property.sizeSqm"> · {{ property.sizeSqm }} m²</span>
             <span v-if="property.bedrooms"> · {{ property.bedrooms }} bed</span>
           </p>
         </div>
-        <span
-          class="text-sm font-medium px-3 py-1 rounded-full"
-          :class="property.isRented ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
-        >
+        <Badge :variant="property.isRented ? 'primary' : 'neutral'">
           {{ property.isRented ? `Let to ${property.tenantName}` : 'Vacant' }}
-        </span>
+        </Badge>
       </div>
 
-      <div class="bg-white p-4 rounded-2xl shadow-md">
+      <BaseCard>
         <PropertyMetricsWidget :metrics="metrics" />
-      </div>
+      </BaseCard>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-2xl shadow-md">
+        <BaseCard>
           <RentVsMarketWidget :metrics="metrics" @add-estimate="onAddEstimate" />
-        </div>
-        <div class="xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
+        </BaseCard>
+        <BaseCard class="xl:col-span-2">
           <RentOverTimeChartWidget :history="rentHistory" :currency-code="property.currencyCode" />
-        </div>
+        </BaseCard>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-2xl shadow-md">
+        <BaseCard>
           <TenancyWidget :leases="leases" @create="onCreateLease" />
-        </div>
-        <div class="xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
+        </BaseCard>
+        <BaseCard class="xl:col-span-2">
           <TransactionLedgerWidget
             :transactions="transactions"
             @create="onCreateTransaction"
             @delete="onDeleteTransaction"
           />
-        </div>
+        </BaseCard>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-2xl shadow-md">
+        <BaseCard>
           <ValuationWidget
             :valuations="valuations"
             :currency-code="property.currencyCode"
             @create="onCreateValuation"
           />
-        </div>
-        <div class="xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
+        </BaseCard>
+        <BaseCard class="xl:col-span-2">
           <PropertyTimelineWidget :events="events" />
-        </div>
+        </BaseCard>
       </div>
     </template>
   </div>
@@ -104,6 +101,10 @@ import TenancyWidget from './Widgets/Properties/TenancyWidget.vue';
 import TransactionLedgerWidget from './Widgets/Properties/TransactionLedgerWidget.vue';
 import PropertyTimelineWidget from './Widgets/Properties/PropertyTimelineWidget.vue';
 import ValuationWidget from './Widgets/Properties/ValuationWidget.vue';
+import BaseCard from './ui/BaseCard.vue';
+import Badge from './ui/Badge.vue';
+import LoadingSkeleton from './ui/LoadingSkeleton.vue';
+import ErrorState from './ui/ErrorState.vue';
 
 const route = useRoute();
 const propertyId = Number(route.params.id);

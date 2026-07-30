@@ -1,40 +1,40 @@
 <template>
   <div class="p-4 grid grid-cols-1 xl:grid-cols-3 gap-4">
     <!-- Portfolio headline -->
-    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-3">
       <PortfolioSummaryWidget :portfolio="portfolio" />
-    </div>
+    </BaseCard>
 
     <!-- Top Row Widgets -->
-    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1">
       <TotalRentWidget :properties="properties" />
-    </div>
+    </BaseCard>
 
-    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1">
       <RentedVsVacantPieWidget :properties="properties" />
-    </div>
+    </BaseCard>
 
-    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1">
       <UpcomingRentDueWidget :properties="properties" />
-    </div>
+    </BaseCard>
 
     <!-- The commercial hook: where rent is trailing the market -->
-    <div class="col-span-1 xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-2">
       <UnderpricedPropertiesWidget :metrics="portfolio?.properties ?? []" />
-    </div>
+    </BaseCard>
 
-    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1">
       <MostExpensivePropertyWidget :properties="properties" />
-    </div>
+    </BaseCard>
 
     <!-- Properties List -->
-    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-3">
       <PropertyListWidget :properties="properties" @delete-property="_deleteProperty" />
-    </div>
+    </BaseCard>
 
-    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-3">
       <AddPropertyWidget @create="_addProperty" />
-    </div>
+    </BaseCard>
   </div>
 </template>
 
@@ -54,6 +54,7 @@ import MostExpensivePropertyWidget from '../components/Widgets/Properties/MostEx
 import UnderpricedPropertiesWidget from '../components/Widgets/Properties/UnderpricedPropertiesWidget.vue';
 import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSummaryWidget.vue';
 import AddPropertyWidget from '../components/Widgets/Properties/AddPropertyWidget.vue';
+import BaseCard from './ui/BaseCard.vue';
 
 const properties = ref<RentalProperty[]>([]);
 const portfolio = ref<PortfolioAnalytics | null>(null);
