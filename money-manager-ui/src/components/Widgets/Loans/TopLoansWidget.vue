@@ -1,22 +1,27 @@
 <template>
   <div class="p-6">
-    <h2 class="text-lg font-semibold mb-2">Top Loans</h2>
-    <ul v-if="topLoans.length" class="space-y-2 text-sm">
-      <li v-for="loan in topLoans" :key="loan.id" class="flex justify-between">
-        <div>
+    <h2 class="font-heading text-lg font-bold mb-2">Top Loans</h2>
+    <ul v-if="topLoans.length">
+      <ListRow v-for="loan in topLoans" :key="loan.id">
+        <template #title>
           <p class="font-medium">{{ loan.loanName }}</p>
-          <p class="text-gray-500">Remaining: {{ formatCurrency(loan.remainingBalance) }}</p>
-        </div>
-        <p class="font-semibold text-red-500">{{ formatCurrency(loan.loanAmount) }}</p>
-      </li>
+        </template>
+        <template #subtitle>
+          <p class="text-sm text-text-muted">Remaining: {{ formatCurrency(loan.remainingBalance) }}</p>
+        </template>
+        <template #trailing>
+          <p class="font-semibold text-danger tabular-nums">{{ formatCurrency(loan.loanAmount) }}</p>
+        </template>
+      </ListRow>
     </ul>
-    <p v-else class="text-gray-500">No loans available.</p>
+    <p v-else class="text-text-muted">No loans available.</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
+import ListRow from '../../ui/ListRow.vue';
 
 const props = defineProps<{ loans: Loan[] }>();
 

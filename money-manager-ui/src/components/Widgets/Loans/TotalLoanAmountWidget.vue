@@ -1,15 +1,11 @@
 <template>
-  <div class="p-6">
-    <h2 class="text-lg font-semibold mb-2">Total Loan Amount</h2>
-    <p class="text-2xl font-bold text-blue-600">
-      {{ formattedTotal }}
-    </p>
-  </div>
+  <StatCard label="Total Loan Amount" :value="formattedTotal" />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
+import StatCard from '../../ui/StatCard.vue';
 
 const props = defineProps<{
   loans: Loan[];

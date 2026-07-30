@@ -1,76 +1,71 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-1">Add a loan</h2>
-    <p class="text-xs text-gray-500 mb-4">
+    <h2 class="font-heading text-lg font-bold mb-1">Add a loan</h2>
+    <p class="text-xs text-text-muted mb-4">
       Track what you owe — the amounts below are what interest and payoff progress are measured
       against.
     </p>
 
     <form @submit.prevent="submit" class="space-y-3">
-      <input v-model="form.loanName" placeholder="Loan Name" class="p-2 border rounded w-full" required />
+      <BaseInput v-model.trim="form.loanName" placeholder="Loan Name" required />
 
       <div>
-        <input
+        <BaseInput
           v-model.number="form.loanAmount"
           placeholder="Original amount"
-          class="p-2 border rounded w-full"
           type="number"
           min="0"
           required
         />
-        <p class="text-xs text-gray-500 mt-1">Original amount borrowed, before any repayments.</p>
+        <p class="text-xs text-text-muted mt-1">Original amount borrowed, before any repayments.</p>
       </div>
 
       <div>
-        <input
+        <BaseInput
           v-model.number="form.remainingBalance"
           placeholder="Remaining balance"
-          class="p-2 border rounded w-full"
           type="number"
           min="0"
           required
         />
-        <p class="text-xs text-gray-500 mt-1">
+        <p class="text-xs text-text-muted mt-1">
           What's still owed today — this is what interest and payoff progress are calculated from.
         </p>
       </div>
 
       <div>
-        <input
+        <BaseInput
           v-model.number="form.interestRate"
           placeholder="Interest rate (%)"
-          class="p-2 border rounded w-full"
           type="number"
           min="0"
           step="0.01"
           required
         />
-        <p class="text-xs text-gray-500 mt-1">Annual rate, e.g. 4.5 for 4.5%.</p>
+        <p class="text-xs text-text-muted mt-1">Annual rate, e.g. 4.5 for 4.5%.</p>
       </div>
 
       <div>
-        <input v-model="form.dueDate" type="date" class="p-2 border rounded w-full" required />
-        <p class="text-xs text-gray-500 mt-1">Date the loan is scheduled to be fully repaid.</p>
+        <BaseInput v-model="form.dueDate" type="date" required />
+        <p class="text-xs text-text-muted mt-1">Date the loan is scheduled to be fully repaid.</p>
       </div>
 
       <div>
-        <select v-model="form.currencyCode" class="p-2 border rounded w-full">
+        <BaseSelect v-model="form.currencyCode">
           <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
-        </select>
-        <p class="text-xs text-gray-500 mt-1">Currency this loan is denominated in.</p>
+        </BaseSelect>
+        <p class="text-xs text-text-muted mt-1">Currency this loan is denominated in.</p>
       </div>
 
       <div>
-        <label class="flex items-center gap-1">
-          <input v-model="form.isPaidOff" type="checkbox" />
+        <label class="flex items-center gap-1.5 text-sm text-text">
+          <input v-model="form.isPaidOff" type="checkbox" class="accent-primary" />
           <span>Paid off</span>
         </label>
-        <p class="text-xs text-gray-500 mt-1">Check if this loan has already been fully repaid.</p>
+        <p class="text-xs text-text-muted mt-1">Check if this loan has already been fully repaid.</p>
       </div>
 
-      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-        Add loan
-      </button>
+      <BaseButton type="submit">Add loan</BaseButton>
     </form>
   </div>
 </template>
@@ -79,6 +74,9 @@
 import { reactive } from 'vue';
 import type { Loan } from '../../../models/models';
 import { CURRENCIES } from '../../../utils/currencies';
+import BaseInput from '../../ui/BaseInput.vue';
+import BaseSelect from '../../ui/BaseSelect.vue';
+import BaseButton from '../../ui/BaseButton.vue';
 
 const emit = defineEmits<{ (e: 'create', payload: Omit<Loan, 'id'>): void }>();
 

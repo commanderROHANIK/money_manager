@@ -1,13 +1,11 @@
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-md">
-    <h2 class="text-lg font-semibold mb-3">Upcoming Events</h2>
-
-    <div v-if="loading" class="text-sm text-gray-500">Loading...</div>
-    <div v-else-if="error" class="text-sm text-red-500">Error: {{ error }}</div>
+  <BaseCard title="Upcoming Events">
+    <LoadingSkeleton v-if="loading" :rows="4" />
+    <ErrorState v-else-if="error" title="Failed to load events" :description="error ?? undefined" />
     <div v-else>
       <table v-if="upcoming.length" class="w-full text-sm">
         <thead>
-          <tr class="border-b font-semibold text-left">
+          <tr class="border-b border-border text-left font-semibold text-text-muted">
             <th class="py-2">Title</th>
             <th class="py-2">Description</th>
             <th class="py-2">Date</th>
@@ -17,46 +15,55 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="ev in upcoming" :key="ev.id" class="border-b hover:bg-gray-50">
+          <tr v-for="ev in upcoming" :key="ev.id" class="border-b border-border hover:bg-surface-2">
             <td class="py-2">{{ ev.title }}</td>
-            <td class="py-2 text-gray-600">{{ ev.description }}</td>
-            <td class="py-2">{{ formatDate(ev.eventDate) }}</td>
+            <td class="py-2 text-text-muted">{{ ev.description }}</td>
+            <td class="py-2 font-mono text-text-muted tabular-nums">{{ formatDate(ev.eventDate) }}</td>
             <td class="py-2">{{ ev.isRecurring ? 'Yes' : 'No' }}</td>
             <td class="py-2">
-              <span :class="ev.isNotified ? 'text-green-600 font-semibold' : 'text-gray-500'">
+              <Badge :variant="ev.isNotified ? 'primary' : 'neutral'">
                 {{ ev.isNotified ? 'Notified' : 'Pending' }}
-              </span>
+              </Badge>
             </td>
             <td class="py-2">
-              <button
-                class="text-sm px-2 py-1 mr-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+              <BaseButton
+                size="sm"
+                variant="primary"
+                class="mr-2"
                 :disabled="ev.isNotified || updatingIds.has(ev.id)"
                 @click="markNotified(ev)"
               >
                 {{ ev.isNotified ? '✓' : 'Notify' }}
-              </button>
+              </BaseButton>
 
-              <button
-                class="text-sm px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+              <BaseButton
+                size="sm"
+                variant="danger"
                 :disabled="updatingIds.has(ev.id)"
                 @click="deleteEvent(ev.id)"
               >
                 Delete
-              </button>
+              </BaseButton>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <p v-else class="text-sm text-gray-500">No upcoming events.</p>
+      <EmptyState v-else title="No upcoming events." />
     </div>
-  </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchUpcomingEvents, updateUpcomingEvent, deleteUpcomingEvent } from '../../../services/api';
 import type { UpcomingEvent } from '../../../models/models';
+import BaseCard from '../../ui/BaseCard.vue';
+import BaseButton from '../../ui/BaseButton.vue';
+import Badge from '../../ui/Badge.vue';
+import EmptyState from '../../ui/EmptyState.vue';
+import ErrorState from '../../ui/ErrorState.vue';
+import LoadingSkeleton from '../../ui/LoadingSkeleton.vue';
 
 const events = ref<UpcomingEvent[]>([]);
 const loading = ref(true);

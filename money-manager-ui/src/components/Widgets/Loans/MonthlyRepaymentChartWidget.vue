@@ -13,6 +13,7 @@ import type {
 } from 'chart.js';
 import { computed, defineProps } from 'vue';
 import type { Loan } from '../../../models/models';
+import { chartCategoricalPalette, chartColors } from '../../../utils/chartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -22,24 +23,15 @@ const props = defineProps<{
 
 // Chart Data
 const data = computed<ChartData<'pie'>>(() => {
+  const palette = chartCategoricalPalette();
   return {
     labels: props.accounts.map(acc => acc.loanName),
     datasets: [
       {
         data: props.accounts.map(acc => acc.loanAmount),
-        backgroundColor: [
-          '#2ecc71', // Emerald Green
-          '#3498db', // Bright Blue
-          '#e67e22', // Carrot Orange
-          '#e74c3c', // Alizarin Red
-          '#f39c12', // Orange
-          '#1abc9c', // Aqua
-          '#9b59b6', // Amethyst Purple
-          '#16a085', // Dark Aqua
-          '#2980b9', // Belize Hole Blue
-        ],
+        backgroundColor: props.accounts.map((_, i) => palette[i % palette.length]),
         borderWidth: 2,
-        borderColor: '#ffffff' // White border for separation
+        borderColor: chartColors.surface
       }
     ]
   };
