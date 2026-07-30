@@ -1,7 +1,9 @@
 <template>
   <div>
     <h2 class="font-heading text-lg font-bold mb-4">Rented vs Vacant</h2>
-    <Doughnut :data="chartData" :options="chartOptions" />
+    <div class="chart-box">
+      <Doughnut :data="chartData" :options="chartOptions" />
+    </div>
   </div>
 </template>
 
@@ -50,8 +52,7 @@ const chartOptions = {
 </script>
 
 <style scoped>
-/* Make sure chart is nicely sized */
-div {
+.chart-box {
   height: 300px;
 }
 </style>

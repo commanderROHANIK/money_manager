@@ -1,8 +1,10 @@
 <template>
-  <div class="p-4 rounded-lg shadow-card bg-surface chart-box">
+  <div class="p-4 rounded-lg shadow-card bg-surface">
     <h2 class="font-heading text-lg font-bold mb-4">Rent Collected by Month</h2>
 
-    <Bar v-if="hasData" :data="chartData" :options="chartOptions" />
+    <div v-if="hasData" class="chart-box">
+      <Bar :data="chartData" :options="chartOptions" />
+    </div>
     <p v-else class="text-sm text-text-muted">
       No rent payments recorded yet for these {{ properties.length }} properties.
     </p>
