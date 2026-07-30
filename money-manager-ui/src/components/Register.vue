@@ -1,75 +1,36 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
-      <h2 class="text-2xl font-semibold mb-6 text-center">Register</h2>
+  <div class="flex min-h-screen items-center justify-center bg-surface-2 p-6">
+    <div class="flex w-full max-w-sm flex-col gap-5 rounded-xl bg-surface p-10 shadow-card">
+      <div class="flex flex-col items-center gap-1 text-center">
+        <div class="mb-2 h-10 w-10 rounded-md bg-primary"></div>
+        <div class="font-heading text-xl font-extrabold">Create an account</div>
+        <div class="text-sm text-text-muted">Let's get your money tracked.</div>
+      </div>
 
-      <form @submit.prevent="handleRegister" class="space-y-4 p-0">
-        <!-- Username -->
-        <input
-          v-model.trim="username"
-          placeholder="Username"
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-          autocomplete="username"
-          required
-        />
-
-        <!-- Email -->
-        <input
-          v-model.trim="email"
-          type="email"
-          placeholder="Email"
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-          autocomplete="email"
-          required
-        />
-
-        <!-- Password -->
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Password"
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-          autocomplete="new-password"
-          required
-        />
-
-        <!-- Confirm Password -->
-        <input
+      <form @submit.prevent="handleRegister" class="flex flex-col gap-4">
+        <BaseInput v-model.trim="username" placeholder="Username" autocomplete="username" required />
+        <BaseInput v-model.trim="email" type="email" placeholder="Email" autocomplete="email" required />
+        <BaseInput v-model="password" type="password" placeholder="Password" autocomplete="new-password" required />
+        <BaseInput
           v-model="confirmPassword"
           type="password"
           placeholder="Confirm Password"
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
           autocomplete="new-password"
           required
         />
 
-        <!-- Register Button -->
-        <button
-          type="submit"
-          class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition disabled:opacity-50"
-          :disabled="loading"
-        >
+        <BaseButton type="submit" block :disabled="loading">
           {{ loading ? "Registering..." : "Register" }}
-        </button>
-
-        <!-- Link to Login -->
-        <button
-          type="button"
-          class="w-full bg-white text-black py-2 rounded hover:bg-green-200 transition"
-          @click="$router.push('/login')"
-        >
+        </BaseButton>
+        <BaseButton type="button" variant="secondary" block @click="$router.push('/login')">
           Login
-        </button>
+        </BaseButton>
       </form>
 
-      <!-- Error/Success Message -->
       <p
         v-if="message"
-        :class="{
-          'text-green-600': message.includes('success'),
-          'text-red-600': !message.includes('success')
-        }"
-        class="mt-4 text-center"
+        class="text-center text-sm"
+        :class="message.includes('success') ? 'text-primary' : 'text-danger'"
       >
         {{ message }}
       </p>
@@ -79,8 +40,11 @@
 
 <script>
 import { register } from "../services/authService";
+import BaseInput from './ui/BaseInput.vue';
+import BaseButton from './ui/BaseButton.vue';
 
 export default {
+  components: { BaseInput, BaseButton },
   data() {
     return {
       username: "",
