@@ -10,6 +10,8 @@ export interface CurrentUser {
   username: string;
   email: string;
   baseCurrency: string;
+  /** Exchange rates are shared by every user, so only an administrator may write them. */
+  isAdmin: boolean;
 }
 
 export interface LoginRequest {

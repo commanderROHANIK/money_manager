@@ -2,7 +2,13 @@
   <div>
     <div class="flex items-baseline justify-between gap-2 mb-3">
       <h2 class="text-xl font-semibold">Portfolio</h2>
-      <span v-if="portfolio?.fxAsOf" class="text-xs text-gray-500">
+      <!-- Only when totals are actually being shown. A missing rate does not stop the
+           convertible currencies resolving a date, so this and the withheld-totals notice
+           below could both appear at once and contradict each other. -->
+      <span
+        v-if="portfolio?.fxAsOf && !portfolio.unconvertedCurrencies.length"
+        class="text-xs text-gray-500"
+      >
         converted to {{ portfolio.currency }} at rates as at {{ formatDate(portfolio.fxAsOf) }}
       </span>
     </div>

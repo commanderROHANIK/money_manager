@@ -29,6 +29,14 @@ namespace MoneyManager.Api.Services.MarketRent
         /// confirm whatever rent is already being charged.
         /// </summary>
         public required int ExcludePropertyId { get; init; }
+
+        /// <summary>
+        /// The owner of the property being valued. Their whole portfolio is excluded from
+        /// the evidence, not just the one property: a caller who can add properties could
+        /// otherwise stack the sample with decoy rents either side of a single real
+        /// neighbour and read that neighbour's exact figure back out of the median.
+        /// </summary>
+        public required int ExcludeUserId { get; init; }
     }
 
     /// <summary>

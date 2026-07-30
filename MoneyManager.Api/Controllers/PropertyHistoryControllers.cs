@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Models;
@@ -134,6 +135,7 @@ namespace MoneyManager.Api.Controllers
         /// too few comparable lettings in that city — which is a valid answer, not an error.
         /// </summary>
         [HttpPost("refresh")]
+        [EnableRateLimiting("market-rent")]
         public async Task<ActionResult<RentPricePoint>> Refresh(
             int propertyId, [FromServices] MarketRentService marketRent)
         {

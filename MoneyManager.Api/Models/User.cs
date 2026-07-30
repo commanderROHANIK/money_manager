@@ -19,6 +19,16 @@ namespace MoneyManager.Api.Models
         /// <summary>ISO 4217 code that consolidated portfolio totals are reported in.</summary>
         public string BaseCurrency { get; set; } = "EUR";
 
+        /// <summary>
+        /// May write the shared reference data every tenant reads — currently exchange
+        /// rates. A wrong rate silently misstates every other user's portfolio total, and a
+        /// deleted one withholds it, so this is not something an ordinary account gets.
+        ///
+        /// The first account registered on an instance is the administrator, which keeps a
+        /// fresh deployment usable without a separate provisioning step.
+        /// </summary>
+        public bool IsAdmin { get; set; }
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

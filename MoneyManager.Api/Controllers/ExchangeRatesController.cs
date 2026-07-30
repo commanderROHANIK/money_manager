@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
 
 namespace MoneyManager.Api.Controllers
@@ -10,6 +11,10 @@ namespace MoneyManager.Api.Controllers
     /// Rates are shared reference data rather than per-user records, so any signed-in user
     /// reads the same table. Entering them by hand is the path that always works; an
     /// automatic feed writes the same rows with a different <c>Source</c>.
+    ///
+    /// Reads are open to any signed-in user; writes are not. Because one table backs every
+    /// tenant's totals, an ordinary account able to write here could misstate every other
+    /// user's portfolio by entering a wrong rate, or withhold it entirely by deleting one.
     /// </summary>
     [ApiController]
     [Authorize]
@@ -32,6 +37,7 @@ namespace MoneyManager.Api.Controllers
         /// re-running a feed for the same day, updates rather than accumulating duplicates.
         /// </summary>
         [HttpPut]
+        [Authorize(Roles = TokenProvider.AdminRole)]
         public async Task<ActionResult<ExchangeRate>> Upsert([FromBody] ExchangeRateRequest request)
         {
             var from = Normalise(request.FromCurrency);
@@ -65,11 +71,35 @@ namespace MoneyManager.Api.Controllers
             existing.Rate = request.Rate;
             existing.Source = "manual";
 
-            await context.SaveChangesAsync();
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // Two upserts for the same pair and date can both find nothing and both
+                // insert; the unique index is what actually decides it. Re-applying to the
+                // row that won keeps this idempotent rather than returning a 500.
+                context.ChangeTracker.Clear();
+
+                var winner = await context.ExchangeRates
+                    .FirstOrDefaultAsync(r => r.FromCurrency == from && r.ToCurrency == to && r.AsOf == asOf);
+
+                if (winner is null)
+                    throw;
+
+                winner.Rate = request.Rate;
+                winner.Source = "manual";
+                await context.SaveChangesAsync();
+
+                return Ok(winner);
+            }
+
             return Ok(existing);
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = TokenProvider.AdminRole)]
         public async Task<IActionResult> Delete(int id)
         {
             var rate = await context.ExchangeRates.FirstOrDefaultAsync(r => r.Id == id);

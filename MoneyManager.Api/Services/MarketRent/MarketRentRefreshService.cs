@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using MoneyManager.Api.Data;
 
 namespace MoneyManager.Api.Services.MarketRent
 {
@@ -26,6 +27,9 @@ namespace MoneyManager.Api.Services.MarketRent
         IOptions<MarketRentOptions> options,
         ILogger<MarketRentRefreshService> logger) : BackgroundService
     {
+        /// <summary>A year. Beyond this the interval is a typo rather than a policy.</summary>
+        internal const int MaxRefreshIntervalHours = 24 * 366;
+
         private readonly MarketRentOptions _options = options.Value;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,9 +40,22 @@ namespace MoneyManager.Api.Services.MarketRent
                 return;
             }
 
+            // Checked rather than left to throw out of PeriodicTimer's constructor. An
+            // unhandled exception here stops the entire host under the default
+            // BackgroundServiceExceptionBehavior, so a mistyped interval would take the API
+            // down rather than just this job. Startup validation rejects these values first;
+            // this is the backstop for a value that arrives some other way.
+            if (_options.RefreshIntervalHours is <= 0 or > MaxRefreshIntervalHours)
+            {
+                logger.LogError(
+                    "Market rent refresh disabled: {Interval} is not a usable refresh interval in hours.",
+                    _options.RefreshIntervalHours);
+                return;
+            }
+
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(_options.StartupDelaySeconds), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(Math.Max(0, _options.StartupDelaySeconds)), stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -70,6 +87,12 @@ namespace MoneyManager.Api.Services.MarketRent
         {
             using var scope = scopeFactory.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<MarketRentService>();
+            var context = scope.ServiceProvider.GetRequiredService<MoneyManagerDbContext>();
+
+            // There is no request user here, so the owner of each written estimate has to be
+            // assigned explicitly. Opening the scope is what permits that, and it is scoped
+            // to this run rather than being a standing property of the context.
+            using var ownerScope = context.AllowExplicitOwnerAssignment();
 
             var stale = await service.FindStaleAsync(TimeSpan.FromDays(_options.MaxAgeDays), ct);
 

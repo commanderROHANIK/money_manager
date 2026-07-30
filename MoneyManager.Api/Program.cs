@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MoneyManager.Api.Data;
@@ -67,7 +68,8 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = jwt.Audience,
             IssuerSigningKey = signingKey,
             ClockSkew = TimeSpan.FromSeconds(30),
-            NameClaimType = "username"
+            NameClaimType = "username",
+            RoleClaimType = TokenProvider.RoleClaimType
         };
     });
 
@@ -88,7 +90,20 @@ builder.Services.AddScoped<ExchangeRateService>();
 
 // Market rent. Providers are resolved as a set and asked in priority order, so adding a
 // paid HTTP-backed source later is a registration rather than a change at any call site.
-builder.Services.Configure<MarketRentOptions>(builder.Configuration.GetSection(MarketRentOptions.SectionName));
+// Validated at startup so a mistyped interval fails immediately, and by name. Left
+// unvalidated it surfaced as an ArgumentOutOfRangeException thrown out of the hosted
+// service, which the default BackgroundServiceExceptionBehavior turns into the whole API
+// refusing to run for no stated reason.
+builder.Services.AddOptions<MarketRentOptions>()
+    .Bind(builder.Configuration.GetSection(MarketRentOptions.SectionName))
+    .Validate(o => o.RefreshIntervalHours is > 0 and <= MarketRentRefreshService.MaxRefreshIntervalHours,
+        $"{MarketRentOptions.SectionName}:RefreshIntervalHours must be between 1 and "
+        + $"{MarketRentRefreshService.MaxRefreshIntervalHours}.")
+    .Validate(o => o.MaxAgeDays > 0,
+        $"{MarketRentOptions.SectionName}:MaxAgeDays must be greater than zero.")
+    .Validate(o => o.StartupDelaySeconds >= 0,
+        $"{MarketRentOptions.SectionName}:StartupDelaySeconds cannot be negative.")
+    .ValidateOnStart();
 builder.Services.AddScoped<IMarketRentProvider, PeerComparableRentProvider>();
 builder.Services.AddScoped<MarketRentService>();
 builder.Services.AddHostedService<MarketRentRefreshService>();
@@ -107,6 +122,21 @@ builder.Services.AddRateLimiter(options =>
         factory: _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        }));
+
+    // The market rent refresh reads across every tenant and writes a row. Cheap for a user
+    // clicking "refresh"; a way to hammer an unindexed cross-tenant scan, and to probe the
+    // comparables set repeatedly, if left unmetered. Partitioned by user rather than IP so
+    // one account cannot spend everyone else's budget.
+    options.AddPolicy("market-rent", context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                      ?? context.Connection.RemoteIpAddress?.ToString()
+                      ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
         }));
@@ -149,7 +179,30 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    scope.ServiceProvider.GetRequiredService<MoneyManagerDbContext>().Database.Migrate();
+    var db = scope.ServiceProvider.GetRequiredService<MoneyManagerDbContext>();
+    db.Database.Migrate();
+
+    // Backfills RentalProperty.NormalizedCity for rows that predate the column. Done here
+    // rather than in the migration because SQLite's UPPER() only folds ASCII: it would
+    // write "GYőR" where the application writes "GYŐR", leaving old and new rows in
+    // different markets — the very defect the column exists to fix. Reassigning City runs
+    // the setter, which normalises in C#. No current user at startup, so the tenant filter
+    // has to be off; these are updates, so no owner is assigned.
+    var unnormalized = db.RentalProperties
+        .IgnoreQueryFilters()
+        .Where(p => p.NormalizedCity == null && p.City != null)
+        .ToList();
+
+    if (unnormalized.Count > 0)
+    {
+        foreach (var property in unnormalized)
+        {
+            var city = property.City;
+            property.City = city;
+        }
+
+        db.SaveChanges();
+    }
 }
 
 if (app.Environment.IsDevelopment())

@@ -22,8 +22,11 @@
           Save
         </button>
         <span v-if="savedMessage" class="text-sm text-green-700">{{ savedMessage }}</span>
+        <span v-if="baseCurrencyError" class="text-sm text-red-600">{{ baseCurrencyError }}</span>
       </div>
     </div>
+
+    <p v-if="loadError" class="text-sm text-red-600">{{ loadError }}</p>
 
     <!-- Exchange rates -->
     <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
@@ -33,7 +36,16 @@
         not stored directly are crossed through EUR.
       </p>
 
-      <form @submit.prevent="addRate" class="flex flex-wrap gap-2 mb-4 items-center">
+      <p v-if="!isAdmin" class="text-sm text-gray-500 mb-3">
+        Rates are shared by everyone on this instance, so only an administrator can change
+        them. Yours are shown below.
+      </p>
+
+      <form
+        v-if="isAdmin"
+        @submit.prevent="addRate"
+        class="flex flex-wrap gap-2 mb-4 items-center"
+      >
         <select v-model="form.fromCurrency" class="p-2 border rounded w-24">
           <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
         </select>
@@ -50,9 +62,13 @@
           class="p-2 border rounded w-32"
           required
         />
-        <input v-model="form.asOf" type="date" class="p-2 border rounded" />
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          Save rate
+        <input v-model="form.asOf" type="date" class="p-2 border rounded" required />
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50"
+          :disabled="savingRate"
+        >
+          {{ savingRate ? 'Saving…' : 'Save rate' }}
         </button>
       </form>
 
@@ -71,7 +87,14 @@
           <span class="flex items-center gap-3 text-gray-500 whitespace-nowrap">
             <span>{{ formatDate(rate.asOf) }}</span>
             <span class="text-xs">{{ rate.source }}</span>
-            <button class="text-gray-400 hover:text-red-600" @click="removeRate(rate.id)">✕</button>
+            <button
+              v-if="isAdmin"
+              class="text-gray-400 hover:text-red-600 disabled:opacity-50"
+              :disabled="removingId === rate.id"
+              @click="removeRate(rate.id)"
+            >
+              ✕
+            </button>
           </span>
         </li>
       </ul>
@@ -96,8 +119,13 @@ const rates = ref<ExchangeRate[]>([]);
 const baseCurrency = ref('EUR');
 const savedBaseCurrency = ref('EUR');
 const saving = ref(false);
+const savingRate = ref(false);
+const removingId = ref<number | null>(null);
+const isAdmin = ref(false);
 const savedMessage = ref('');
+const baseCurrencyError = ref('');
 const error = ref('');
+const loadError = ref('');
 
 const form = reactive({
   fromCurrency: 'EUR',
@@ -106,11 +134,25 @@ const form = reactive({
   asOf: new Date().toISOString().split('T')[0],
 });
 
+/**
+ * A rejected write is the expected outcome for an ordinary account, not a fault — rates are
+ * shared by every user, so only an administrator may change them.
+ */
+function isForbidden(err: unknown): boolean {
+  return (err as { response?: { status?: number } })?.response?.status === 403;
+}
+
 async function load() {
-  const [user, stored] = await Promise.all([fetchCurrentUser(), fetchExchangeRates()]);
-  baseCurrency.value = user.baseCurrency;
-  savedBaseCurrency.value = user.baseCurrency;
-  rates.value = stored;
+  loadError.value = '';
+  try {
+    const [user, stored] = await Promise.all([fetchCurrentUser(), fetchExchangeRates()]);
+    baseCurrency.value = user.baseCurrency;
+    savedBaseCurrency.value = user.baseCurrency;
+    isAdmin.value = user.isAdmin;
+    rates.value = stored;
+  } catch {
+    loadError.value = 'Could not load your settings. Reload to try again.';
+  }
 }
 
 onMounted(load);
@@ -118,10 +160,15 @@ onMounted(load);
 async function saveBaseCurrency() {
   saving.value = true;
   savedMessage.value = '';
+  baseCurrencyError.value = '';
   try {
     const user = await updateBaseCurrency(baseCurrency.value);
     savedBaseCurrency.value = user.baseCurrency;
     savedMessage.value = 'Saved';
+  } catch {
+    // Without this the button simply re-enabled and the old currency stayed selected,
+    // which reads as success.
+    baseCurrencyError.value = 'Could not save your base currency.';
   } finally {
     saving.value = false;
   }
@@ -138,18 +185,37 @@ async function addRate() {
     error.value = 'A rate must be greater than zero.';
     return;
   }
+  if (!form.asOf) {
+    error.value = 'Pick the date this rate applies to.';
+    return;
+  }
 
+  savingRate.value = true;
   try {
     await saveExchangeRate(form.fromCurrency, form.toCurrency, form.rate, form.asOf);
     form.rate = null;
     rates.value = await fetchExchangeRates();
-  } catch {
-    error.value = 'Could not save that rate.';
+  } catch (err) {
+    error.value = isForbidden(err)
+      ? 'Only an administrator can change exchange rates.'
+      : 'Could not save that rate.';
+  } finally {
+    savingRate.value = false;
   }
 }
 
 async function removeRate(id: number) {
-  await deleteExchangeRate(id);
-  rates.value = await fetchExchangeRates();
+  error.value = '';
+  removingId.value = id;
+  try {
+    await deleteExchangeRate(id);
+    rates.value = await fetchExchangeRates();
+  } catch (err) {
+    error.value = isForbidden(err)
+      ? 'Only an administrator can change exchange rates.'
+      : 'Could not remove that rate.';
+  } finally {
+    removingId.value = null;
+  }
 }
 </script>

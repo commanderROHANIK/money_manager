@@ -1,7 +1,13 @@
 namespace MoneyManager.Api.Services.MarketRent
 {
-    /// <summary>One let property used as evidence. Deliberately carries no identity.</summary>
-    public readonly record struct RentComparable(decimal MonthlyRent, decimal? SizeSqm);
+    /// <summary>
+    /// One let property used as evidence.
+    ///
+    /// <c>OwnerKey</c> is an opaque grouping token. It exists solely to enforce the
+    /// distinct-owner minimum below and never leaves this class — no field of a
+    /// <see cref="ComparableEstimate"/> is derived from it.
+    /// </summary>
+    public readonly record struct RentComparable(int OwnerKey, decimal MonthlyRent, decimal? SizeSqm);
 
     public sealed record ComparableEstimate(
         decimal Monthly,
@@ -22,33 +28,49 @@ namespace MoneyManager.Api.Services.MarketRent
     {
         /// <summary>
         /// Below this, an estimate says more about one landlord's pricing than about the
-        /// market, and could let a user infer a specific neighbour's rent.
+        /// market.
         /// </summary>
         public const int MinimumSampleSize = 3;
+
+        /// <summary>
+        /// The k in k-anonymity: how many *different* landlords must stand behind a figure
+        /// before it may be published.
+        ///
+        /// Counting rows instead of owners is what makes a threshold like this fail. Three
+        /// flats owned by one landlord, or three overlapping leases on a single flat, are
+        /// not a market — and a median over them restates one person's rent. The caller is
+        /// additionally excluded from its own sample upstream, so this counts unrelated
+        /// third parties only.
+        /// </summary>
+        public const int MinimumDistinctOwners = 3;
 
         public static ComparableEstimate? Estimate(
             IReadOnlyList<RentComparable> comparables,
             decimal? targetSizeSqm,
-            int minimumSampleSize = MinimumSampleSize)
+            int minimumSampleSize = MinimumSampleSize,
+            int minimumDistinctOwners = MinimumDistinctOwners)
         {
-            if (comparables.Count < minimumSampleSize)
+            if (!IsPublishable(comparables, minimumSampleSize, minimumDistinctOwners))
                 return null;
 
             // Comparing rent per square metre is far more meaningful than comparing rents,
-            // but only when both the target and enough of the evidence have a size.
-            var sized = comparables
-                .Where(c => c.SizeSqm is > 0)
-                .Select(c => c.MonthlyRent / c.SizeSqm!.Value)
-                .OrderBy(v => v)
-                .ToList();
+            // but only when both the target and enough of the evidence have a size. The
+            // sized subset has to clear the disclosure thresholds in its own right —
+            // filtering by size can collapse a broad sample down to a single landlord.
+            var sized = comparables.Where(c => c.SizeSqm is > 0).ToList();
 
-            if (targetSizeSqm is > 0 && sized.Count >= minimumSampleSize)
+            if (targetSizeSqm is > 0 && IsPublishable(sized, minimumSampleSize, minimumDistinctOwners))
             {
+                var perSquareMetre = sized
+                    .Select(c => c.MonthlyRent / c.SizeSqm!.Value)
+                    .OrderBy(v => v)
+                    .ToList();
+
                 return Build(
-                    Median(sized) * targetSizeSqm.Value,
-                    Percentile(sized, 0.25m) * targetSizeSqm.Value,
-                    Percentile(sized, 0.75m) * targetSizeSqm.Value,
-                    sized.Count,
+                    Median(perSquareMetre) * targetSizeSqm.Value,
+                    Percentile(perSquareMetre, 0.25m) * targetSizeSqm.Value,
+                    Percentile(perSquareMetre, 0.75m) * targetSizeSqm.Value,
+                    perSquareMetre.Count,
                     perSquareMetre: true);
             }
 
@@ -61,6 +83,15 @@ namespace MoneyManager.Api.Services.MarketRent
                 absolute.Count,
                 perSquareMetre: false);
         }
+
+        /// <summary>
+        /// Both thresholds have to hold on whichever set actually produces the numbers,
+        /// which is why this is a function rather than a check done once at the top.
+        /// </summary>
+        private static bool IsPublishable(
+            IReadOnlyList<RentComparable> comparables, int minimumSampleSize, int minimumDistinctOwners) =>
+            comparables.Count >= minimumSampleSize
+            && comparables.Select(c => c.OwnerKey).Distinct().Count() >= minimumDistinctOwners;
 
         private static ComparableEstimate Build(
             decimal monthly, decimal low, decimal high, int sampleSize, bool perSquareMetre) =>
@@ -95,11 +126,28 @@ namespace MoneyManager.Api.Services.MarketRent
                 : (sorted[middle - 1] + sorted[middle]) / 2m;
         }
 
-        /// <summary>Nearest-rank percentile. Assumes <paramref name="sorted"/> is ascending.</summary>
+        /// <summary>
+        /// Linear-interpolated percentile. Assumes <paramref name="sorted"/> is ascending.
+        ///
+        /// Interpolating rather than picking the nearest rank is what keeps the range from
+        /// being a disclosure: over three values, nearest-rank quartiles return the lowest
+        /// and highest of them verbatim, so a "range" would republish two individual rents
+        /// exactly. Blending adjacent values means no published bound is any one landlord's
+        /// figure.
+        /// </summary>
         private static decimal Percentile(IReadOnlyList<decimal> sorted, decimal fraction)
         {
-            var rank = (int)Math.Ceiling(fraction * sorted.Count) - 1;
-            return sorted[Math.Clamp(rank, 0, sorted.Count - 1)];
+            if (sorted.Count == 1)
+                return sorted[0];
+
+            var position = fraction * (sorted.Count - 1);
+            var lower = (int)Math.Floor(position);
+            var upper = (int)Math.Ceiling(position);
+
+            if (lower == upper)
+                return sorted[lower];
+
+            return sorted[lower] + ((sorted[upper] - sorted[lower]) * (position - lower));
         }
     }
 }

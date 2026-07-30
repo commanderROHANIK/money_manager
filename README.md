@@ -99,21 +99,52 @@ currency has no rate, portfolio totals are withheld entirely and that currency i
 because a total covering only the properties there happen to be rates for reads as a
 portfolio total without being one.
 
+Rates are shared reference data, not per-user records — one table backs every tenant's
+totals, which is why `ExchangeRate` is deliberately not `IOwnedByUser`. It also means any
+account able to write here could misstate every other user's portfolio with a wrong rate, or
+withhold it entirely by deleting one, so **writes are administrator-only** while reads are
+open to any signed-in user. The first account registered on an instance is the
+administrator, so a fresh deployment needs no separate provisioning step.
+
 ### Market rent
 
 `IMarketRentProvider` produces estimates; `PeerComparableRentProvider` is the default and
 needs no external service. It takes the median rent per square metre of comparable let
-properties — same city, same type, bedrooms within one, same currency — from across the
-whole userbase, and returns nothing below three comparables.
+properties — same city, same country, same type, bedrooms within one, same currency, still
+active — from across the whole userbase.
 
-This is the one place that deliberately reads across the tenant boundary. Only aggregates
-leave it: a median, a range and a count, never an address, a name or a row. The minimum
-sample size is what stops an estimate being a restatement of one neighbour's rent. Both
-properties are covered by tests, and both must survive any change here.
+This is the one place that deliberately reads across the tenant boundary, and four rules
+make that safe. Each is covered by tests that must survive any change here:
+
+1. **Only aggregates leave it** — a median, a range and a count, never an address, a name,
+   an id or a row. The test pins the whole response shape, not a list of forbidden words, so
+   a field carrying identity fails it the moment it is added.
+2. **Nothing is published below three comparables drawn from three different landlords.**
+   Counting rows rather than owners is what makes a threshold like this fail: three flats
+   owned by one person, or three overlapping tenancies on a single flat, are not a market,
+   and a median over them restates one person's rent. One property is one data point however
+   many leases it carries.
+3. **The caller's own portfolio is never evidence.** Without this the sample is
+   attacker-controlled — anyone able to add properties could bracket a single real neighbour
+   with decoy rents and read that neighbour's exact figure back out of the median, then
+   bisect to any precision.
+4. **The published range is interpolated, not nearest-rank.** Over three values a
+   nearest-rank quartile returns the lowest and highest verbatim, so the "range" would be two
+   individual rents republished.
+
+What remains, and is deliberate: with an odd sample the median is by definition one member's
+figure. That is disclosive only if you know whose — which rules 2 and 3 are what prevent.
+
+City matching runs on a stored `NormalizedCity` rather than `UPPER(City)` in SQL, because
+SQLite's `UPPER()` folds ASCII only and would leave `Győr` and `GYŐR` in separate markets.
+Splitting a market both loses evidence and pushes samples down towards the disclosure
+threshold.
 
 A background service refreshes stale estimates. Because it runs with no authenticated user,
-it reads with `IgnoreQueryFilters()` and writes with an explicit owner — without that the
-tenant filter turns it into a job that silently does nothing.
+it reads with `IgnoreQueryFilters()` (and `AsNoTracking()`, so other tenants' rows never
+enter a change tracker) and writes inside `AllowExplicitOwnerAssignment()`. That scope is an
+explicit opt-in rather than an inference from "there is no current user": treating the
+absence of a user as permission fails open towards any future path that loses its principal.
 
 Every market figure is rendered with its provider, as-at date and sample size. An
 authoritative-looking wrong rent is worse than no rent at all.

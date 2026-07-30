@@ -70,6 +70,10 @@ namespace MoneyManager.Api.Data
                 entity.Property(p => p.CurrencyCode).HasMaxLength(3);
                 entity.HasIndex(p => new { p.UserId, p.City });
 
+                // Covers the peer-comparable lookup, which runs with the tenant filter off
+                // and so cannot lean on the UserId index above.
+                entity.HasIndex(p => new { p.NormalizedCity, p.PropertyType, p.CurrencyCode });
+
                 entity.HasMany(p => p.Leases)
                       .WithOne(l => l.RentalProperty!)
                       .HasForeignKey(l => l.RentalPropertyId)
@@ -161,6 +165,35 @@ namespace MoneyManager.Api.Data
             });
         }
 
+        private bool _explicitOwnerAllowed;
+
+        /// <summary>
+        /// Opens the one window in which an owner assigned in code is honoured instead of
+        /// taken from the token, for background work that legitimately writes on a known
+        /// user's behalf outside any request.
+        ///
+        /// This is an explicit opt-in rather than an inference from "there is no current
+        /// user" on purpose. Treating the absence of a user as permission fails open: it
+        /// would silently extend to any future endpoint that ends up without a resolvable
+        /// principal, turning a payload-supplied <c>UserId</c> into a cross-tenant write
+        /// with nothing in the type system or the tests to notice.
+        /// </summary>
+        public IDisposable AllowExplicitOwnerAssignment()
+        {
+            if (_currentUser.UserId is not null)
+                throw new InvalidOperationException(
+                    "Explicit owner assignment is for background work only; inside a request "
+                    + "the owner always comes from the token.");
+
+            _explicitOwnerAllowed = true;
+            return new ExplicitOwnerScope(this);
+        }
+
+        private sealed class ExplicitOwnerScope(MoneyManagerDbContext context) : IDisposable
+        {
+            public void Dispose() => context._explicitOwnerAllowed = false;
+        }
+
         public override int SaveChanges()
         {
             ApplyOwnership();
@@ -189,17 +222,17 @@ namespace MoneyManager.Api.Data
                         entry.Entity.UserId = currentUserId;
                         break;
 
-                    case EntityState.Added when entry.Entity.UserId > 0:
-                        // No authenticated user: background work writing on a known user's
-                        // behalf. Reachable only outside a request — every HTTP endpoint is
-                        // behind the fallback authorization policy — so this cannot be used
-                        // to smuggle an owner in through a request body.
+                    case EntityState.Added when _explicitOwnerAllowed && entry.Entity.UserId > 0:
+                        // Background work writing on a known user's behalf, inside a scope
+                        // that had to be opened deliberately. A request can never reach this
+                        // branch: opening the scope throws while a current user exists.
                         break;
 
                     case EntityState.Added:
                         throw new InvalidOperationException(
                             "Cannot persist a user-owned entity outside an authenticated request "
-                            + "without an explicit owner.");
+                            + "without an explicit owner. Background work must write inside "
+                            + nameof(AllowExplicitOwnerAssignment) + ".");
 
                     case EntityState.Modified:
                         entry.Property(nameof(IOwnedByUser.UserId)).IsModified = false;

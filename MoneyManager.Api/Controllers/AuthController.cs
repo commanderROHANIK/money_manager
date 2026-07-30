@@ -61,6 +61,12 @@ namespace MoneyManager.Api.Controllers
 
             user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
+            // The first account on an instance administers it, so a fresh deployment can
+            // maintain exchange rates without a separate provisioning step. Racing
+            // registrations could in principle both see an empty table; the loser is a
+            // second admin on a brand-new instance, which is not worth a transaction.
+            user.IsAdmin = !await _context.Users.AnyAsync();
+
             _context.Users.Add(user);
 
             try
@@ -122,7 +128,8 @@ namespace MoneyManager.Api.Controllers
                 id = user.Id,
                 username = user.Username,
                 email = user.Email,
-                baseCurrency = user.BaseCurrency
+                baseCurrency = user.BaseCurrency,
+                isAdmin = user.IsAdmin
             });
         }
 
@@ -153,7 +160,8 @@ namespace MoneyManager.Api.Controllers
                 id = user.Id,
                 username = user.Username,
                 email = user.Email,
-                baseCurrency = user.BaseCurrency
+                baseCurrency = user.BaseCurrency,
+                isAdmin = user.IsAdmin
             });
         }
     }
