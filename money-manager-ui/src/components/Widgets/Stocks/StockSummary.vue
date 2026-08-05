@@ -1,29 +1,31 @@
 <template>
-    <div class="bg-white p-4 rounded-2xl shadow-md">
-      <h2 class="text-lg font-semibold mb-2">Stock Overview</h2>
-  
+    <BaseCard title="Stock Overview">
       <div v-if="stocks.length > 0" class="space-y-1 text-sm">
         <div v-for="stock in stocks" :key="stock.id" class="flex justify-between">
           <span>{{ stock.ticker }} ({{ stock.sharesOwned }}x)</span>
-          <span>{{ formatCurrency(stock.sharesOwned * stock.currentPrice) }}</span>
+          <span class="tabular-nums">{{ formatCurrency(stock.sharesOwned * stock.currentPrice) }}</span>
         </div>
-  
-        <div class="mt-3 font-semibold">
-          Total Value: {{ formatCurrency(totalValue) }}
-        </div>
-        <div class="text-green-600 text-sm">
-          📈 +{{ gainPercent.toFixed(1) }}% this month
+
+        <div class="mt-3">
+          <StatCard
+            label="Total Value"
+            :value="formatCurrency(totalValue)"
+            :delta="`${gainPercent >= 0 ? '↑' : '↓'} ${Math.abs(gainPercent).toFixed(1)}% this month`"
+            :delta-positive="gainPercent >= 0"
+          />
         </div>
       </div>
-  
-      <p v-else class="text-gray-500 text-sm">No stock data available.</p>
-    </div>
+
+      <p v-else class="text-text-muted text-sm">No stock data available.</p>
+    </BaseCard>
   </template>
-  
+
   <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import { fetchStocks } from '../../../services/api';
   import type { Stock } from '../../../models/models';
+  import BaseCard from '../../ui/BaseCard.vue';
+  import StatCard from '../../ui/StatCard.vue';
   
   const stocks = ref<Stock[]>([]);
   

@@ -1,0 +1,148 @@
+/**
+ * Mounts every widget once with representative data and fails on any Vue warning.
+ *
+ * This exists because `vue-tsc` and `vite build` both pass on a template that references a
+ * component the script block never imported — Vue only complains at runtime, by rendering the
+ * tag as an unknown element. TenancyWidget shipped exactly that way: its form referenced
+ * BaseInput, BaseButton and ListRow with no imports, so the whole tenancy form silently
+ * rendered as nothing usable, through a green build.
+ *
+ * Treating warnings as failures also catches missing required props and bad v-model targets.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
+import type { Component } from 'vue';
+import * as f from './fixtures';
+
+// Chart.js needs a real canvas; jsdom has none. The chart wrappers are not what this test is
+// about, so stand them down to placeholders.
+vi.mock('vue-chartjs', async () => {
+  // Imports go inside the factory: vi.mock is hoisted above the file's own imports.
+  const { defineComponent, h } = await import('vue');
+  const stub = (name: string) => defineComponent({ name, render: () => h('canvas') });
+  return { Bar: stub('Bar'), Line: stub('Line'), Pie: stub('Pie'), Doughnut: stub('Doughnut') };
+});
+
+vi.mock('../services/api', async () => {
+  const f = await import('./fixtures');
+  return {
+  TOKEN_STORAGE_KEY: 'token',
+  api: {},
+  fetchUpcomingEvents: () => Promise.resolve(f.upcomingEvents),
+  updateUpcomingEvent: () => Promise.resolve(),
+  deleteUpcomingEvent: () => Promise.resolve(),
+  createUpcomingEvent: () => Promise.resolve(f.upcomingEvents[0]),
+  fetchBankAccounts: () => Promise.resolve(f.bankAccounts),
+  fetchBankAccountsTotalBalance: () => Promise.resolve(2358350),
+  createBankAccount: () => Promise.resolve(f.bankAccounts[0]),
+  updateBankAccount: () => Promise.resolve(),
+  deleteBankAccount: () => Promise.resolve(),
+  fetchLoans: () => Promise.resolve(f.loans),
+  createLoan: () => Promise.resolve(f.loans[0]),
+  updateLoan: () => Promise.resolve(),
+  deleteLoan: () => Promise.resolve(),
+  fetchRentalProperties: () => Promise.resolve(f.properties),
+  createRentalProperty: () => Promise.resolve(f.properties[0]),
+  updateRentalProperty: () => Promise.resolve(),
+  deleteRentalProperty: () => Promise.resolve(),
+  fetchStocks: () => Promise.resolve(f.stocks),
+  createStock: () => Promise.resolve(f.stocks[0]),
+  updateStock: () => Promise.resolve(),
+  deleteStock: () => Promise.resolve(),
+  };
+});
+
+vi.mock('../services/propertyApi', async () => {
+  const f = await import('./fixtures');
+  return {
+  createProperty: () => Promise.resolve(f.properties[0]),
+  updateProperty: () => Promise.resolve(),
+  fetchProperty: () => Promise.resolve(f.properties[0]),
+  fetchPropertyMetrics: () => Promise.resolve(f.propertyMetrics),
+  fetchPortfolioAnalytics: () => Promise.resolve(f.portfolio),
+  fetchTransactions: () => Promise.resolve(f.transactions),
+  createTransaction: () => Promise.resolve(f.transactions[0]),
+  deleteTransaction: () => Promise.resolve(),
+  fetchLeases: () => Promise.resolve(f.leases),
+  createLease: () => Promise.resolve(f.leases[0]),
+  fetchRentHistory: () => Promise.resolve(f.rentHistory),
+  addMarketEstimate: () => Promise.resolve(f.rentHistory[0]),
+  fetchValuations: () => Promise.resolve(f.valuations),
+  createValuation: () => Promise.resolve(f.valuations[0]),
+  fetchPropertyEvents: () => Promise.resolve(f.propertyEvents),
+  };
+});
+
+const widgets = import.meta.glob('../components/Widgets/**/*.vue', { eager: true }) as Record<
+  string,
+  { default: Component }
+>;
+
+// Props for widgets that take them; the rest load through the mocked services above.
+const props: Record<string, Record<string, unknown>> = {
+  BankAccountPieChart: { accounts: f.bankAccounts },
+  PastEventsWidget: { events: f.upcomingEvents },
+  LoanListWidget: { loans: f.loans },
+  LoanStatusPieWidget: { loans: f.loans },
+  MonthlyRepaymentChartWidget: { accounts: f.loans },
+  NextDueRepaymentWidget: { loans: f.loans },
+  TopLoansWidget: { loans: f.loans },
+  TotalLoanAmountWidget: { loans: f.loans },
+  MostExpensivePropertyWidget: { properties: f.properties },
+  PortfolioSummaryWidget: { portfolio: f.portfolio },
+  PropertyListWidget: { properties: f.properties },
+  PropertyMetricsWidget: { metrics: f.propertyMetrics },
+  PropertyTimelineWidget: { events: f.propertyEvents },
+  RentByMonthChartWidget: { properties: f.properties },
+  RentOverTimeChartWidget: { history: f.rentHistory, currencyCode: 'HUF' },
+  RentVsMarketWidget: { metrics: f.propertyMetrics },
+  RentedVsVacantPieWidget: { properties: f.properties },
+  TenancyWidget: { leases: f.leases },
+  TotalRentWidget: { properties: f.properties },
+  TransactionLedgerWidget: { transactions: f.transactions },
+  UnderpricedPropertiesWidget: { metrics: f.portfolio.properties },
+  UpcomingRentDueWidget: { properties: f.properties },
+  ValuationWidget: { valuations: f.valuations, currencyCode: 'HUF' },
+};
+
+const name = (path: string) => path.split('/').pop()!.replace('.vue', '');
+
+let warnings: string[] = [];
+let warnSpy: ReturnType<typeof vi.spyOn>;
+
+beforeEach(() => {
+  warnings = [];
+  warnSpy = vi.spyOn(console, 'warn').mockImplementation((...args: unknown[]) => {
+    warnings.push(args.map(String).join(' '));
+  });
+});
+
+afterEach(() => warnSpy.mockRestore());
+
+describe('widget smoke test', () => {
+  const entries = Object.entries(widgets);
+
+  it('covers every widget in the tree', () => {
+    expect(entries.length).toBeGreaterThan(35);
+  });
+
+  it.each(entries.map(([path, mod]) => [name(path), mod.default] as const))(
+    '%s mounts without warnings',
+    async (widgetName, component) => {
+      const wrapper = mount(component, {
+        props: props[widgetName] ?? {},
+        // Widgets link to detail pages; the router itself is not under test here.
+        global: { stubs: { RouterLink: { props: ['to'], template: '<a><slot /></a>' } } },
+      });
+      // Let the onMounted fetches in the service-backed widgets settle.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+
+      // "Failed to resolve component" is the one this suite exists for.
+      expect(warnings.join('\n')).toBe('');
+      expect(wrapper.html()).not.toBe('');
+      wrapper.unmount();
+    }
+  );
+});

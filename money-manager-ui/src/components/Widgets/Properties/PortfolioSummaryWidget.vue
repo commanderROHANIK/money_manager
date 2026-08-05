@@ -1,21 +1,21 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-3">Portfolio</h2>
+    <h2 class="font-heading text-lg font-bold mb-3">Portfolio</h2>
 
-    <p v-if="!portfolio || portfolio.propertyCount === 0" class="text-sm text-gray-500">
+    <p v-if="!portfolio || portfolio.propertyCount === 0" class="text-sm text-text-muted">
       No properties yet. Add one below to start tracking what it returns.
     </p>
 
     <template v-else>
-      <p v-if="portfolio.mixedCurrency" class="text-sm text-amber-700 mb-3">
+      <p v-if="portfolio.mixedCurrency" class="text-sm text-accent-strong mb-3">
         Your properties span several currencies, so they are not totalled here — exchange
         rates are not applied yet. Each property's own figures are still exact.
       </p>
 
       <div v-else class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-gray-50">
-          <p class="text-xs text-gray-500">{{ tile.label }}</p>
-          <p class="text-lg font-bold" :class="tile.tone">{{ tile.value }}</p>
+        <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-surface-2">
+          <p class="text-xs text-text-muted">{{ tile.label }}</p>
+          <p class="text-lg font-bold tabular-nums" :class="tile.tone">{{ tile.value }}</p>
         </div>
       </div>
     </template>
@@ -46,12 +46,12 @@ const tiles = computed(() => {
     {
       label: 'Monthly cash flow',
       value: money(p.totalMonthlyCashFlow),
-      tone: (p.totalMonthlyCashFlow ?? 0) >= 0 ? 'text-green-600' : 'text-red-600',
+      tone: (p.totalMonthlyCashFlow ?? 0) >= 0 ? 'text-primary-strong' : 'text-danger',
     },
     {
       label: 'Portfolio ROI',
       value: formatPercent(p.portfolioRoi),
-      tone: (p.portfolioRoi ?? 0) >= 0 ? 'text-green-600' : 'text-red-600',
+      tone: (p.portfolioRoi ?? 0) >= 0 ? 'text-primary-strong' : 'text-danger',
     },
   ];
 });

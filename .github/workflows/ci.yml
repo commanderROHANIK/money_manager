@@ -34,3 +34,6 @@ jobs:
       - run: npm ci
       # vue-tsc runs as part of the build, so a type error fails the pipeline.
       - run: npm run build
+      # The build does not catch a template referencing a component the script never imported —
+      # that only surfaces when the component is mounted. npm test mounts every widget.
+      - run: npm test

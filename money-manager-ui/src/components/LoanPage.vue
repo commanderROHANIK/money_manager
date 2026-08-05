@@ -1,36 +1,36 @@
 <template>
   <div class="p-4 grid grid-cols-1 xl:grid-cols-3 gap-4">
     <!-- Top Row -->
-    <div class="col-span-1 xl:col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-1">
       <TotalLoanAmountWidget :loans="loans" />
-    </div>
-    
-    <div class="col-span-1 xl:col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    </BaseCard>
+
+    <BaseCard class="col-span-1 xl:col-span-1">
       <LoanStatusPieWidget :loans="loans" />
-    </div>
+    </BaseCard>
 
     <!-- Monthly Repayment Chart -->
-    <div class="col-span-1 xl:col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-1">
       <MonthlyRepaymentChartWidget :accounts="loans" />
-    </div>
+    </BaseCard>
 
     <!-- Loans List -->
-    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
-       <LoanListWidget :loans="loans" @delete-loan="_deleteLoan" />
-    </div>
+    <BaseCard class="col-span-1 xl:col-span-3">
+      <LoanListWidget :loans="loans" @delete-loan="_deleteLoan" />
+    </BaseCard>
 
     <!-- Add Loan -->
-    <div class="col-span-1 xl:col-span-3 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1 xl:col-span-3">
       <AddLoanWidget @create="_addLoan" />
-    </div>
+    </BaseCard>
 
     <!-- Bottom Row -->
-    <div class="col-span-1 bg-white p-4 rounded-2xl shadow-md">
+    <BaseCard class="col-span-1">
       <NextDueRepaymentWidget :loans="loans" />
-    </div>
-    <div class="col-span-1 xl:col-span-2 bg-white p-4 rounded-2xl shadow-md">
+    </BaseCard>
+    <BaseCard class="col-span-1 xl:col-span-2">
       <TopLoansWidget :loans="loans" />
-    </div>
+    </BaseCard>
   </div>
 </template>
 
@@ -47,6 +47,7 @@ import LoanListWidget from '../components/Widgets/Loans/LoanListWidget.vue';
 import AddLoanWidget from '../components/Widgets/Loans/AddLoanWidget.vue';
 import NextDueRepaymentWidget from '../components/Widgets/Loans/NextDueRepaymentWidget.vue';
 import TopLoansWidget from '../components/Widgets/Loans/TopLoansWidget.vue';
+import BaseCard from './ui/BaseCard.vue';
 
 const loans = ref<Loan[]>([]);
 

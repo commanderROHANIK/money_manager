@@ -21,7 +21,7 @@ export default {
   name: "LogoutIcon",
   props: {
     size: { type: [Number, String], default: 24 },      // width/height in px
-    color: { type: String, default: "#fff" },           // default: white
+    color: { type: String, default: "currentColor" },
     ariaLabel: { type: String, default: "Logout" }
   },
   onClick() {

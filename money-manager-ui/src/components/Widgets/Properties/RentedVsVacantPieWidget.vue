@@ -1,7 +1,9 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-4">Rented vs Vacant</h2>
-    <Doughnut :data="chartData" :options="chartOptions" />
+    <h2 class="font-heading text-lg font-bold mb-4">Rented vs Vacant</h2>
+    <div class="chart-box">
+      <Doughnut :data="chartData" :options="chartOptions" />
+    </div>
   </div>
 </template>
 
@@ -15,6 +17,7 @@ import {
   Legend
 } from 'chart.js';
 import type { RentalProperty } from '../../../models/models';
+import { chartColors } from '../../../utils/chartTheme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -30,8 +33,8 @@ const chartData = computed(() => ({
   datasets: [
     {
       data: [rentedCount.value, vacantCount.value],
-      backgroundColor: ['#10B981', '#F87171'], // green, red
-      borderColor: ['#ffffff', '#ffffff'],
+      backgroundColor: [chartColors.primary, chartColors.danger],
+      borderColor: [chartColors.surface, chartColors.surface],
       borderWidth: 2
     }
   ]
@@ -49,8 +52,7 @@ const chartOptions = {
 </script>
 
 <style scoped>
-/* Make sure chart is nicely sized */
-div {
+.chart-box {
   height: 300px;
 }
 </style>

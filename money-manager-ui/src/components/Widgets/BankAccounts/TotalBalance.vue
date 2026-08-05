@@ -1,15 +1,11 @@
 <template>
-    <div class="bg-white p-4 rounded-2xl shadow-md">
-        <h2 class="text-lg font-semibold mb-2">Total Balance</h2>
-        <p class="text-2xl font-bold text-green-600">
-            {{ formattedBalance  }}
-        </p>
-    </div>
+    <StatCard label="Total Balance" :value="formattedBalance" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchBankAccountsTotalBalance } from '../../../services/api'; // Adjust the import path as necessary
+import StatCard from '../../ui/StatCard.vue';
 
 const balance = ref<number | null>(null);
 

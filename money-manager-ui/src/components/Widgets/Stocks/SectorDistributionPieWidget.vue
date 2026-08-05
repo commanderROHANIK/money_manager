@@ -11,6 +11,7 @@ import {
 import { fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
 import type { ChartData, ChartOptions } from 'chart.js';
+import { chartColors, chartCategoricalPalette } from '../../../utils/chartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -51,7 +52,7 @@ const chartData = computed<ChartData<'pie'>>(() => {
   const labels = Object.keys(sectorDistribution.value);
   const data = Object.values(sectorDistribution.value);
 
-  const colors = ['#1abc9c', '#3498db', '#9b59b6', '#f39c12', '#e74c3c', '#7f8c8d'];
+  const colors = chartCategoricalPalette();
 
   return {
     labels,
@@ -59,7 +60,7 @@ const chartData = computed<ChartData<'pie'>>(() => {
       {
         data,
         backgroundColor: colors.slice(0, labels.length),
-        borderColor: '#fff',
+        borderColor: chartColors.surface,
         borderWidth: 1
       }
     ]
@@ -90,9 +91,9 @@ const chartOptions: ChartOptions<'pie'> = {
 
 <template>
   <div>
-    <div v-if="loading">Loading...</div>
+    <div v-if="loading" class="text-sm text-text-muted">Loading...</div>
     <div v-else-if="!hasData">
-      <p class="text-center text-gray-500">No data available to display sector distribution.</p>
+      <p class="text-center text-sm text-text-muted">No data available to display sector distribution.</p>
     </div>
     <div v-else>
       <Pie :data="chartData" :options="chartOptions" />

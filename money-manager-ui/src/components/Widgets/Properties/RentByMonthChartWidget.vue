@@ -1,9 +1,11 @@
 <template>
-  <div class="p-4 rounded-lg shadow bg-white chart-box">
-    <h2 class="text-lg font-semibold mb-4">Rent Collected by Month</h2>
+  <div class="p-4 rounded-lg shadow-card bg-surface">
+    <h2 class="font-heading text-lg font-bold mb-4">Rent Collected by Month</h2>
 
-    <Bar v-if="hasData" :data="chartData" :options="chartOptions" />
-    <p v-else class="text-sm text-gray-500">
+    <div v-if="hasData" class="chart-box">
+      <Bar :data="chartData" :options="chartOptions" />
+    </div>
+    <p v-else class="text-sm text-text-muted">
       No rent payments recorded yet for these {{ properties.length }} properties.
     </p>
   </div>
@@ -23,6 +25,7 @@ import { Bar } from 'vue-chartjs';
 import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
+import { chartColors } from '../../../utils/chartTheme';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -74,7 +77,7 @@ const chartData = computed(() => {
     datasets: [
       {
         label: 'Rent Collected',
-        backgroundColor: '#4ADE80',
+        backgroundColor: chartColors.primary,
         borderRadius: 6,
         data: labels.map((label) => rentByMonth.value[label])
       }

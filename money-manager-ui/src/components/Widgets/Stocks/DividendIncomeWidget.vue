@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class="text-2xl font-bold text-green-600">
+    <div class="font-heading text-2xl font-bold text-primary-strong tabular-nums">
       {{ formattedDividend }}
     </div>
-    <p class="text-xs text-gray-500 mt-1">
+    <p class="text-xs text-text-muted mt-1">
       Estimate only — assumes a {{ (ASSUMED_YIELD * 100).toFixed(0) }}% yield.
       Actual dividends are not tracked yet.
     </p>

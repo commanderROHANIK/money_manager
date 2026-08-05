@@ -1,53 +1,53 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-4">Tenancies</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">Tenancies</h2>
 
-    <div v-if="active" class="p-3 rounded-lg bg-green-50 border border-green-200 mb-4">
-      <p class="font-medium text-green-900">{{ active.tenantName }}</p>
-      <p class="text-sm text-green-800">
+    <div v-if="active" class="p-3 rounded-lg bg-primary-soft border border-border mb-4">
+      <p class="font-medium text-primary-strong">{{ active.tenantName }}</p>
+      <p class="text-sm text-text tabular-nums">
         {{ formatMoney(active.monthlyRent, active.currencyCode) }} / month, due on day
         {{ active.rentDueDayOfMonth }}
       </p>
-      <p class="text-xs text-green-700">
+      <p class="text-xs text-text-muted">
         Since {{ formatDate(active.startDate) }}<span v-if="active.endDate"> until {{ formatDate(active.endDate) }}</span>
       </p>
     </div>
-    <p v-else class="text-sm text-amber-700 mb-4">
+    <p v-else class="text-sm text-text-muted mb-4">
       Vacant — no tenancy is running today.
     </p>
 
     <form @submit.prevent="submit" class="grid grid-cols-2 gap-2 mb-4">
-      <input v-model="form.tenantName" placeholder="Tenant name" class="p-2 border rounded col-span-2" required />
-      <input v-model="form.startDate" type="date" class="p-2 border rounded" required />
-      <input v-model="form.endDate" type="date" class="p-2 border rounded" placeholder="End (optional)" />
-      <input
+      <BaseInput v-model="form.tenantName" placeholder="Tenant name" class="col-span-2" required />
+      <BaseInput v-model="form.startDate" type="date" required />
+      <BaseInput v-model="form.endDate" type="date" placeholder="End (optional)" />
+      <BaseInput
         v-model.number="form.monthlyRent"
         type="number"
         min="1"
         placeholder="Monthly rent"
-        class="p-2 border rounded"
         required
       />
-      <input
+      <BaseInput
         v-model.number="form.rentDueDayOfMonth"
         type="number"
         min="1"
         max="28"
         placeholder="Due day"
-        class="p-2 border rounded"
       />
-      <button type="submit" class="col-span-2 bg-green-600 hover:bg-green-700 text-white py-2 rounded">
-        Add tenancy
-      </button>
+      <BaseButton type="submit" block class="col-span-2">Add tenancy</BaseButton>
     </form>
 
-    <ul v-if="past.length" class="divide-y text-sm">
-      <li v-for="lease in past" :key="lease.id" class="py-2 flex justify-between">
-        <span class="truncate">{{ lease.tenantName }}</span>
-        <span class="text-gray-500 whitespace-nowrap">
-          {{ formatDate(lease.startDate) }} – {{ formatDate(lease.endDate) }}
-        </span>
-      </li>
+    <ul v-if="past.length">
+      <ListRow v-for="lease in past" :key="lease.id">
+        <template #title>
+          <span class="truncate text-sm">{{ lease.tenantName }}</span>
+        </template>
+        <template #trailing>
+          <span class="text-sm text-text-muted whitespace-nowrap">
+            {{ formatDate(lease.startDate) }} – {{ formatDate(lease.endDate) }}
+          </span>
+        </template>
+      </ListRow>
     </ul>
   </div>
 </template>
@@ -58,6 +58,9 @@ import type { Lease } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatDate } from '../../../utils/labels';
 import type { LeaseRequest } from '../../../services/propertyApi';
+import BaseInput from '../../ui/BaseInput.vue';
+import BaseButton from '../../ui/BaseButton.vue';
+import ListRow from '../../ui/ListRow.vue';
 
 const props = defineProps<{ leases: Lease[] }>();
 const emit = defineEmits<{ (e: 'create', payload: LeaseRequest): void }>();

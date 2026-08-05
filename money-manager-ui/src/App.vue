@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen">
     <Menu />
-    <main class="flex-1 overflow-y-auto bg-gray-100">
+    <main class="flex-1 overflow-y-auto bg-bg">
       <router-view />
     </main>
   </div>

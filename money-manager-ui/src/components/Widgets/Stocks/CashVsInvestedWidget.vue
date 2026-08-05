@@ -1,27 +1,27 @@
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-md">
-    <h2 class="text-lg font-semibold mb-4">Cash vs Invested</h2>
-    <div class="space-y-2">
+  <BaseCard title="Cash vs Invested">
+    <div class="space-y-2 text-sm">
       <div class="flex justify-between">
-        <span>Cash:</span>
-        <span class="font-medium text-green-600">{{ formattedCash }}</span>
+        <span class="text-text-muted">Cash:</span>
+        <span class="font-medium text-accent-strong tabular-nums">{{ formattedCash }}</span>
       </div>
       <div class="flex justify-between">
-        <span>Invested:</span>
-        <span class="font-medium text-blue-600">{{ formattedInvested }}</span>
+        <span class="text-text-muted">Invested:</span>
+        <span class="font-medium text-primary-strong tabular-nums">{{ formattedInvested }}</span>
       </div>
-      <div class="flex justify-between font-semibold mt-4 border-t pt-2">
+      <div class="flex justify-between font-semibold mt-4 border-t border-border pt-2">
         <span>Total:</span>
-        <span>{{ formattedTotal }}</span>
+        <span class="tabular-nums">{{ formattedTotal }}</span>
       </div>
     </div>
-  </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchBankAccountsTotalBalance, fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
+import BaseCard from '../../ui/BaseCard.vue';
 
 const cash = ref<number | null>(null);
 const stocks = ref<Stock[]>([]);

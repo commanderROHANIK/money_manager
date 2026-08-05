@@ -4,48 +4,43 @@
     <TotalBalanceWidget />
 
     <!-- Bank Accounts List Widget -->
-    <div class="bg-white p-6 rounded-2xl shadow-md col-span-1 md:col-span-2">
-      <div class="flex justify-between items-center mb-2">
-        <h2 class="text-lg font-semibold">Connected Bank Accounts</h2>
-        <button
-          class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded"
-          @click="showAddModal = true"
-        >
-          + Add Account
-        </button>
-      </div>
-      <ul class="divide-y text-sm">
-        <li
-          v-for="account in bankAccounts"
-          :key="account.id"
-          class="flex justify-between items-center py-2"
-        >
-          <div>
+    <BaseCard title="Connected Bank Accounts" class="col-span-1 md:col-span-2">
+      <template #actions>
+        <BaseButton size="sm" @click="showAddModal = true">+ Add Account</BaseButton>
+      </template>
+      <ul class="text-sm">
+        <ListRow v-for="account in bankAccounts" :key="account.id">
+          <template #title>
             <p class="font-medium">{{ account.accountName }} - {{ account.bankName }}</p>
-            <p class="text-gray-500 text-xs">{{ account.accountType }} • {{ formatCurrency(account.balance) }}</p>
-          </div>
-          <button
-            class="text-red-500 hover:text-red-700"
-            @click="deleteAccount(account.id)"
-          >
-            ➖
-          </button>
-        </li>
+          </template>
+          <template #subtitle>
+            <p class="text-xs text-text-muted">
+              {{ account.accountType }} • <span class="tabular-nums">{{ formatCurrency(account.balance) }}</span>
+            </p>
+          </template>
+          <template #trailing>
+            <button
+              class="text-danger hover:text-danger/70 transition"
+              @click="deleteAccount(account.id)"
+            >
+              ➖
+            </button>
+          </template>
+        </ListRow>
       </ul>
-    </div>
+    </BaseCard>
 
     <!-- Pie Chart Widget -->
-    <div class="bg-white p-6 rounded-2xl shadow-md col-span-1">
-      <h2 class="text-lg font-semibold mb-2">Balance Distribution</h2>
+    <BaseCard title="Balance Distribution" class="col-span-1">
       <BankAccountPieChart :accounts="sortedAccounts" />
-    </div>
+    </BaseCard>
 
     <!-- Add Modal (Placeholder) -->
-    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div class="bg-white rounded-xl shadow-lg p-6 w-96">
-        <h3 class="text-lg font-semibold mb-4">Add Bank Account</h3>
+    <div v-if="showAddModal" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+      <div class="bg-surface border border-border rounded-lg shadow-card p-6 w-96">
+        <h3 class="font-heading text-lg font-bold mb-4">Add Bank Account</h3>
         <!-- Form fields go here -->
-        <button class="bg-blue-500 text-white px-4 py-1 rounded" @click="showAddModal = false">Close</button>
+        <BaseButton @click="showAddModal = false">Close</BaseButton>
       </div>
     </div>
   </div>
@@ -57,6 +52,9 @@ import { fetchBankAccounts, deleteBankAccount } from '../services/api';
 import type { BankAccount } from '../models/models';
 import TotalBalanceWidget from '../components/Widgets/BankAccounts/TotalBalance.vue';
 import BankAccountPieChart from '../components/Widgets/BankAccounts/BankAccountPieChart.vue'; // You’ll create this
+import BaseCard from './ui/BaseCard.vue';
+import BaseButton from './ui/BaseButton.vue';
+import ListRow from './ui/ListRow.vue';
 
 const bankAccounts = ref<BankAccount[]>([]);
 const showAddModal = ref(false);

@@ -1,14 +1,18 @@
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-md">
-    <h2 class="text-lg font-semibold mb-2">Events</h2>
-    <p class="text-sm">{{ upcomingCount }} Upcoming | {{ pastCount }} Past</p>
-  </div>
+  <BaseCard title="Events">
+    <div class="grid grid-cols-2 gap-4">
+      <StatCard label="Upcoming" :value="upcomingCount" />
+      <StatCard label="Past" :value="pastCount" />
+    </div>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchUpcomingEvents } from '../../../services/api';
 import type { UpcomingEvent } from '../../../models/models';
+import BaseCard from '../../ui/BaseCard.vue';
+import StatCard from '../../ui/StatCard.vue';
 
 const events = ref<UpcomingEvent[]>([]);
 

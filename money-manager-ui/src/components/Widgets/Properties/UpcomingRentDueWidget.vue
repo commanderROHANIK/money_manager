@@ -1,24 +1,24 @@
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-4">Upcoming Rent Due</h2>
-    <ul v-if="upcomingRents.length > 0" class="space-y-2">
-      <li
-        v-for="property in upcomingRents"
-        :key="property.id"
-        class="p-3 rounded-lg shadow bg-white flex justify-between items-center"
-      >
-        <div>
-          <div class="font-medium">{{ property.propertyName }}</div>
-          <div class="text-sm text-gray-500">
+    <h2 class="font-heading text-lg font-bold mb-4">Upcoming Rent Due</h2>
+    <ul v-if="upcomingRents.length > 0">
+      <ListRow v-for="property in upcomingRents" :key="property.id">
+        <template #title>
+          <span class="font-medium">{{ property.propertyName }}</span>
+        </template>
+        <template #subtitle>
+          <span class="text-sm text-text-muted">
             {{ formatDueDate(property.rentDueDate) }}
-          </div>
-        </div>
-        <div class="text-green-600 font-semibold">
-          {{ formatMoney(property.rentAmount, property.currencyCode) }}
-        </div>
-      </li>
+          </span>
+        </template>
+        <template #trailing>
+          <span class="text-primary-strong font-semibold tabular-nums">
+            {{ formatMoney(property.rentAmount, property.currencyCode) }}
+          </span>
+        </template>
+      </ListRow>
     </ul>
-    <p v-else class="text-gray-500">No rent due in the next 30 days.</p>
+    <p v-else class="text-text-muted">No rent due in the next 30 days.</p>
   </div>
 </template>
 
@@ -26,6 +26,7 @@
 import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
+import ListRow from '../../ui/ListRow.vue';
 
 const props = defineProps<{
   properties: RentalProperty[];
