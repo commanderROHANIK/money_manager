@@ -44,6 +44,11 @@
   --mm-accent-strong: oklch(52% 0.13 55);
   --mm-danger-strong: oklch(48% 0.19 25);
 
+  /* Pressed/hover step below --primary-strong. Needed because white-on-primary only reaches
+     4.02:1, so the filled primary button sits on --primary-strong (5.94:1) and still needs a
+     darker state to hover to. */
+  --mm-primary-pressed: oklch(40% 0.13 160);
+
   --mm-sidebar-bg: oklch(24% 0.03 160);
   --mm-sidebar-text: oklch(93% 0.01 160);
 
@@ -74,6 +79,7 @@
   --color-primary: var(--mm-primary);
   --color-primary-strong: var(--mm-primary-strong);
   --color-primary-soft: var(--mm-primary-soft);
+  --color-primary-pressed: var(--mm-primary-pressed);
 
   --color-accent: var(--mm-accent);
   --color-accent-soft: var(--mm-accent-soft);

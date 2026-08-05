@@ -33,10 +33,13 @@ const sizeClass = computed(() =>
   props.size === 'sm' ? 'px-4 py-2 text-xs' : 'px-5 py-3',
 );
 
+// Filled primary sits on --primary-strong rather than --primary: white on --primary measures
+// 4.02:1, under the 4.5:1 AA floor for this 14px bold label. --primary stays the brand fill
+// elsewhere (logo marks, chart series, the active nav highlight).
 const variantClass = computed(() => ({
-  primary: 'bg-primary text-white hover:bg-primary-strong',
+  primary: 'bg-primary-strong text-white hover:bg-primary-pressed',
   secondary: 'border border-border bg-surface text-text hover:bg-surface-2',
-  ghost: 'bg-transparent text-primary hover:bg-primary-soft',
-  danger: 'bg-danger-soft text-danger hover:bg-danger/15',
+  ghost: 'bg-transparent text-primary-strong hover:bg-primary-soft',
+  danger: 'bg-danger-soft text-danger-strong hover:bg-danger/15',
 }[props.variant]));
 </script>
