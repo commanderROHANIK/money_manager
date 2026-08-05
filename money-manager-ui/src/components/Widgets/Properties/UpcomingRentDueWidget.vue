@@ -12,7 +12,7 @@
           </span>
         </template>
         <template #trailing>
-          <span class="text-primary font-semibold tabular-nums">
+          <span class="text-primary-strong font-semibold tabular-nums">
             {{ formatMoney(property.rentAmount, property.currencyCode) }}
           </span>
         </template>

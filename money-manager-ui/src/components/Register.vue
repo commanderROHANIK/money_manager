@@ -30,7 +30,7 @@
       <p
         v-if="message"
         class="text-center text-sm"
-        :class="message.includes('success') ? 'text-primary' : 'text-danger'"
+        :class="message.includes('success') ? 'text-primary-strong' : 'text-danger'"
       >
         {{ message }}
       </p>

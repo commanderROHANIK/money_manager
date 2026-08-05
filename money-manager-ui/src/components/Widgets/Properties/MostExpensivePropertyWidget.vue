@@ -5,7 +5,7 @@
     <div v-if="mostExpensive" class="space-y-2">
       <router-link
         :to="`/properties/${mostExpensive.id}`"
-        class="text-lg font-medium text-primary hover:underline"
+        class="text-lg font-medium text-primary-strong hover:underline"
       >
         {{ mostExpensive.propertyName }}
       </router-link>

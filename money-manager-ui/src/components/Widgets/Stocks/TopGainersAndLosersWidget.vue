@@ -32,7 +32,7 @@ const topLosers = computed(() => sortedStocks.value.slice(-3).reverse());
       <div>
         <h3 class="font-heading text-sm font-bold text-text-muted mb-1">Top Gainers</h3>
         <ul>
-          <li v-for="stock in topGainers" :key="stock.id" class="text-primary text-sm tabular-nums">
+          <li v-for="stock in topGainers" :key="stock.id" class="text-primary-strong text-sm tabular-nums">
             {{ stock.ticker }} +{{ ((stock.currentPrice - stock.purchasePrice) / stock.purchasePrice * 100).toFixed(2) }}%
           </li>
         </ul>

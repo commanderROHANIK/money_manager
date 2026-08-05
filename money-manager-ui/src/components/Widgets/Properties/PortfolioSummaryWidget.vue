@@ -7,7 +7,7 @@
     </p>
 
     <template v-else>
-      <p v-if="portfolio.mixedCurrency" class="text-sm text-accent mb-3">
+      <p v-if="portfolio.mixedCurrency" class="text-sm text-accent-strong mb-3">
         Your properties span several currencies, so they are not totalled here — exchange
         rates are not applied yet. Each property's own figures are still exact.
       </p>
@@ -46,12 +46,12 @@ const tiles = computed(() => {
     {
       label: 'Monthly cash flow',
       value: money(p.totalMonthlyCashFlow),
-      tone: (p.totalMonthlyCashFlow ?? 0) >= 0 ? 'text-primary' : 'text-danger',
+      tone: (p.totalMonthlyCashFlow ?? 0) >= 0 ? 'text-primary-strong' : 'text-danger',
     },
     {
       label: 'Portfolio ROI',
       value: formatPercent(p.portfolioRoi),
-      tone: (p.portfolioRoi ?? 0) >= 0 ? 'text-primary' : 'text-danger',
+      tone: (p.portfolioRoi ?? 0) >= 0 ? 'text-primary-strong' : 'text-danger',
     },
   ];
 });

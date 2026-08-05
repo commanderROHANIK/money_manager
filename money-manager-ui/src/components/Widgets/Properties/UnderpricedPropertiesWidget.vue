@@ -9,7 +9,7 @@
     </p>
 
     <div v-else>
-      <p class="font-heading text-3xl font-extrabold tabular-nums text-accent mb-3">
+      <p class="font-heading text-3xl font-extrabold tabular-nums text-accent-strong mb-3">
         {{ totalUpliftLabel }}<span class="text-base font-normal text-text-muted"> / year</span>
       </p>
 
@@ -18,14 +18,14 @@
           <template #title>
             <router-link
               :to="`/properties/${item.propertyId}`"
-              class="text-primary hover:underline truncate"
+              class="text-primary-strong hover:underline truncate"
             >
               {{ item.propertyName }}
             </router-link>
           </template>
           <template #trailing>
             <span class="text-sm whitespace-nowrap">
-              <span class="text-accent font-medium">{{ formatPercent(item.rentGapPercent) }}</span>
+              <span class="text-accent-strong font-medium">{{ formatPercent(item.rentGapPercent) }}</span>
               <span class="text-text-muted">
                 · {{ formatMoney(item.annualRentUplift, item.currencyCode) }}/yr
               </span>

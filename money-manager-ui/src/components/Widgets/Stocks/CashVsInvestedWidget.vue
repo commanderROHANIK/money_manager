@@ -3,7 +3,7 @@
     <div class="space-y-2 text-sm">
       <div class="flex justify-between">
         <span class="text-text-muted">Cash:</span>
-        <span class="font-medium text-primary tabular-nums">{{ formattedCash }}</span>
+        <span class="font-medium text-accent-strong tabular-nums">{{ formattedCash }}</span>
       </div>
       <div class="flex justify-between">
         <span class="text-text-muted">Invested:</span>

@@ -20,7 +20,7 @@
     <div v-else>
       <p
         class="font-heading text-3xl font-extrabold tabular-nums"
-        :class="isBelowMarket ? 'text-accent' : 'text-primary'"
+        :class="isBelowMarket ? 'text-accent-strong' : 'text-primary-strong'"
       >
         {{ headline }}
       </p>

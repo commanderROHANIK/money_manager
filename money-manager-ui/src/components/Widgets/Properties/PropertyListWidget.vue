@@ -11,7 +11,7 @@
         <template #title>
           <router-link
             :to="`/properties/${property.id}`"
-            class="font-medium text-primary hover:underline"
+            class="font-medium text-primary-strong hover:underline"
           >
             {{ property.propertyName }}
           </router-link>
@@ -31,7 +31,7 @@
           </Badge>
           <router-link
             :to="`/properties/${property.id}`"
-            class="text-sm text-primary hover:underline whitespace-nowrap"
+            class="text-sm text-primary-strong hover:underline whitespace-nowrap"
           >
             {{ property.isRented ? 'Manage rent' : 'Set rent' }}
           </router-link>

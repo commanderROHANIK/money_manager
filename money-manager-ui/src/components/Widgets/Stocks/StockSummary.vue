@@ -7,7 +7,12 @@
         </div>
 
         <div class="mt-3">
-          <StatCard label="Total Value" :value="formatCurrency(totalValue)" :delta="`↑ ${gainPercent.toFixed(1)}% this month`" />
+          <StatCard
+            label="Total Value"
+            :value="formatCurrency(totalValue)"
+            :delta="`${gainPercent >= 0 ? '↑' : '↓'} ${Math.abs(gainPercent).toFixed(1)}% this month`"
+            :delta-positive="gainPercent >= 0"
+          />
         </div>
       </div>
 

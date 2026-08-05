@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="font-heading text-2xl font-bold text-primary tabular-nums">
+    <div class="font-heading text-2xl font-bold text-primary-strong tabular-nums">
       {{ formattedDividend }}
     </div>
     <p class="text-xs text-text-muted mt-1">

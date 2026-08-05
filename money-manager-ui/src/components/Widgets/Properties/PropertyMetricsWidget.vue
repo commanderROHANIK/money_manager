@@ -19,7 +19,7 @@
       <li
         v-for="warning in metrics.warnings"
         :key="warning.code"
-        class="text-xs text-accent bg-accent-soft border border-border rounded px-2 py-1"
+        class="text-xs text-accent-strong bg-accent-soft border border-border rounded px-2 py-1"
       >
         {{ warning.message }}
       </li>
@@ -41,7 +41,7 @@ function money(value: number | null): string {
 
 function sign(value: number | null): string {
   if (value === null) return '';
-  return value >= 0 ? 'text-primary' : 'text-danger';
+  return value >= 0 ? 'text-primary-strong' : 'text-danger';
 }
 
 const tiles = computed(() => [

@@ -7,7 +7,7 @@
       <!-- Header -->
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <router-link to="/properties" class="text-sm text-primary hover:underline">
+          <router-link to="/properties" class="text-sm text-primary-strong hover:underline">
             ← All properties
           </router-link>
           <h1 class="font-heading text-2xl font-bold mt-1">{{ property.propertyName }}</h1>

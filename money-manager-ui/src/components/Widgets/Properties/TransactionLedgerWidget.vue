@@ -47,7 +47,7 @@
           </p>
         </template>
         <template #trailing>
-          <span class="tabular-nums" :class="isIncome(entry.category) ? 'text-primary' : 'text-danger'">
+          <span class="tabular-nums" :class="isIncome(entry.category) ? 'text-primary-strong' : 'text-danger'">
             {{ isIncome(entry.category) ? '+' : '−' }}{{ formatMoney(entry.amount, entry.currencyCode) }}
           </span>
           <button
