@@ -58,6 +58,9 @@ import type { Lease } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatDate } from '../../../utils/labels';
 import type { LeaseRequest } from '../../../services/propertyApi';
+import BaseInput from '../../ui/BaseInput.vue';
+import BaseButton from '../../ui/BaseButton.vue';
+import ListRow from '../../ui/ListRow.vue';
 
 const props = defineProps<{ leases: Lease[] }>();
 const emit = defineEmits<{ (e: 'create', payload: LeaseRequest): void }>();
