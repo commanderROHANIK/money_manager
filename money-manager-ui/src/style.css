@@ -1,3 +1,14 @@
+/* Fonts are self-hosted (bundled by Vite) rather than fetched from the Google Fonts CDN, so the
+   app keeps its typography offline and makes no third-party request on load. Weights here match
+   the ones the design system actually uses. */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/manrope/800.css";
+
 @import "tailwindcss";
 
 /*
@@ -26,6 +37,13 @@
   --mm-danger: oklch(56% 0.19 25);
   --mm-danger-soft: oklch(94% 0.05 25);
 
+  /* Text-on-light variants. The doc's --accent and --danger are specified as fills (badge
+     backgrounds, chart series, highlights); used as text on --surface they measure 2.5:1 and
+     4.1:1 respectively, under the 4.5:1 WCAG AA floor. These are the same hues darkened until
+     they clear it, so accent/danger stay usable as text without restating the fill tokens. */
+  --mm-accent-strong: oklch(52% 0.13 55);
+  --mm-danger-strong: oklch(48% 0.19 25);
+
   --mm-sidebar-bg: oklch(24% 0.03 160);
   --mm-sidebar-text: oklch(93% 0.01 160);
 
@@ -38,7 +56,7 @@
   --mm-chart-2: var(--mm-accent);
   --mm-chart-3: oklch(60% 0.1 250);
   --mm-chart-4: oklch(62% 0.1 310);
-  --mm-chart-5: oklch(56% 0.19 25);
+  --mm-chart-5: var(--mm-danger);
   --mm-chart-6: oklch(65% 0.03 80);
 }
 
@@ -59,9 +77,11 @@
 
   --color-accent: var(--mm-accent);
   --color-accent-soft: var(--mm-accent-soft);
+  --color-accent-strong: var(--mm-accent-strong);
 
   --color-danger: var(--mm-danger);
   --color-danger-soft: var(--mm-danger-soft);
+  --color-danger-strong: var(--mm-danger-strong);
 
   --color-sidebar-bg: var(--mm-sidebar-bg);
   --color-sidebar-text: var(--mm-sidebar-text);
