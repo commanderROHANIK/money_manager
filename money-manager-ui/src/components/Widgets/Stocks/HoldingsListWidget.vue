@@ -3,22 +3,24 @@
     <ListRow v-for="stock in stocks" :key="stock.id">
       <template #title>
         <div class="flex items-center gap-2">
-          <Badge variant="outline">{{ stock.ticker }}</Badge>
+          <Badge variant="outline" mono>{{ stock.ticker }}</Badge>
           <span class="text-sm text-text-muted">{{ stock.sharesOwned }} shares</span>
         </div>
       </template>
       <template #subtitle>
-        <span class="text-xs text-text-muted tabular-nums">
-          {{ formatCurrency(stock.purchasePrice) }} &rarr; {{ formatCurrency(stock.currentPrice) }}
+        <span class="text-xs text-text-muted">
+          Bought <span class="tabular-nums">{{ formatCurrency(stock.purchasePrice) }}</span>
+          · now <span class="tabular-nums">{{ formatCurrency(stock.currentPrice) }}</span>
         </span>
       </template>
       <template #trailing>
         <div class="flex flex-col items-end gap-0.5">
+          <span class="text-xs text-text-muted">Value</span>
           <span class="text-sm font-semibold tabular-nums">{{ formatCurrency(stock.sharesOwned * stock.currentPrice) }}</span>
           <span
             class="text-xs tabular-nums"
             :class="{
-              'text-primary': gain(stock) > 0,
+              'text-primary-strong': gain(stock) > 0,
               'text-danger': gain(stock) < 0,
               'text-text-muted': gain(stock) === 0,
             }"
