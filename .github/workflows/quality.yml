@@ -1,0 +1,58 @@
+# Advisory checks. These are deliberately NOT in ci.yml and must never be added to the required
+# status checks until the codebase is clean enough for them to pass.
+#
+# On why this is a separate workflow rather than `continue-on-error: true` in ci.yml:
+# continue-on-error makes GitHub report the job as *successful*. The PR then says "all checks
+# have passed", the annotation goes unread, and if the job is later promoted to required it is
+# structurally incapable of failing. A separate, non-required workflow fails honestly — a red X
+# on the PR — while branch protection, which blocks only on the check names you list, still lets
+# the merge through. Visible but not blocking is what advisory should mean.
+#
+# Promotion path: when a check here goes green and stays green, delete its job from this file and
+# add the equivalent step to the matching job in ci.yml. That promotes it to blocking without
+# touching branch protection, because the required check name (API / UI) does not change.
+
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  migrations:
+    name: Migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - run: dotnet tool restore
+      - run: dotnet restore app.sln
+
+      # Editing an entity or OnModelCreating without generating a migration produces a fully
+      # green build and then fails at runtime on someone else's machine. Nothing else catches
+      # it: Database.Migrate() only applies the migration files that exist, so a stale model
+      # just means EF's queries quietly drift from the schema.
+      #
+      # Advisory for now because this command can report spuriously across EF patch versions.
+      # Promote it into the API job in ci.yml once it has proven stable.
+      - name: Check for model changes with no migration
+        run: dotnet ef migrations has-pending-model-changes --project MoneyManager.Api
