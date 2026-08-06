@@ -5,6 +5,12 @@
 **/node_modules/
 **/dist/
 
+# Test and coverage output
+**/coverage/
+**/test-results/
+**/playwright-report/
+**/.auth/
+
 # Ignore user-specific files
 *.user
 *.suo

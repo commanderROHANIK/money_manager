@@ -27,6 +27,100 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    defaults:
+      run:
+        working-directory: money-manager-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: money-manager-ui/package-lock.json
+      - run: npm ci
+
+      # Errors already block here (the job fails); the warnings are the shrinking backlog.
+      # Promotion: when `npm run lint -- --max-warnings 0` passes, delete this job and add the
+      # step to the UI job in ci.yml. Required check names do not change, so branch protection
+      # needs no edit.
+      - run: npm run lint
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    defaults:
+      run:
+        working-directory: money-manager-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: money-manager-ui/package-lock.json
+      - run: npm ci
+      - run: npm run test:coverage
+
+      # One number on the run summary, so "is this improving?" is answerable at a glance rather
+      # than by opening logs. An advisory check nobody can read at a glance becomes wallpaper.
+      # Heredoc delimiter is quoted so the shell expands nothing — the script is full of ${...}
+      # that belongs to JavaScript, not to bash.
+      - name: Report coverage
+        if: always()
+        run: |
+          cat > /tmp/summary.cjs <<'EOF'
+          const t = require(process.argv[2]).total;
+          const rows = ['statements', 'branches', 'functions', 'lines']
+            .map((k) => `| ${k} | ${t[k].pct}% | ${t[k].covered}/${t[k].total} |`);
+          console.log(['### UI coverage', '', '| Metric | % | Covered |', '|---|---|---|', ...rows].join('\n'));
+          EOF
+          node /tmp/summary.cjs "$PWD/coverage/coverage-summary.json" >> "$GITHUB_STEP_SUMMARY"
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - run: dotnet restore app.sln
+
+      # `style` rather than `whitespace`: whitespace-only reformatting of a codebase with a
+      # consistent hand style buys nothing and destroys git blame.
+      - run: dotnet format style app.sln --verify-no-changes --no-restore
+
+      # The number that sizes the nullable ratchet in Directory.Build.props. Nobody has been able
+      # to run a build locally (no .NET SDK in the web sandbox), so this is where the backlog
+      # first becomes visible.
+      - name: Count build warnings
+        if: always()
+        run: |
+          dotnet build app.sln --no-restore -warnaserror 2>&1 | tee /tmp/build.log || true
+          {
+            echo '### C# build warnings'
+            echo ''
+            echo "Total: $(grep -c 'warning CS' /tmp/build.log || echo 0)"
+            echo ''
+            echo '```'
+            grep -o 'warning CS[0-9]*' /tmp/build.log | sort | uniq -c | sort -rn || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   migrations:
     name: Migrations
     runs-on: ubuntu-latest

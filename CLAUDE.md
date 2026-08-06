@@ -13,9 +13,15 @@ get them wrong.
 
 ```bash
 dotnet build app.sln
-dotnet test app.sln                       # 30 tests: analytics calculator + tenant isolation
-cd money-manager-ui && npm ci && npm test # 41 tests: widget smoke suite
-cd money-manager-ui && npm run build      # vue-tsc runs here, so type errors fail the build
+dotnet test app.sln                    # analytics calculator + tenant isolation
+
+cd money-manager-ui
+npm ci
+npm test                               # 82 tests: widget smoke, content, utils, services
+npm run typecheck                      # vue-tsc -b
+npm run lint                           # errors fail; warnings are the known backlog
+npm run lint:fix
+npm run test:coverage                  # baseline: ~61% statements
 ```
 
 Dev servers: API on `http://localhost:5296` (Swagger at `/swagger`, Development only), UI on
@@ -154,7 +160,16 @@ machine — CI checks for this drift.
 ## CI
 
 `.github/workflows/ci.yml` builds and tests both halves on every PR. Checks named **API** and
-**UI** block merge. Quality checks (lint, formatting, coverage) run separately and are advisory
-— they will show red without blocking you.
+**UI** block merge.
+
+`.github/workflows/quality.yml` runs **Lint**, **Coverage**, **Format** and **Migrations**.
+These are advisory: they fail visibly on the PR but are deliberately not in the required-check
+list, so they never block a merge. Each carries a comment describing how it gets promoted to
+blocking — which is by moving the step into the matching `ci.yml` job, so the required check
+names never change and branch protection never needs editing.
 
 If a lint warning appears in a file you did not touch, leave it. Fix only what you changed.
+
+The linter is worth trusting on one rule in particular. `vue/no-undef-components` catches a
+template using a component the script never imported — the defect that shipped in
+`TenancyWidget`, which `vue-tsc` and `vite build` both pass cleanly. If it fires, it is right.

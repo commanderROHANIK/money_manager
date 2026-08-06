@@ -1,0 +1,42 @@
+<Project>
+
+  <!--
+    Applies to both projects, and — the part that matters — applies identically locally and in
+    CI. Enforcing analysis through a CI-only `-warnaserror` flag instead would mean a red build
+    that nobody can reproduce on their machine, which is the fastest way to teach people that
+    the build is unreliable rather than that their code is.
+  -->
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!--
+      Deliberately false for now.
+
+      <Nullable>enable</Nullable> is already set on both projects, so CS86xx warnings are being
+      emitted today. Flipping this to true before those reach zero would red-wall every pull
+      request at once, with no incremental path and no way to tell a new violation from the
+      backlog.
+
+      The ratchet, in order:
+        1. The advisory Quality workflow reports the current warning count on every PR.
+        2. Clear the nullable warnings, which are the highest-value set here — they are the ones
+           that turn into NullReferenceException at runtime.
+        3. Promote them per-code as each reaches zero, via WarningsAsErrors below.
+        4. When the total is zero, set TreatWarningsAsErrors to true. At that point the existing
+           API job becomes the enforcement point with no workflow change at all.
+    -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!--
+      Step 3 of the ratchet. Uncomment codes individually as they reach zero — promoting one at a
+      time is what locks in progress instead of demanding a single big cleanup.
+
+      CS8618 non-nullable field uninitialised   CS8625 null literal to non-nullable
+      CS8602 dereference of a possible null     CS8603 possible null reference return
+      CS8604 possible null reference argument   CS8600 null to non-nullable conversion
+    -->
+    <!-- <WarningsAsErrors>CS8618;CS8625;CS8602;CS8603;CS8604;CS8600</WarningsAsErrors> -->
+  </PropertyGroup>
+
+</Project>

@@ -77,6 +77,9 @@ function formatCurrency(amount: number): string {
 }
 
 const sortedAccounts = computed(() => {
-  return bankAccounts.value.sort((a, b) => b.balance - a.balance);
+  // Copy before sorting: Array.prototype.sort mutates in place, so sorting bankAccounts.value
+  // directly would have this computed write to its own reactive dependency — permanently
+  // reordering the source list and risking a re-evaluation loop.
+  return [...bankAccounts.value].sort((a, b) => b.balance - a.balance);
 });
 </script>
