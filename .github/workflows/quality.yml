@@ -104,13 +104,15 @@ jobs:
       # consistent hand style buys nothing and destroys git blame.
       - run: dotnet format style app.sln --verify-no-changes --no-restore
 
-      # The number that sizes the nullable ratchet in Directory.Build.props. Nobody has been able
-      # to run a build locally (no .NET SDK in the web sandbox), so this is where the backlog
-      # first becomes visible.
+      # Kept as a trend line, not a gate. The first run reported zero warnings, which is what
+      # allowed TreatWarningsAsErrors to go straight to true in Directory.Build.props — so the
+      # real enforcement now lives in the required API job, and any regression fails there.
+      # This step stays because a visible number is what stops an advisory check from becoming
+      # wallpaper, and it still reports if the count ever moves.
       - name: Count build warnings
         if: always()
         run: |
-          dotnet build app.sln --no-restore -warnaserror 2>&1 | tee /tmp/build.log || true
+          dotnet build app.sln --no-restore 2>&1 | tee /tmp/build.log || true
           {
             echo '### C# build warnings'
             echo ''

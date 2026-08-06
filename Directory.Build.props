@@ -11,32 +11,25 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!--
-      Deliberately false for now.
+      True, and it can be, because the backlog turned out to be empty.
 
-      <Nullable>enable</Nullable> is already set on both projects, so CS86xx warnings are being
-      emitted today. Flipping this to true before those reach zero would red-wall every pull
-      request at once, with no incremental path and no way to tell a new violation from the
-      backlog.
+      This was expected to need a staged cleanup: <Nullable>enable</Nullable> has been on for a
+      while, so the assumption was that CS86xx warnings had accumulated and that flipping this
+      would red-wall every pull request. Nobody could check, because the .NET SDK is not
+      installed in the Claude Code web sandbox — builds.dotnet.microsoft.com is blocked by the
+      egress policy.
 
-      The ratchet, in order:
-        1. The advisory Quality workflow reports the current warning count on every PR.
-        2. Clear the nullable warnings, which are the highest-value set here — they are the ones
-           that turn into NullReferenceException at runtime.
-        3. Promote them per-code as each reaches zero, via WarningsAsErrors below.
-        4. When the total is zero, set TreatWarningsAsErrors to true. At that point the existing
-           API job becomes the enforcement point with no workflow change at all.
+      The Quality workflow's Format job settled it on the first run against real infrastructure:
+      `dotnet build app.sln -warnaserror` reported "0 Warning(s), 0 Error(s)". There is no
+      backlog to clear, so the incremental ratchet is unnecessary and this goes straight to
+      enforcing.
+
+      Consequence worth knowing before you add code: any new compiler warning — a possible null
+      dereference, an unused variable, an obsolete API — now fails the build, locally and in the
+      required API check alike. That is the intent. Fix the cause; do not add
+      `#pragma warning disable`.
     -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-
-    <!--
-      Step 3 of the ratchet. Uncomment codes individually as they reach zero — promoting one at a
-      time is what locks in progress instead of demanding a single big cleanup.
-
-      CS8618 non-nullable field uninitialised   CS8625 null literal to non-nullable
-      CS8602 dereference of a possible null     CS8603 possible null reference return
-      CS8604 possible null reference argument   CS8600 null to non-nullable conversion
-    -->
-    <!-- <WarningsAsErrors>CS8618;CS8625;CS8602;CS8603;CS8604;CS8600</WarningsAsErrors> -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 </Project>

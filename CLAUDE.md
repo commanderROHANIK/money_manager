@@ -146,6 +146,10 @@ wrong, leave it failing and say so in the PR description.
 **Never add `eslint-disable`, `#pragma warning disable`, or a `!` null-forgiving operator to
 silence a check.** Those turn a real signal into a silent one. Fix the cause or leave it visible.
 
+**C# compiler warnings are errors.** `Directory.Build.props` sets `TreatWarningsAsErrors`,
+because the codebase is at zero warnings and staying there is much cheaper than getting back
+there. A possible-null dereference or an unused variable fails the build, locally and in CI.
+
 ## Migrations
 
 ```bash
