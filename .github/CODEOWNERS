@@ -1,0 +1,27 @@
+# Paths where a mistake is silent and expensive.
+#
+# Honest caveat: with a single collaborator this file does not currently enforce anything.
+# GitHub will not let you be a required reviewer of your own pull request, so turning on
+# "Require review from Code Owners" would make every solo PR unmergeable. Leave that setting
+# off until a second collaborator exists.
+#
+# Until then its value is that it marks the sensitive surface — for humans reading a diff and
+# for agents reading the repo — and it starts enforcing the moment someone else is added.
+
+*                                                @commanderROHANIK
+
+# Tenant isolation and schema. A defect here leaks one landlord's portfolio to another.
+/MoneyManager.Api/Data/                          @commanderROHANIK
+/MoneyManager.Api/Migrations/                    @commanderROHANIK
+/MoneyManager.Api/Models/IOwnedByUser.cs         @commanderROHANIK
+
+# Authentication, token minting, and the deny-by-default policy.
+/MoneyManager.Api/Infrastructure/                @commanderROHANIK
+/MoneyManager.Api/Program.cs                     @commanderROHANIK
+/MoneyManager.Api/Controllers/AuthController.cs  @commanderROHANIK
+
+# The gates themselves. An agent that can edit these can disable its own checks.
+/.github/                                        @commanderROHANIK
+/.claude/                                        @commanderROHANIK
+/CLAUDE.md                                       @commanderROHANIK
+/Directory.Build.props                           @commanderROHANIK
