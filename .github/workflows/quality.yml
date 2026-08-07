@@ -22,7 +22,12 @@ name: Quality
 on:
   push:
     branches: [main]
+  # `labeled` and `unlabeled` are added on purpose. The default trigger types are opened,
+  # synchronize and reopened, so without these the Gate changes job below could never go green:
+  # adding the label it asks for would not re-run anything, and you would need an unrelated
+  # push to clear a check that was already satisfied.
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -32,6 +37,57 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # An agent that can edit the workflows can switch off the checks that would have caught it,
+  # and the diff for that looks much like any other diff. This makes it loud instead.
+  #
+  # It is the practical substitute for CODEOWNERS on this repo: "require review from Code
+  # Owners" cannot be enforced while there is a single collaborator, because GitHub will not
+  # let you be a required reviewer of your own pull request. A label is something the author
+  # has to consciously add, which is the acknowledgement CODEOWNERS would otherwise force.
+  gates:
+    name: Gate changes
+    # Labels exist only on pull requests. On a push to main there is nothing left to acknowledge.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # fetch-depth: 0 is load-bearing. The default checkout is shallow, so `origin/<base>` is
+      # either missing or stale, and a three-dot diff against a stale base silently reports
+      # files the pull request never touched.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require the ci-change label when the gates themselves are edited
+        env:
+          BASE: ${{ github.base_ref }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+        run: |
+          changed=$(git diff --name-only "origin/$BASE...HEAD" -- \
+            .github .claude Directory.Build.props money-manager-ui/eslint.config.js)
+
+          if [ -z "$changed" ]; then
+            echo "No changes to the checks or the agent configuration."
+            exit 0
+          fi
+
+          echo "This pull request changes the checks that guard it:"
+          echo "$changed" | sed 's/^/  /'
+          echo ""
+
+          # Space-padded match so 'ci-changes' or 'no-ci-change' cannot satisfy it.
+          case " $LABELS " in
+            *" ci-change "*)
+              echo "Labelled ci-change - acknowledged."
+              ;;
+            *)
+              echo "Add the 'ci-change' label to confirm this is intentional."
+              echo "The label is the acknowledgement, not an approval - it exists so that"
+              echo "weakening a check is a deliberate act rather than an unnoticed one."
+              exit 1
+              ;;
+          esac
+
   format:
     name: Format
     runs-on: ubuntu-latest

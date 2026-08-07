@@ -173,10 +173,16 @@ tree was clean. `npm run lint` uses `--max-warnings 0` and coverage enforces the
 If you raise real coverage, raise the thresholds in the same change. That ratchet is the point —
 they are set just under measured reality to catch a regression, not as an aspiration.
 
-`.github/workflows/quality.yml` runs **Format** and **Migrations**. These are advisory: they fail
-visibly on the PR but are deliberately not in the required-check list, so they never block a
-merge. Promotion works by moving the step into the matching `ci.yml` job, so the required check
-names never change and branch protection never needs editing.
+`.github/workflows/quality.yml` runs **Gate changes**, **Format** and **Migrations**. These are
+advisory: they fail visibly on the PR but are deliberately not in the required-check list, so
+they never block a merge. Promotion works by moving the step into the matching `ci.yml` job, so
+the required check names never change and branch protection never needs editing.
+
+**If your change touches `.github/`, `.claude/`, `Directory.Build.props` or `eslint.config.js`,
+add the `ci-change` label to the PR.** Those paths are the checks themselves, and a change that
+weakens one should be a deliberate act rather than an unnoticed line in a large diff. The label
+is an acknowledgement, not an approval — add it and say in the PR description what changed and
+why. Do not instead widen the path list to avoid the check.
 
 The linter is worth trusting on one rule in particular. `vue/no-undef-components` catches a
 template using a component the script never imported — the defect that shipped in
