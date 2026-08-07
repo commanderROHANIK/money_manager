@@ -14,6 +14,7 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import type { Component } from 'vue';
 import * as f from './fixtures';
+import { FROZEN_NOW } from './fixtures';
 
 // Chart.js needs a real canvas; jsdom has none. The chart wrappers are not what this test is
 // about, so stand them down to placeholders.
@@ -112,13 +113,32 @@ let warnings: string[] = [];
 let warnSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
+  // The fixtures carry fixed 2026 dates while several widgets compare against `new Date()`, so
+  // without a frozen clock this suite would quietly change behaviour over time and eventually
+  // fail on a date nobody chose.
+  //
+  // Only Date is faked. Faking setTimeout as well would stop the `await setTimeout(0)` below
+  // from ever resolving, and every service-backed widget would hang until the test timed out.
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(FROZEN_NOW);
+
   warnings = [];
   warnSpy = vi.spyOn(console, 'warn').mockImplementation((...args: unknown[]) => {
     warnings.push(args.map(String).join(' '));
   });
 });
 
-afterEach(() => warnSpy.mockRestore());
+afterEach(() => {
+  warnSpy.mockRestore();
+  vi.useRealTimers();
+});
+
+/**
+ * Values that mean a template interpolated something it should have formatted. Cheap to check,
+ * and it applies to every widget at once — which is what makes it worth doing generically
+ * rather than widget by widget.
+ */
+const PLACEHOLDER_LEAKS = ['undefined', 'NaN', '[object Object]', 'Infinity'];
 
 describe('widget smoke test', () => {
   const entries = Object.entries(widgets);
@@ -142,6 +162,20 @@ describe('widget smoke test', () => {
       // "Failed to resolve component" is the one this suite exists for.
       expect(warnings.join('\n')).toBe('');
       expect(wrapper.html()).not.toBe('');
+
+      // `expect(html).not.toBe('')` passes on `<div></div>`. A widget that renders no text and
+      // no chart is not actually rendering.
+      const text = wrapper.text().trim();
+      expect(
+        text !== '' || wrapper.find('canvas').exists(),
+        `${widgetName} rendered neither text nor a chart`
+      ).toBe(true);
+
+      // A field added to a model but formatted wrong shows up here rather than in production.
+      for (const leak of PLACEHOLDER_LEAKS) {
+        expect(text, `${widgetName} leaked "${leak}" into its output`).not.toContain(leak);
+      }
+
       wrapper.unmount();
     }
   );

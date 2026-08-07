@@ -17,7 +17,7 @@
           <Badge v-if="loan.isPaidOff" variant="primary">Paid Off</Badge>
         </template>
         <template #trailing>
-          <button @click="confirmDelete(loan)" class="text-sm font-semibold text-danger hover:text-danger/80">
+          <button class="text-sm font-semibold text-danger hover:text-danger/80" @click="confirmDelete(loan)">
             Delete
           </button>
         </template>

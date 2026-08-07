@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: "/money-manager-ui"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      production:
+        dependency-type: production
+      development:
+        dependency-type: development
+
+  # The Microsoft packages are grouped so the framework set moves together. Splitting them
+  # across separate PRs produces intermediate states where EF, ASP.NET Core and Identity are on
+  # different patch levels, which is a class of breakage nobody wants to bisect.
+  #
+  # HAZARD, read before merging any of these:
+  #
+  # Microsoft.AspNetCore.Authentication.JwtBearer is what resolves the Microsoft.IdentityModel.*
+  # set. If that resolution goes incoherent, every token fails validation with IDX14102 — at
+  # runtime only, through a fully green build. See the comment in MoneyManager.Api.csproj.
+  #
+  # The tempting "fix" is to add an explicit Microsoft.IdentityModel.Tokens PackageReference.
+  # That IS the bug. Never do it.
+  #
+  # What actually makes a bump here safe is the login -> /api/auth/me integration test, which is
+  # the only thing that exercises token minting and validation end to end. Do not merge a
+  # JwtBearer bump without it passing.
+  #
+  # Note also that `ignore` below only suppresses version updates. Dependabot *security* updates
+  # can still introduce an explicit transitive pin, so a security PR touching
+  # Microsoft.IdentityModel.* needs the same scrutiny even though it is not listed here.
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      microsoft:
+        patterns: ["Microsoft.*"]
+    ignore:
+      - dependency-name: "Microsoft.IdentityModel.*"

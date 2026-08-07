@@ -1,0 +1,44 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{ts,js,vue,json,yml,yaml,css,html}]
+indent_size = 2
+
+[*.{cs,csproj,sln,props}]
+indent_size = 4
+
+# Trailing whitespace is a line break in Markdown.
+[*.md]
+trim_trailing_whitespace = false
+
+[*.sh]
+indent_size = 2
+
+# ---------------------------------------------------------------------------
+# C# code style.
+#
+# Severities are deliberately low for now. EnforceCodeStyleInBuild is on in
+# Directory.Build.props, so anything raised to warning here shows up in every build — and the
+# nullable warnings already present are the backlog worth clearing first. Raise these once that
+# is done, one at a time.
+# ---------------------------------------------------------------------------
+[*.cs]
+# The codebase mixes block-scoped namespaces (controllers, DbContext) with file-scoped ones
+# (TokenProvider, ICurrentUser). Worth normalising in a dedicated commit; silent until then so
+# it does not add noise to unrelated diffs.
+csharp_style_namespace_declarations = file_scoped:silent
+
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:silent
+csharp_prefer_braces = when_multiline:silent
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent

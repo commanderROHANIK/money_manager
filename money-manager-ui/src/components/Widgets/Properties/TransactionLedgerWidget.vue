@@ -2,7 +2,7 @@
   <div>
     <h2 class="font-heading text-lg font-bold mb-4">Ledger</h2>
 
-    <form @submit.prevent="submit" class="flex flex-wrap gap-2 mb-4">
+    <form class="flex flex-wrap gap-2 mb-4" @submit.prevent="submit">
       <BaseInput v-model="form.date" type="date" required />
       <BaseSelect v-model.number="form.category">
         <optgroup v-for="group in TRANSACTION_CATEGORY_GROUPS" :key="group.label" :label="group.label">

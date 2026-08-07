@@ -16,7 +16,7 @@
       Vacant — no tenancy is running today.
     </p>
 
-    <form @submit.prevent="submit" class="grid grid-cols-2 gap-2 mb-4">
+    <form class="grid grid-cols-2 gap-2 mb-4" @submit.prevent="submit">
       <BaseInput v-model="form.tenantName" placeholder="Tenant name" class="col-span-2" required />
       <BaseInput v-model="form.startDate" type="date" required />
       <BaseInput v-model="form.endDate" type="date" placeholder="End (optional)" />

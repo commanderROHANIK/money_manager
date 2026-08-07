@@ -5,22 +5,63 @@ on:
     branches: [main]
   pull_request:
 
+# The default token scope is broader than anything here needs. A workflow change authored by an
+# agent should not be able to push, comment, or cut a release.
+permissions:
+  contents: read
+
+# Agents push repeatedly to the same branch while iterating, and without this each push queues
+# another full run. Only cancel on pull requests: cancelling on main would leave the default
+# branch with no completed run against its head.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   api:
     name: API
     runs-on: ubuntu-latest
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+
+      # setup-dotnet's own `cache: true` requires a packages.lock.json, and lock files are a bad
+      # trade here: they freeze the whole resolved graph including the Microsoft.IdentityModel.*
+      # set that MoneyManager.Api.csproj deliberately leaves unpinned. Caching on the csproj hash
+      # gets the same speedup without introducing that trap.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - run: dotnet tool restore
       - run: dotnet restore app.sln
       - run: dotnet build app.sln --no-restore --configuration Release
       - run: dotnet test app.sln --no-build --configuration Release --verbosity normal
 
+      # Promoted from the advisory Quality workflow after five consecutive green runs.
+      #
+      # `style` rather than `whitespace`: whitespace-only reformatting of a codebase with a
+      # consistent hand style buys nothing and destroys git blame.
+      - run: dotnet format style app.sln --verify-no-changes --no-restore
+
+      # The cheapest high-value check here. Editing an entity or OnModelCreating without
+      # generating a migration produces a completely green build and then fails at runtime on
+      # someone else's machine — Database.Migrate() only applies the migration files that exist,
+      # so a stale model just means EF's queries quietly drift from the schema. Nothing else
+      # catches it, including the tests.
+      - name: Check for model changes with no migration
+        run: dotnet ef migrations has-pending-model-changes --project MoneyManager.Api
+
   ui:
     name: UI
     runs-on: ubuntu-latest
+    timeout-minutes: 6
     defaults:
       run:
         working-directory: money-manager-ui
@@ -32,8 +73,41 @@ jobs:
           cache: npm
           cache-dependency-path: money-manager-ui/package-lock.json
       - run: npm ci
-      # vue-tsc runs as part of the build, so a type error fails the pipeline.
+
+      # Promoted from the advisory Quality workflow once the codebase reached zero findings.
+      # `npm run lint` carries --max-warnings 0, so a new warning fails here rather than joining
+      # a backlog. vue/no-undef-components is the rule that earns this its place: it catches a
+      # template using a component the script never imported, which vue-tsc and vite build both
+      # pass cleanly, and which has shipped broken in this repo before.
+      - run: npm run lint
+
+      # Its own step so a type error reports as "Typecheck" rather than being buried in a failing
+      # build. `npm run build` runs vue-tsc again, but incrementally against the tsbuildinfo this
+      # step just wrote, so the second pass costs a couple of seconds.
+      # It must be `vue-tsc -b`, not `--noEmit`: tsconfig.json is a solution-style stub with
+      # "files": [], so a non-build invocation would typecheck nothing at all.
+      - run: npm run typecheck
+
       - run: npm run build
+
       # The build does not catch a template referencing a component the script never imported —
       # that only surfaces when the component is mounted. npm test mounts every widget.
-      - run: npm test
+      #
+      # Runs with coverage so the thresholds in vitest.config.ts apply: a change that deletes
+      # coverage fails here. Also promoted from the Quality workflow.
+      - run: npm run test:coverage
+
+      # Runs even when an earlier step failed, so a red build still reports its coverage — but
+      # only if the file exists. On a failure before the tests ran there is no summary to read,
+      # and require() would throw MODULE_NOT_FOUND, adding a second red step pointing at the
+      # wrong cause.
+      - name: Report coverage
+        if: always() && hashFiles('money-manager-ui/coverage/coverage-summary.json') != ''
+        run: |
+          cat > /tmp/summary.cjs <<'EOF'
+          const t = require(process.argv[2]).total;
+          const rows = ['statements', 'branches', 'functions', 'lines']
+            .map((k) => `| ${k} | ${t[k].pct}% | ${t[k].covered}/${t[k].total} |`);
+          console.log(['### UI coverage', '', '| Metric | % | Covered |', '|---|---|---|', ...rows].join('\n'));
+          EOF
+          node /tmp/summary.cjs "$PWD/coverage/coverage-summary.json" >> "$GITHUB_STEP_SUMMARY"

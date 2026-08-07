@@ -5,7 +5,7 @@
       Equity and appreciation are measured against the most recent figure here.
     </p>
 
-    <form @submit.prevent="submit" class="flex flex-wrap gap-2 mb-4">
+    <form class="flex flex-wrap gap-2 mb-4" @submit.prevent="submit">
       <BaseInput v-model="form.valuedOn" type="date" required />
       <BaseInput
         v-model.number="form.value"

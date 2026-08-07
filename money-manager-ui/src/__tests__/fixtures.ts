@@ -5,6 +5,16 @@ import {
 
 const iso = (d: string) => new Date(d).toISOString();
 
+/**
+ * The clock every suite freezes to.
+ *
+ * The fixtures below carry fixed 2026 dates, and widgets like UpcomingRentDueWidget and
+ * NextDueRepaymentWidget compare them against `new Date()`. Without a frozen clock, "is this
+ * rent due soon" silently changes answer as real time passes and the suite fails on a date
+ * nobody picked.
+ */
+export const FROZEN_NOW = new Date('2026-08-01T00:00:00.000Z');
+
 export const bankAccounts = [
   { id: 1, accountName: 'Everyday', balance: 412350, bankName: 'OTP', accountNumber: '1', accountType: 'Checking', currencyCode: 'HUF' },
   { id: 2, accountName: 'Rainy day', balance: 1850000, bankName: 'OTP', accountNumber: '2', accountType: 'Savings', currencyCode: 'HUF' },
@@ -53,6 +63,40 @@ export const portfolio = {
   propertyCount: 3, currency: 'HUF', mixedCurrency: false,
   totalInvested: 188500000, totalCurrentValue: 231000000, totalEquity: 142400000,
   totalMonthlyCashFlow: 128000, totalAnnualRentUplift: 852000, portfolioRoi: 0.187,
+};
+
+/**
+ * A property the API could not compute: no valuation, no purchase price, no ledger.
+ *
+ * Every metric is null and the warnings say why. This is the fixture that lets a test assert
+ * the product's central promise — that an unknown figure renders as unknown rather than as a
+ * confident zero. The populated fixtures above cannot express that case at all.
+ */
+export const propertyMetricsUnknown = {
+  propertyId: 4, propertyName: 'Newly added flat', currencyCode: 'HUF', asOf: iso('2026-08-01'),
+  totalInvested: null, cashInvested: null, annualRentalIncome: null,
+  annualOperatingExpenses: null, netOperatingIncome: null, annualDebtService: null,
+  monthlyCashFlow: null, grossYield: null, netYield: null, capRate: null, cashOnCashReturn: null,
+  currentValue: null, equity: null, appreciation: null, appreciationPercent: null,
+  cumulativeNetCashFlow: null, totalReturn: null, totalRoi: null, annualizedRoi: null,
+  yearsHeld: null, occupancyRate: null, marketMonthlyRent: null, contractedMonthlyRent: null,
+  rentGapPercent: null, annualRentUplift: null,
+  warnings: [
+    { code: 'no_valuation', message: 'No valuation on record, and no purchase price to fall back on.' },
+    { code: 'no_transactions', message: 'No transactions recorded, so cash flow cannot be computed.' },
+  ],
+};
+
+/**
+ * A portfolio spanning two currencies. Totals are null and `mixedCurrency` is true, because
+ * adding HUF to EUR without a rate produces a plausible wrong number — the API refuses, and the
+ * UI has to say so rather than render a total.
+ */
+export const portfolioMixedCurrency = {
+  properties: [propertyMetrics, metric({ propertyId: 5, propertyName: 'Vienna flat', currencyCode: 'EUR' })],
+  propertyCount: 2, currency: null, mixedCurrency: true,
+  totalInvested: null, totalCurrentValue: null, totalEquity: null,
+  totalMonthlyCashFlow: null, totalAnnualRentUplift: null, portfolioRoi: null,
 };
 
 export const transactions = [

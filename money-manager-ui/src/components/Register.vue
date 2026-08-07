@@ -7,7 +7,7 @@
         <div class="text-sm text-text-muted">Let's get your money tracked.</div>
       </div>
 
-      <form @submit.prevent="handleRegister" class="flex flex-col gap-4">
+      <form class="flex flex-col gap-4" @submit.prevent="handleRegister">
         <BaseInput v-model.trim="username" placeholder="Username" autocomplete="username" required />
         <BaseInput v-model.trim="email" type="email" placeholder="Email" autocomplete="email" required />
         <BaseInput v-model="password" type="password" placeholder="Password" autocomplete="new-password" required />
@@ -38,12 +38,15 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { register } from "../services/authService";
 import BaseInput from './ui/BaseInput.vue';
 import BaseButton from './ui/BaseButton.vue';
 
-export default {
+// defineComponent rather than a bare object literal: it is what gives `this` a type inside
+// data() and methods(). Without it `lang="ts"` compiles but checks almost nothing.
+export default defineComponent({
   components: { BaseInput, BaseButton },
   data() {
     return {
@@ -70,11 +73,12 @@ export default {
         this.message = "Registered successfully";
         this.username = this.email = this.password = this.confirmPassword = "";
       } catch (err) {
-        this.message = "Error registering: " + err.message;
+        this.message =
+          "Error registering: " + (err instanceof Error ? err.message : "please try again");
       } finally {
         this.loading = false;
       }
     },
   },
-};
+});
 </script>

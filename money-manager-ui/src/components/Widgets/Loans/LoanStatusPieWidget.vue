@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import { Doughnut } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import type { TooltipItem } from 'chart.js';
 import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
 import { chartColors } from '../../../utils/chartTheme';
@@ -54,7 +55,7 @@ const chartOptions = {
     },
     tooltip: {
       callbacks: {
-        label: (context: any) => {
+        label: (context: TooltipItem<'doughnut'>) => {
           const label = context.label || '';
           const value = context.parsed || 0;
           const total = context.dataset.data.reduce((acc: number, v: number) => acc + v, 0);

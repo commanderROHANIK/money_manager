@@ -1,0 +1,35 @@
+<Project>
+
+  <!--
+    Applies to both projects, and — the part that matters — applies identically locally and in
+    CI. Enforcing analysis through a CI-only `-warnaserror` flag instead would mean a red build
+    that nobody can reproduce on their machine, which is the fastest way to teach people that
+    the build is unreliable rather than that their code is.
+  -->
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!--
+      True, and it can be, because the backlog turned out to be empty.
+
+      This was expected to need a staged cleanup: <Nullable>enable</Nullable> has been on for a
+      while, so the assumption was that CS86xx warnings had accumulated and that flipping this
+      would red-wall every pull request. Nobody could check, because the .NET SDK is not
+      installed in the Claude Code web sandbox — builds.dotnet.microsoft.com is blocked by the
+      egress policy.
+
+      The Quality workflow's Format job settled it on the first run against real infrastructure:
+      `dotnet build app.sln -warnaserror` reported "0 Warning(s), 0 Error(s)". There is no
+      backlog to clear, so the incremental ratchet is unnecessary and this goes straight to
+      enforcing.
+
+      Consequence worth knowing before you add code: any new compiler warning — a possible null
+      dereference, an unused variable, an obsolete API — now fails the build, locally and in the
+      required API check alike. That is the intent. Fix the cause; do not add
+      `#pragma warning disable`.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

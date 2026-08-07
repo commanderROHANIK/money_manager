@@ -6,7 +6,7 @@
       against.
     </p>
 
-    <form @submit.prevent="submit" class="space-y-3">
+    <form class="space-y-3" @submit.prevent="submit">
       <BaseInput v-model.trim="form.loanName" placeholder="Loan Name" required />
 
       <div>

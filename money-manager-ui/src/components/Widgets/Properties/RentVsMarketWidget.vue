@@ -4,7 +4,7 @@
 
     <div v-if="metrics.marketMonthlyRent === null" class="text-sm text-text-muted">
       <p class="mb-2">No market estimate on record for this property.</p>
-      <form @submit.prevent="submitEstimate" class="flex gap-2">
+      <form class="flex gap-2" @submit.prevent="submitEstimate">
         <BaseInput
           v-model.number="estimate"
           type="number"

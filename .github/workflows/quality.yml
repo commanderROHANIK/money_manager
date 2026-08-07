@@ -1,0 +1,98 @@
+# Advisory checks. These are deliberately NOT in ci.yml and must never be added to the required
+# status checks until the codebase is clean enough for them to pass.
+#
+# On why this is a separate workflow rather than `continue-on-error: true` in ci.yml:
+# continue-on-error makes GitHub report the job as *successful*. The PR then says "all checks
+# have passed", the annotation goes unread, and if the job is later promoted to required it is
+# structurally incapable of failing. A separate, non-required workflow fails honestly — a red X
+# on the PR — while branch protection, which blocks only on the check names you list, still lets
+# the merge through. Visible but not blocking is what advisory should mean.
+#
+# Promotion path: when a check here goes green and stays green, delete its job from this file and
+# add the equivalent step to the matching job in ci.yml. That promotes it to blocking without
+# touching branch protection, because the required check name (API / UI) does not change.
+#
+# Already promoted this way, and no longer here:
+#   Lint       -> `npm run lint` in ci.yml's UI job, once the tree reached 0 warnings.
+#   Coverage   -> `npm run test:coverage` in the same job, thresholds in vitest.config.ts.
+#   Format     -> `dotnet format style --verify-no-changes` in the API job.
+#   Migrations -> `dotnet ef migrations has-pending-model-changes` in the API job.
+#
+# The "Count build warnings" step went with them and was then dropped: TreatWarningsAsErrors is
+# true, so a warning fails the build outright and a separate count of it is always zero.
+#
+# Everything measured has now cleared, which is what the ratchet was for. What remains is the
+# one check that is advisory by design rather than by readiness — acknowledging a change to the
+# gates is a judgement call, so it should be visible without being a merge blocker.
+
+name: Quality
+
+on:
+  # Pull requests only. The single job here is gated on `github.event_name == 'pull_request'`
+  # because labels exist only on pull requests, so a push trigger would queue a run whose only
+  # job always skips.
+  #
+  # `labeled` and `unlabeled` are added on purpose. The default trigger types are opened,
+  # synchronize and reopened, so without these the Gate changes job below could never go green:
+  # adding the label it asks for would not re-run anything, and you would need an unrelated
+  # push to clear a check that was already satisfied.
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # An agent that can edit the workflows can switch off the checks that would have caught it,
+  # and the diff for that looks much like any other diff. This makes it loud instead.
+  #
+  # It is the practical substitute for CODEOWNERS on this repo: "require review from Code
+  # Owners" cannot be enforced while there is a single collaborator, because GitHub will not
+  # let you be a required reviewer of your own pull request. A label is something the author
+  # has to consciously add, which is the acknowledgement CODEOWNERS would otherwise force.
+  gates:
+    name: Gate changes
+    # No event guard needed: the workflow triggers on pull_request only, so this always applies.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # fetch-depth: 0 is load-bearing. The default checkout is shallow, so `origin/<base>` is
+      # either missing or stale, and a three-dot diff against a stale base silently reports
+      # files the pull request never touched.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require the ci-change label when the gates themselves are edited
+        env:
+          BASE: ${{ github.base_ref }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+        run: |
+          changed=$(git diff --name-only "origin/$BASE...HEAD" -- \
+            .github .claude Directory.Build.props money-manager-ui/eslint.config.js)
+
+          if [ -z "$changed" ]; then
+            echo "No changes to the checks or the agent configuration."
+            exit 0
+          fi
+
+          echo "This pull request changes the checks that guard it:"
+          echo "$changed" | sed 's/^/  /'
+          echo ""
+
+          # Space-padded match so 'ci-changes' or 'no-ci-change' cannot satisfy it.
+          case " $LABELS " in
+            *" ci-change "*)
+              echo "Labelled ci-change - acknowledged."
+              ;;
+            *)
+              echo "Add the 'ci-change' label to confirm this is intentional."
+              echo "The label is the acknowledgement, not an approval - it exists so that"
+              echo "weakening a check is a deliberate act rather than an unnoticed one."
+              exit 1
+              ;;
+          esac
