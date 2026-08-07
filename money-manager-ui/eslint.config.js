@@ -76,15 +76,27 @@ export default defineConfigWithVueTs(
       'vue/html-self-closing': 'off',
       'vue/html-closing-bracket-spacing': 'off',
 
-      // Real signal, but each needs a deliberate change rather than a reformat. Warnings for
-      // now; promote to error one at a time as each reaches zero.
-      'vue/attributes-order': 'warn',
-      'vue/multi-word-component-names': 'warn',
-      'vue/require-default-prop': 'warn',
-      'vue/require-explicit-emits': 'warn',
-      // Three components still have plain-JS script blocks, so they are not type-checked.
-      'vue/block-lang': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      // Two rules that do not fit this codebase, switched off rather than left as permanent
+      // warnings. A rule nobody intends to satisfy is indistinguishable from noise.
+      //
+      // require-default-prop predates <script setup lang="ts">. With type-based props, `label?:
+      // string` already says the prop is optional and undefined is its default; adding a runtime
+      // default would change behaviour to satisfy a linter. All 10 hits were the ui/ primitives
+      // doing the correct modern thing.
+      'vue/require-default-prop': 'off',
+      //
+      // multi-word-component-names exists to avoid colliding with current and future HTML
+      // elements. Badge, Dashboard, Login, Menu and Register do not collide, and renaming them
+      // would churn imports across the app for no defect caught.
+      'vue/multi-word-component-names': 'off',
+
+      // Kept on and now at zero. Left as errors below rather than warnings so a regression
+      // fails the build instead of joining a backlog.
+      'vue/attributes-order': 'error',
+      'vue/require-explicit-emits': 'error',
+      // Every component now has a typed script block. This is what keeps it that way.
+      'vue/block-lang': ['error', { script: { lang: 'ts' } }],
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
 

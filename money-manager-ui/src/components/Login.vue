@@ -6,7 +6,7 @@
         <div class="font-heading text-xl font-extrabold">Welcome back</div>
         <div class="text-sm text-text-muted">Good to see you — let's check your money.</div>
       </div>
-      <form @submit.prevent="handleLogin" class="flex flex-col gap-4">
+      <form class="flex flex-col gap-4" @submit.prevent="handleLogin">
         <BaseInput v-model="username" placeholder="Username" autocomplete="username" />
         <BaseInput v-model="password" type="password" placeholder="Password" autocomplete="current-password" />
         <BaseButton type="submit" block>Log in</BaseButton>
@@ -19,12 +19,15 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { login } from '../services/authService';
 import BaseInput from './ui/BaseInput.vue';
 import BaseButton from './ui/BaseButton.vue';
 
-export default {
+// defineComponent rather than a bare object literal: it is what gives `this` a type inside
+// data() and methods(). Without it `lang="ts"` compiles but checks almost nothing.
+export default defineComponent({
   components: { BaseInput, BaseButton },
   data() {
     return { username: '', password: '', error: '' };
@@ -39,5 +42,5 @@ export default {
         .catch(() => this.error = 'Invalid login');
     }
   }
-};
+});
 </script>

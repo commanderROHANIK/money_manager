@@ -6,7 +6,7 @@
       entering even if they are approximate.
     </p>
 
-    <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <form class="grid grid-cols-1 md:grid-cols-3 gap-3" @submit.prevent="submit">
       <BaseInput v-model="form.propertyName" placeholder="Name" class="md:col-span-2" required />
       <BaseSelect v-model.number="form.propertyType">
         <option v-for="(label, value) in PROPERTY_TYPE_LABELS" :key="value" :value="Number(value)">

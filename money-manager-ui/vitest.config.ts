@@ -21,10 +21,18 @@ export default defineConfig({
         // Type declarations only — covering them measures nothing.
         'src/models/**',
       ],
-      // No thresholds yet, deliberately. A floor picked before the baseline is known either
-      // sits below reality and gates nothing, or above it and teaches people to write
-      // assertion-free tests. Measure first, then set it just under the current number so it
-      // works as a regression detector.
+      // Set from the measured baseline (67.0 / 67.9 / 66.0 / 66.3 at the time of writing),
+      // rounded down a couple of points. Deliberately NOT an aspirational number: the job of a
+      // floor is to catch a pull request that deletes coverage, and a target nobody can hit
+      // just teaches people to write assertion-free tests to clear it.
+      //
+      // Raise these as part of any change that raises real coverage. That is the ratchet.
+      thresholds: {
+        statements: 64,
+        branches: 65,
+        functions: 63,
+        lines: 64,
+      },
     },
   },
 });

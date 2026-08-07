@@ -11,6 +11,11 @@
 # Promotion path: when a check here goes green and stays green, delete its job from this file and
 # add the equivalent step to the matching job in ci.yml. That promotes it to blocking without
 # touching branch protection, because the required check name (API / UI) does not change.
+#
+# Already promoted this way, and no longer here:
+#   Lint     -> `npm run lint` in ci.yml's UI job, once the tree reached 0 warnings.
+#   Coverage -> `npm run test:coverage` in the same job, with thresholds in vitest.config.ts.
+# The ratchet works. What remains below is what has not cleared yet.
 
 name: Quality
 
@@ -27,60 +32,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    defaults:
-      run:
-        working-directory: money-manager-ui
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: money-manager-ui/package-lock.json
-      - run: npm ci
-
-      # Errors already block here (the job fails); the warnings are the shrinking backlog.
-      # Promotion: when `npm run lint -- --max-warnings 0` passes, delete this job and add the
-      # step to the UI job in ci.yml. Required check names do not change, so branch protection
-      # needs no edit.
-      - run: npm run lint
-
-  coverage:
-    name: Coverage
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    defaults:
-      run:
-        working-directory: money-manager-ui
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: money-manager-ui/package-lock.json
-      - run: npm ci
-      - run: npm run test:coverage
-
-      # One number on the run summary, so "is this improving?" is answerable at a glance rather
-      # than by opening logs. An advisory check nobody can read at a glance becomes wallpaper.
-      # Heredoc delimiter is quoted so the shell expands nothing — the script is full of ${...}
-      # that belongs to JavaScript, not to bash.
-      - name: Report coverage
-        if: always()
-        run: |
-          cat > /tmp/summary.cjs <<'EOF'
-          const t = require(process.argv[2]).total;
-          const rows = ['statements', 'branches', 'functions', 'lines']
-            .map((k) => `| ${k} | ${t[k].pct}% | ${t[k].covered}/${t[k].total} |`);
-          console.log(['### UI coverage', '', '| Metric | % | Covered |', '|---|---|---|', ...rows].join('\n'));
-          EOF
-          node /tmp/summary.cjs "$PWD/coverage/coverage-summary.json" >> "$GITHUB_STEP_SUMMARY"
-
   format:
     name: Format
     runs-on: ubuntu-latest

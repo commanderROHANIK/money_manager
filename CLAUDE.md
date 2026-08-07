@@ -17,11 +17,11 @@ dotnet test app.sln                    # analytics calculator + tenant isolation
 
 cd money-manager-ui
 npm ci
-npm test                               # 82 tests: widget smoke, content, utils, services
+npm test                               # 125 tests
 npm run typecheck                      # vue-tsc -b
-npm run lint                           # errors fail; warnings are the known backlog
+npm run lint                           # --max-warnings 0: any new warning fails
 npm run lint:fix
-npm run test:coverage                  # baseline: ~61% statements
+npm run test:coverage                  # enforces the floor in vitest.config.ts
 ```
 
 Dev servers: API on `http://localhost:5296` (Swagger at `/swagger`, Development only), UI on
@@ -166,13 +166,17 @@ machine — CI checks for this drift.
 `.github/workflows/ci.yml` builds and tests both halves on every PR. Checks named **API** and
 **UI** block merge.
 
-`.github/workflows/quality.yml` runs **Lint**, **Coverage**, **Format** and **Migrations**.
-These are advisory: they fail visibly on the PR but are deliberately not in the required-check
-list, so they never block a merge. Each carries a comment describing how it gets promoted to
-blocking — which is by moving the step into the matching `ci.yml` job, so the required check
-names never change and branch protection never needs editing.
+The **UI** job also runs lint and coverage, both promoted out of the advisory workflow once the
+tree was clean. `npm run lint` uses `--max-warnings 0` and coverage enforces the thresholds in
+`vitest.config.ts`, so there is no warning backlog to hide in: any new finding fails the build.
 
-If a lint warning appears in a file you did not touch, leave it. Fix only what you changed.
+If you raise real coverage, raise the thresholds in the same change. That ratchet is the point —
+they are set just under measured reality to catch a regression, not as an aspiration.
+
+`.github/workflows/quality.yml` runs **Format** and **Migrations**. These are advisory: they fail
+visibly on the PR but are deliberately not in the required-check list, so they never block a
+merge. Promotion works by moving the step into the matching `ci.yml` job, so the required check
+names never change and branch protection never needs editing.
 
 The linter is worth trusting on one rule in particular. `vue/no-undef-components` catches a
 template using a component the script never imported — the defect that shipped in

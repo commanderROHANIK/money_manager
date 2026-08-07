@@ -59,6 +59,13 @@ jobs:
           cache-dependency-path: money-manager-ui/package-lock.json
       - run: npm ci
 
+      # Promoted from the advisory Quality workflow once the codebase reached zero findings.
+      # `npm run lint` carries --max-warnings 0, so a new warning fails here rather than joining
+      # a backlog. vue/no-undef-components is the rule that earns this its place: it catches a
+      # template using a component the script never imported, which vue-tsc and vite build both
+      # pass cleanly, and which has shipped broken in this repo before.
+      - run: npm run lint
+
       # Its own step so a type error reports as "Typecheck" rather than being buried in a failing
       # build. `npm run build` runs vue-tsc again, but incrementally against the tsbuildinfo this
       # step just wrote, so the second pass costs a couple of seconds.
@@ -70,4 +77,18 @@ jobs:
 
       # The build does not catch a template referencing a component the script never imported —
       # that only surfaces when the component is mounted. npm test mounts every widget.
-      - run: npm test
+      #
+      # Runs with coverage so the thresholds in vitest.config.ts apply: a change that deletes
+      # coverage fails here. Also promoted from the Quality workflow.
+      - run: npm run test:coverage
+
+      - name: Report coverage
+        if: always()
+        run: |
+          cat > /tmp/summary.cjs <<'EOF'
+          const t = require(process.argv[2]).total;
+          const rows = ['statements', 'branches', 'functions', 'lines']
+            .map((k) => `| ${k} | ${t[k].pct}% | ${t[k].covered}/${t[k].total} |`);
+          console.log(['### UI coverage', '', '| Metric | % | Covered |', '|---|---|---|', ...rows].join('\n'));
+          EOF
+          node /tmp/summary.cjs "$PWD/coverage/coverage-summary.json" >> "$GITHUB_STEP_SUMMARY"
