@@ -17,7 +17,7 @@ dotnet test app.sln                    # analytics calculator + tenant isolation
 
 cd money-manager-ui
 npm ci
-npm test                               # 125 tests
+npm test
 npm run typecheck                      # vue-tsc -b
 npm run lint                           # --max-warnings 0: any new warning fails
 npm run lint:fix

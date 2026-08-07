@@ -12,9 +12,13 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
  * that, statically, before anything has to be mounted. At 60 files Biome's speed edge is
  * irrelevant; that one rule is not.
  *
- * Severity is split deliberately. Rules that encode real bugs are errors from day one. Stylistic
- * rules start as warnings so the advisory Quality job reports a shrinking number instead of a
- * wall of red — see the promotion note in .github/workflows/quality.yml.
+ * Every rule here is an error, and `npm run lint` carries --max-warnings 0 in ci.yml's required
+ * UI job. Rules started as warnings while the initial backlog was cleared; that finished, so
+ * the warning tier is gone rather than left as a place for new findings to accumulate quietly.
+ *
+ * The rules that were switched off are switched off with a reason, below. A rule left permanently
+ * at "warn" that nobody intends to satisfy is indistinguishable from noise, and it is what makes
+ * --max-warnings 0 unreachable.
  */
 export default defineConfigWithVueTs(
   {
@@ -57,6 +61,11 @@ export default defineConfigWithVueTs(
       // by vue-router, so they are defined everywhere and must be excluded or the rule reports
       // six false positives and gets switched off by the first person who reads it.
       'vue/no-undef-components': ['error', { ignorePatterns: ['router-link', 'router-view'] }],
+
+      // Importing defineProps/defineEmits produces a compiler warning on every build and test
+      // run, which is the kind of persistent noise that trains people to ignore output. The
+      // build passes regardless, so only a linter catches it — the same argument as above.
+      'vue/no-import-compiler-macros': 'error',
 
       // tsconfig.app.json already sets noUnusedLocals and noUnusedParameters, and vue-tsc runs
       // in CI. Reporting the same finding from two tools teaches people to ignore both.

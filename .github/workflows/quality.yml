@@ -28,8 +28,10 @@
 name: Quality
 
 on:
-  push:
-    branches: [main]
+  # Pull requests only. The single job here is gated on `github.event_name == 'pull_request'`
+  # because labels exist only on pull requests, so a push trigger would queue a run whose only
+  # job always skips.
+  #
   # `labeled` and `unlabeled` are added on purpose. The default trigger types are opened,
   # synchronize and reopened, so without these the Gate changes job below could never go green:
   # adding the label it asks for would not re-run anything, and you would need an unrelated
@@ -54,8 +56,7 @@ jobs:
   # has to consciously add, which is the acknowledgement CODEOWNERS would otherwise force.
   gates:
     name: Gate changes
-    # Labels exist only on pull requests. On a push to main there is nothing left to acknowledge.
-    if: github.event_name == 'pull_request'
+    # No event guard needed: the workflow triggers on pull_request only, so this always applies.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

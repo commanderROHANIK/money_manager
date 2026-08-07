@@ -97,8 +97,12 @@ jobs:
       # coverage fails here. Also promoted from the Quality workflow.
       - run: npm run test:coverage
 
+      # Runs even when an earlier step failed, so a red build still reports its coverage — but
+      # only if the file exists. On a failure before the tests ran there is no summary to read,
+      # and require() would throw MODULE_NOT_FOUND, adding a second red step pointing at the
+      # wrong cause.
       - name: Report coverage
-        if: always()
+        if: always() && hashFiles('money-manager-ui/coverage/coverage-summary.json') != ''
         run: |
           cat > /tmp/summary.cjs <<'EOF'
           const t = require(process.argv[2]).total;

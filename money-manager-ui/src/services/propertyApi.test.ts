@@ -31,11 +31,10 @@ afterEach(() => {
 
 const PROPERTY_ID = 7;
 
-describe('request shapes', () => {
-  it.each([
-    // [name, method, url, call] — the name and the two strings feed the %s placeholders in the
-    // title, so a failure reads "fetchRentHistory issues get /RentalProperties/7/rent-history"
-    // rather than printing the closure source.
+// [name, method, url, call] — the name and the two strings feed the %s placeholders in the
+// title, so a failure reads "fetchRentHistory issues get /RentalProperties/7/rent-history"
+// rather than printing the closure source.
+const CALLS: [string, string, string, () => Promise<unknown>][] = [
     ['createProperty', 'post', '/RentalProperties',
       () => p.createProperty({} as p.RentalPropertyRequest)],
     ['updateProperty', 'put', '/RentalProperties/7',
@@ -66,7 +65,13 @@ describe('request shapes', () => {
       () => p.createValuation(PROPERTY_ID, '2026-01-01', 100)],
     ['fetchPropertyEvents', 'get', '/RentalProperties/7/events',
       () => p.fetchPropertyEvents(PROPERTY_ID)],
-  ])('%s issues %s %s', async (_name, method, url, call) => {
+];
+
+/** Drives the completeness check below, from the same table the assertions use. */
+const PINNED_NAMES = CALLS.map(([name]) => name);
+
+describe('request shapes', () => {
+  it.each(CALLS)('%s issues %s %s', async (_name, method, url, call) => {
     await call();
 
     expect(seen.method).toBe(method);
@@ -74,13 +79,15 @@ describe('request shapes', () => {
   });
 
   it('covers every exported function', () => {
-    // Guards the table above against drift: a function added to the service without a row here
-    // would otherwise be silently unpinned.
+    // Compares names, not a count. A count passes when one function is added and another
+    // removed in the same commit, and it never checks the table it claims to guard — so it
+    // would have missed exactly the drift it exists to catch.
     const exported = Object.entries(p)
       .filter(([, v]) => typeof v === 'function')
-      .map(([k]) => k);
+      .map(([name]) => name)
+      .sort();
 
-    expect(exported.length).toBe(15);
+    expect(exported).toEqual([...PINNED_NAMES].sort());
   });
 });
 

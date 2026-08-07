@@ -8,10 +8,21 @@
 import { describe, it, expect } from 'vitest';
 import { formatMoney, sumSameCurrency } from './money';
 
+/**
+ * The expected digits, grouped the way the ambient locale groups them.
+ *
+ * formatMoney deliberately passes `undefined` as the locale so it follows the user's, which
+ * means a hardcoded '240,000' only holds where the separator happens to be a comma. Asserting
+ * a computed expectation keeps the test about the function instead of about the machine it
+ * runs on — under de-DE the same call produces '240.000'.
+ */
+const localised = (value: number, options: Intl.NumberFormatOptions = {}) =>
+  value.toLocaleString(undefined, { maximumFractionDigits: 0, ...options });
+
 describe('formatMoney', () => {
   it('renders an amount in its own currency', () => {
-    expect(formatMoney(240000, 'HUF')).toContain('240,000');
-    expect(formatMoney(1234.5, 'EUR')).toContain('1,235');
+    expect(formatMoney(240000, 'HUF')).toContain(localised(240000));
+    expect(formatMoney(1234.5, 'EUR')).toContain(localised(1234.5));
   });
 
   it('treats a missing amount as zero rather than blanking the widget', () => {
@@ -22,8 +33,17 @@ describe('formatMoney', () => {
   });
 
   it('defaults to whole units and lets the caller opt back into decimals', () => {
-    expect(formatMoney(1234.56, 'EUR')).not.toContain('.56');
-    expect(formatMoney(1234.56, 'EUR', { maximumFractionDigits: 2 })).toContain('.56');
+    // Compared against locale-computed forms rather than a literal '.56', since the decimal
+    // separator is a comma in much of Europe.
+    expect(formatMoney(1234.56, 'EUR')).toContain(localised(1234.56));
+    expect(formatMoney(1234.56, 'EUR', { maximumFractionDigits: 2 })).toContain(
+      localised(1234.56, { maximumFractionDigits: 2 })
+    );
+
+    // And the two are genuinely different, which is what "defaults to whole units" means.
+    expect(formatMoney(1234.56, 'EUR')).not.toEqual(
+      formatMoney(1234.56, 'EUR', { maximumFractionDigits: 2 })
+    );
   });
 
   it('upcases the currency code', () => {
@@ -41,7 +61,8 @@ describe('formatMoney', () => {
     // exercising the catch block if it used one of those.
     const formatted = formatMoney(1500, 'ABCD');
 
-    expect(formatted).toContain('1,500');
+    // The fallback calls toLocaleString() with no options, so match that exactly.
+    expect(formatted).toContain((1500).toLocaleString());
     expect(formatted).toContain('ABCD');
   });
 });

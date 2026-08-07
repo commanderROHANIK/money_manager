@@ -60,8 +60,12 @@ describe('PropertyMetricsWidget', () => {
 
     const text = wrapper.text();
 
+    // formatPercent uses toFixed, which is locale-independent, so a literal is safe here.
     expect(text).toContain('22.3%'); // totalRoi 0.223
-    expect(text).toContain('43,333'); // monthlyCashFlow
+
+    // Money is not: formatMoney follows the ambient locale, so this is '43,333' under en-US
+    // and '43.333' under de-DE. Compute the expectation rather than hardcoding the separator.
+    expect(text).toContain((43333).toLocaleString(undefined, { maximumFractionDigits: 0 }));
   });
 });
 

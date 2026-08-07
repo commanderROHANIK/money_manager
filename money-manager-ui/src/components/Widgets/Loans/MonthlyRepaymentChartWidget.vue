@@ -11,7 +11,7 @@ import type {
   ChartData,
   ChartOptions
 } from 'chart.js';
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
 import { chartCategoricalPalette, chartColors } from '../../../utils/chartTheme';
 
