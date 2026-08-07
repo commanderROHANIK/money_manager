@@ -63,7 +63,7 @@ jobs:
       # fetch-depth: 0 is load-bearing. The default checkout is shallow, so `origin/<base>` is
       # either missing or stale, and a three-dot diff against a stale base silently reports
       # files the pull request never touched.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
