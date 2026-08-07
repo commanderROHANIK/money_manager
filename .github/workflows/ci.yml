@@ -39,9 +39,24 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      - run: dotnet tool restore
       - run: dotnet restore app.sln
       - run: dotnet build app.sln --no-restore --configuration Release
       - run: dotnet test app.sln --no-build --configuration Release --verbosity normal
+
+      # Promoted from the advisory Quality workflow after five consecutive green runs.
+      #
+      # `style` rather than `whitespace`: whitespace-only reformatting of a codebase with a
+      # consistent hand style buys nothing and destroys git blame.
+      - run: dotnet format style app.sln --verify-no-changes --no-restore
+
+      # The cheapest high-value check here. Editing an entity or OnModelCreating without
+      # generating a migration produces a completely green build and then fails at runtime on
+      # someone else's machine — Database.Migrate() only applies the migration files that exist,
+      # so a stale model just means EF's queries quietly drift from the schema. Nothing else
+      # catches it, including the tests.
+      - name: Check for model changes with no migration
+        run: dotnet ef migrations has-pending-model-changes --project MoneyManager.Api
 
   ui:
     name: UI

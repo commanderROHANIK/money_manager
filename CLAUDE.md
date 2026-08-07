@@ -173,10 +173,15 @@ tree was clean. `npm run lint` uses `--max-warnings 0` and coverage enforces the
 If you raise real coverage, raise the thresholds in the same change. That ratchet is the point —
 they are set just under measured reality to catch a regression, not as an aspiration.
 
-`.github/workflows/quality.yml` runs **Gate changes**, **Format** and **Migrations**. These are
-advisory: they fail visibly on the PR but are deliberately not in the required-check list, so
-they never block a merge. Promotion works by moving the step into the matching `ci.yml` job, so
-the required check names never change and branch protection never needs editing.
+The **API** job also runs `dotnet format style --verify-no-changes` and
+`dotnet ef migrations has-pending-model-changes`. The second is the one that matters most:
+editing an entity without generating a migration is green through build *and* test, and only
+fails at runtime on someone else's machine.
+
+`.github/workflows/quality.yml` runs one advisory check, **Gate changes**. It fails visibly on
+the PR but is deliberately not a required check. Everything else that started there has been
+promoted into `ci.yml` by moving the step into the matching job — which is why the required
+check names are still just `API` and `UI`, and branch protection has never needed editing.
 
 **If your change touches `.github/`, `.claude/`, `Directory.Build.props` or `eslint.config.js`,
 add the `ci-change` label to the PR.** Those paths are the checks themselves, and a change that

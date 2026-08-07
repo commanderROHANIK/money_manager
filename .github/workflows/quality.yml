@@ -13,9 +13,17 @@
 # touching branch protection, because the required check name (API / UI) does not change.
 #
 # Already promoted this way, and no longer here:
-#   Lint     -> `npm run lint` in ci.yml's UI job, once the tree reached 0 warnings.
-#   Coverage -> `npm run test:coverage` in the same job, with thresholds in vitest.config.ts.
-# The ratchet works. What remains below is what has not cleared yet.
+#   Lint       -> `npm run lint` in ci.yml's UI job, once the tree reached 0 warnings.
+#   Coverage   -> `npm run test:coverage` in the same job, thresholds in vitest.config.ts.
+#   Format     -> `dotnet format style --verify-no-changes` in the API job.
+#   Migrations -> `dotnet ef migrations has-pending-model-changes` in the API job.
+#
+# The "Count build warnings" step went with them and was then dropped: TreatWarningsAsErrors is
+# true, so a warning fails the build outright and a separate count of it is always zero.
+#
+# Everything measured has now cleared, which is what the ratchet was for. What remains is the
+# one check that is advisory by design rather than by readiness — acknowledging a change to the
+# gates is a judgement call, so it should be visible without being a merge blocker.
 
 name: Quality
 
@@ -87,75 +95,3 @@ jobs:
               exit 1
               ;;
           esac
-
-  format:
-    name: Format
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-          restore-keys: nuget-${{ runner.os }}-
-
-      - run: dotnet restore app.sln
-
-      # `style` rather than `whitespace`: whitespace-only reformatting of a codebase with a
-      # consistent hand style buys nothing and destroys git blame.
-      - run: dotnet format style app.sln --verify-no-changes --no-restore
-
-      # Kept as a trend line, not a gate. The first run reported zero warnings, which is what
-      # allowed TreatWarningsAsErrors to go straight to true in Directory.Build.props — so the
-      # real enforcement now lives in the required API job, and any regression fails there.
-      # This step stays because a visible number is what stops an advisory check from becoming
-      # wallpaper, and it still reports if the count ever moves.
-      - name: Count build warnings
-        if: always()
-        run: |
-          dotnet build app.sln --no-restore 2>&1 | tee /tmp/build.log || true
-          {
-            echo '### C# build warnings'
-            echo ''
-            echo "Total: $(grep -c 'warning CS' /tmp/build.log || echo 0)"
-            echo ''
-            echo '```'
-            grep -o 'warning CS[0-9]*' /tmp/build.log | sort | uniq -c | sort -rn || true
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  migrations:
-    name: Migrations
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-          restore-keys: nuget-${{ runner.os }}-
-
-      - run: dotnet tool restore
-      - run: dotnet restore app.sln
-
-      # Editing an entity or OnModelCreating without generating a migration produces a fully
-      # green build and then fails at runtime on someone else's machine. Nothing else catches
-      # it: Database.Migrate() only applies the migration files that exist, so a stale model
-      # just means EF's queries quietly drift from the schema.
-      #
-      # Advisory for now because this command can report spuriously across EF patch versions.
-      # Promote it into the API job in ci.yml once it has proven stable.
-      - name: Check for model changes with no migration
-        run: dotnet ef migrations has-pending-model-changes --project MoneyManager.Api
