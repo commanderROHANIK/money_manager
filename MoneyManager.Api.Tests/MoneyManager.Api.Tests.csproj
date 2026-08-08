@@ -8,18 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.18" />
     <!-- Hosts the real app in-process for the Integration/ suite. Deliberately not paired with
          an explicit Microsoft.IdentityModel.Tokens reference: the whole point of those tests is
          to exercise the package set JwtBearer resolves on its own, so pinning it here would
-         defeat the check the same way pinning it in the API project would. -->
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
+         defeat the check the same way pinning it in the API project would. Kept in step with the
+         ASP.NET Core version the API project references, so the test host and the app under test
+         load one set of assemblies. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.18" />
   </ItemGroup>
 
   <ItemGroup>
