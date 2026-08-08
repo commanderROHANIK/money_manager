@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
+using MoneyManager.Api.Services.Currency;
 
 namespace MoneyManager.Api.Controllers
 {
@@ -14,11 +15,16 @@ namespace MoneyManager.Api.Controllers
     {
         private readonly MoneyManagerDbContext _context;
         private readonly PropertyAnalyticsService _analytics;
+        private readonly CurrencyRollupService _rollups;
 
-        public RentalPropertiesController(MoneyManagerDbContext context, PropertyAnalyticsService analytics)
+        public RentalPropertiesController(
+            MoneyManagerDbContext context,
+            PropertyAnalyticsService analytics,
+            CurrencyRollupService rollups)
         {
             _context = context;
             _analytics = analytics;
+            _rollups = rollups;
         }
 
         [HttpGet]
@@ -60,15 +66,24 @@ namespace MoneyManager.Api.Controllers
         }
 
         /// <summary>
-        /// Per-property metrics for the whole portfolio, plus totals. Totals are only summed
-        /// across properties sharing a currency; mixed portfolios report which currencies
-        /// are present rather than adding unlike amounts together.
+        /// Per-property metrics for the whole portfolio, plus totals. A portfolio spanning
+        /// currencies is totalled by converting each property into the owner's base currency at
+        /// the rates they have entered; a pair with no rate leaves the affected totals null and
+        /// says which rate is missing, rather than adding unlike amounts together.
+        ///
+        /// <para>
+        /// Conversion happens here, at the rollup, and nowhere else. The per-property metrics in
+        /// <c>Properties</c> are passed through exactly as the calculator produced them, in each
+        /// property's own currency — adding a rate never changes a single property's figures.
+        /// </para>
         /// </summary>
         [HttpGet("analytics/portfolio")]
         public async Task<ActionResult<PortfolioAnalyticsDto>> GetPortfolioAnalytics([FromQuery] DateTime? asOf = null)
         {
             var all = await _analytics.GetForAllAsync(asOf);
-            return Ok(PortfolioAnalyticsDto.From(all));
+            var rollup = await _rollups.LoadAsync();
+
+            return Ok(PortfolioAnalyticsDto.From(all, rollup));
         }
 
         [HttpPost]
@@ -251,6 +266,23 @@ namespace MoneyManager.Api.Controllers
         }
     }
 
+    /// <summary>
+    /// Portfolio totals and how they were arrived at.
+    ///
+    /// <para>
+    /// <c>Currency</c> always names the unit the <c>Total*</c> figures are expressed in — the
+    /// shared currency when the portfolio has one, the owner's base currency when the figures had
+    /// to be converted to exist at all. There is deliberately no second, parallel set of
+    /// "converted" totals: one number per metric, and one field saying what unit it is in, is
+    /// what stops a caller rendering EUR figures under a HUF label.
+    /// </para>
+    /// <para>
+    /// <c>MixedCurrency</c> says the portfolio spans currencies; <c>Converted</c> says a rate was
+    /// applied to produce these totals. They are not the same question, and the UI needs both:
+    /// the first explains why conversion was necessary, the second is what has to be shown to the
+    /// user next to the number.
+    /// </para>
+    /// </summary>
     public record PortfolioAnalyticsDto(
         IReadOnlyList<PropertyMetrics> Properties,
         int PropertyCount,
@@ -261,48 +293,74 @@ namespace MoneyManager.Api.Controllers
         decimal? TotalEquity,
         decimal? TotalMonthlyCashFlow,
         decimal? TotalAnnualRentUplift,
-        decimal? PortfolioRoi)
+        decimal? PortfolioRoi,
+        string BaseCurrency,
+        bool Converted,
+        IReadOnlyList<CurrencyPair> MissingRates,
+        IReadOnlyList<AppliedRate> AppliedRates,
+        IReadOnlyList<MetricWarning> Warnings)
     {
-        public static PortfolioAnalyticsDto From(IReadOnlyList<PropertyMetrics> metrics)
+        public static PortfolioAnalyticsDto From(IReadOnlyList<PropertyMetrics> metrics, RollupContext rollup)
         {
-            var currencies = metrics.Select(m => m.CurrencyCode).Distinct().ToList();
-            var mixed = currencies.Count > 1;
+            var currencies = metrics.Select(m => m.CurrencyCode).Distinct(StringComparer.Ordinal).ToList();
 
-            // Adding amounts in different currencies would produce a confident nonsense
-            // number. Until exchange rates land, say so instead.
-            if (mixed || metrics.Count == 0)
+            if (metrics.Count == 0)
             {
                 return new PortfolioAnalyticsDto(
-                    metrics, metrics.Count, mixed ? null : currencies.FirstOrDefault(),
-                    mixed, null, null, null, null, null, null);
+                    metrics, 0, null, false, null, null, null, null, null, null,
+                    rollup.BaseCurrency, false, [], [], []);
             }
 
-            var invested = SumOrNull(metrics.Select(m => m.CashInvested));
-            var equity = SumOrNull(metrics.Select(m => m.Equity));
-            var cashFlow = SumOrNull(metrics.Select(m => m.MonthlyCashFlow));
-            var netCashFlow = SumOrNull(metrics.Select(m => m.CumulativeNetCashFlow)) ?? 0m;
+            var target = rollup.ResolveTarget(currencies);
+            var converted = currencies.Any(c => !string.Equals(c, target, StringComparison.OrdinalIgnoreCase));
 
-            decimal? roi = invested is > 0 && equity is not null
-                ? Math.Round((equity.Value + netCashFlow - invested.Value) / invested.Value, 4)
+            var missingRates = CurrencyRollup.MissingRates(currencies, rollup.Rates, target);
+
+            var invested = Total(metrics, m => m.CashInvested, rollup, target);
+            var equity = Total(metrics, m => m.Equity, rollup, target);
+            var netCashFlow = Total(metrics, m => m.CumulativeNetCashFlow, rollup, target);
+
+            // ROI is a ratio, so it is recomputed from converted components rather than being
+            // converted itself — multiplying a percentage by an exchange rate is nonsense. A
+            // blocked leg makes the whole ratio unknowable: the pre-existing `?? 0m` below is
+            // only safe for a portfolio that genuinely recorded no cash flow, never for one whose
+            // cash flow could not be expressed in this currency.
+            decimal? roi = !netCashFlow.Blocked && invested.Amount is > 0 && equity.Amount is { } equityAmount
+                ? Math.Round(
+                    (equityAmount + (netCashFlow.Amount ?? 0m) - invested.Amount.Value) / invested.Amount.Value,
+                    4)
                 : null;
+
+            var warnings = new List<MetricWarning>();
+            if (missingRates.Count > 0)
+                warnings.Add(CurrencyRollup.MissingRateWarning(missingRates));
 
             return new PortfolioAnalyticsDto(
                 metrics,
                 metrics.Count,
-                currencies.FirstOrDefault(),
-                false,
-                invested,
-                SumOrNull(metrics.Select(m => m.CurrentValue)),
-                equity,
-                cashFlow,
-                SumOrNull(metrics.Select(m => m.AnnualRentUplift)),
-                roi);
+                target,
+                currencies.Count > 1,
+                invested.Amount,
+                Total(metrics, m => m.CurrentValue, rollup, target).Amount,
+                equity.Amount,
+                Total(metrics, m => m.MonthlyCashFlow, rollup, target).Amount,
+                Total(metrics, m => m.AnnualRentUplift, rollup, target).Amount,
+                roi,
+                rollup.BaseCurrency,
+                converted,
+                missingRates,
+                CurrencyRollup.AppliedRates(currencies, rollup.Rates, target),
+                warnings);
         }
 
-        private static decimal? SumOrNull(IEnumerable<decimal?> values)
-        {
-            var present = values.Where(v => v is not null).Select(v => v!.Value).ToList();
-            return present.Count == 0 ? null : Math.Round(present.Sum(), 2);
-        }
+        private static RollupTotal Total(
+            IReadOnlyList<PropertyMetrics> metrics,
+            Func<PropertyMetrics, decimal?> select,
+            RollupContext rollup,
+            string target) =>
+            CurrencyRollup.Sum(
+                metrics.Select(m => (select(m), m.CurrencyCode)),
+                rollup.Rates,
+                target);
     }
 }

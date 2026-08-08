@@ -140,6 +140,12 @@ public sealed class TenantIsolationTests : IDisposable
             asAlice.PropertyValuations.Add(new PropertyValuation { RentalPropertyId = propertyId, Value = 200_000 });
             asAlice.RentPricePoints.Add(new RentPricePoint { RentalPropertyId = propertyId, Amount = 1000 });
             asAlice.PropertyEvents.Add(new PropertyEvent { RentalPropertyId = propertyId, Title = "Bought" });
+            asAlice.ExchangeRates.Add(new ExchangeRate
+            {
+                BaseCurrency = "EUR",
+                QuoteCurrency = "HUF",
+                Rate = 400m,
+            });
             asAlice.SaveChanges();
         }
 
@@ -154,6 +160,7 @@ public sealed class TenantIsolationTests : IDisposable
         Assert.Empty(asBob.PropertyValuations.ToList());
         Assert.Empty(asBob.RentPricePoints.ToList());
         Assert.Empty(asBob.PropertyEvents.ToList());
+        Assert.Empty(asBob.ExchangeRates.ToList());
     }
 
     [Fact]

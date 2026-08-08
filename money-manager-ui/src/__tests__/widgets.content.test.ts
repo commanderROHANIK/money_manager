@@ -70,18 +70,45 @@ describe('PropertyMetricsWidget', () => {
 });
 
 describe('PortfolioSummaryWidget', () => {
-  it('refuses to total a portfolio spanning currencies, and says why', () => {
+  it('refuses to total a portfolio spanning currencies with no rate, and names the pair', () => {
     // Adding HUF to EUR without a rate produces a plausible, unlabelled, wrong number. The API
-    // returns nulls and mixedCurrency; the UI has to explain rather than render a total.
+    // returns nulls; the UI has to say which rate would fix it rather than invent a figure.
+    //
+    // This assertion used to require the tiles be hidden entirely, which is what the widget did
+    // when no total could ever exist. Now that a rate can produce one, the tiles stay and show
+    // the same em dash every other unknown figure in this product shows.
     const wrapper = mount(PortfolioSummaryWidget, {
       props: { portfolio: f.portfolioMixedCurrency as unknown as PortfolioAnalytics },
     });
 
     const text = wrapper.text();
 
-    expect(text).toContain('several currencies');
-    expect(text).not.toContain('Cash invested');
-    expect(text).not.toContain('Portfolio ROI');
+    expect(text).toContain('HUF → EUR');
+    expect(text).toContain('Cash invested—');
+    expect(text).not.toContain('Cash invested0');
+  });
+
+  it('labels converted totals as converted, and shows the rate they came from', () => {
+    // The caveat is not decoration. A converted total is derived from a number the user typed in
+    // themselves, and has to read differently from a figure that came out of the ledger.
+    const wrapper = mount(PortfolioSummaryWidget, {
+      props: { portfolio: f.portfolioConverted as unknown as PortfolioAnalytics },
+    });
+
+    const text = wrapper.text();
+
+    expect(text).toContain('Converted to EUR');
+    expect(text).toContain('1 HUF = 0.0025 EUR');
+    expect(text).toContain('2026-07-01');
+    expect(text).not.toContain('No exchange rate on record');
+  });
+
+  it('says nothing about conversion when the portfolio never needed it', () => {
+    const wrapper = mount(PortfolioSummaryWidget, {
+      props: { portfolio: f.portfolio as unknown as PortfolioAnalytics },
+    });
+
+    expect(wrapper.text()).not.toContain('Converted to');
   });
 
   it('totals a single-currency portfolio', () => {

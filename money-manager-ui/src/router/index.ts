@@ -7,6 +7,7 @@ import PropertiesView from '../components/RentalPropertyPage.vue';
 import PropertyDetailView from '../components/PropertyDetailPage.vue';
 import StocksView from '../components/StockPage.vue';
 import EventsView from '../components/UpcomingEvents.vue';
+import SettingsView from '../components/SettingsPage.vue';
 
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
@@ -26,6 +27,7 @@ const routes = [
   },
   { path: '/stocks', name: 'Stocks', component: StocksView, meta: { requiresAuth: true } },
   { path: '/events', name: 'Events', component: EventsView, meta: { requiresAuth: true } },
+  { path: '/settings', name: 'Settings', component: SettingsView, meta: { requiresAuth: true } },
 
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register }

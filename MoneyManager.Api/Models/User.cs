@@ -19,6 +19,19 @@ namespace MoneyManager.Api.Models
         /// <summary>ISO 4217 code that consolidated portfolio totals are reported in.</summary>
         public string BaseCurrency { get; set; } = "EUR";
 
+        /// <summary>
+        /// Whether rollups convert into <see cref="BaseCurrency"/> even when everything already
+        /// shares one currency.
+        ///
+        /// <para>
+        /// Off by default, and that default is deliberate: a landlord whose properties are all in
+        /// HUF gets exact totals with no exchange rate on record at all, and only starts needing
+        /// rates once their portfolio genuinely spans currencies. Turning it on reports
+        /// everything in one unit at the cost of needing a rate for each currency held.
+        /// </para>
+        /// </summary>
+        public bool AlwaysConvertToBaseCurrency { get; set; }
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

@@ -36,6 +36,8 @@ namespace MoneyManager.Api.Data
 
         public DbSet<PropertyEvent> PropertyEvents { get; set; }
 
+        public DbSet<ExchangeRate> ExchangeRates { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -61,6 +63,7 @@ namespace MoneyManager.Api.Data
             ConfigureOwnership<PropertyValuation>(modelBuilder);
             ConfigureOwnership<RentPricePoint>(modelBuilder);
             ConfigureOwnership<PropertyEvent>(modelBuilder);
+            ConfigureOwnership<ExchangeRate>(modelBuilder);
 
             modelBuilder.Entity<RentalProperty>(entity =>
             {
@@ -126,6 +129,17 @@ namespace MoneyManager.Api.Data
             modelBuilder.Entity<PropertyEvent>(entity =>
             {
                 entity.HasIndex(e => new { e.RentalPropertyId, e.OccurredOn });
+            });
+
+            modelBuilder.Entity<ExchangeRate>(entity =>
+            {
+                entity.Property(r => r.BaseCurrency).HasMaxLength(3);
+                entity.Property(r => r.QuoteCurrency).HasMaxLength(3);
+
+                // One rate per pair per user. The endpoint upserts against this, so there is
+                // never a second row for the same pair to disagree with the first — which for a
+                // hand-maintained rate table is the failure that actually happens.
+                entity.HasIndex(r => new { r.UserId, r.BaseCurrency, r.QuoteCurrency }).IsUnique();
             });
         }
 

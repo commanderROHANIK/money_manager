@@ -226,6 +226,32 @@ export interface PropertyMetrics {
     warnings: MetricWarning[];
 }
 
+/** A pair the server could not convert, so the UI can name the rate that is missing. */
+export interface CurrencyPair {
+    from: string;
+    to: string;
+}
+
+/**
+ * A rate a total was actually built with. `asOf` is null only for the identity conversion, and
+ * `inverted` means it was read backwards off a row entered the other way round.
+ */
+export interface AppliedRate {
+    from: string;
+    to: string;
+    rate: number;
+    asOf: string | null;
+    inverted: boolean;
+}
+
+/**
+ * `currency` always names the unit the `total*` figures are in — the shared currency when the
+ * portfolio has one, the owner's base currency when they had to be converted to exist at all.
+ *
+ * `mixedCurrency` says the portfolio spans currencies; `converted` says a rate was applied.
+ * They answer different questions: the first is why conversion was needed, the second is what
+ * has to be shown next to the number.
+ */
 export interface PortfolioAnalytics {
     properties: PropertyMetrics[];
     propertyCount: number;
@@ -237,6 +263,52 @@ export interface PortfolioAnalytics {
     totalMonthlyCashFlow: number | null;
     totalAnnualRentUplift: number | null;
     portfolioRoi: number | null;
+    baseCurrency: string;
+    converted: boolean;
+    missingRates: CurrencyPair[];
+    appliedRates: AppliedRate[];
+    warnings: MetricWarning[];
+}
+
+/** What is held in one currency. Always exact — no rate is involved in a subtotal. */
+export interface CurrencyTotal {
+    currencyCode: string;
+    total: number;
+}
+
+/**
+ * `byCurrency` is the part that is always true. When a rate is missing `totalBalance` is null
+ * rather than approximate, and the breakdown still says exactly what is held.
+ */
+export interface BankBalanceSummary {
+    totalBalance: number | null;
+    currency: string;
+    mixedCurrency: boolean;
+    converted: boolean;
+    baseCurrency: string;
+    byCurrency: CurrencyTotal[];
+    missingRates: CurrencyPair[];
+    appliedRates: AppliedRate[];
+    warnings: MetricWarning[];
+}
+
+export enum ExchangeRateSource {
+    Manual = 0,
+}
+
+/** `rate` reads as "one baseCurrency buys this many quoteCurrency". */
+export interface ExchangeRate {
+    id: number;
+    baseCurrency: string;
+    quoteCurrency: string;
+    rate: number;
+    asOf: string;
+    source: ExchangeRateSource;
+}
+
+export interface Settings {
+    baseCurrency: string;
+    alwaysConvertToBaseCurrency: boolean;
 }
 
 export interface UpcomingEvent {
