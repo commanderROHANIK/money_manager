@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { UpcomingEvent } from '../models/models';
-import type { BankAccount } from '../models/models';
+import type { BankAccount, BankBalanceSummary } from '../models/models';
 import type { Loan } from '../models/models';
 import type { RentalProperty } from '../models/models';
 import type { Stock } from '../models/models';
@@ -71,9 +71,15 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
     return response.data;
   }
 
-  export async function fetchBankAccountsTotalBalance(): Promise<number | null> {
-    const response = await api.get<{ totalBalance: number }>('/BankAccounts/summary/total-balance');
-    return response.data?.totalBalance ?? null;
+  /**
+   * Returns the whole summary rather than a bare number, because a bare number could not say
+   * what currency it was in. The endpoint used to add balances across currencies and report the
+   * result as if it meant something; now the caller gets the per-currency breakdown, the unit
+   * the headline figure is in, and a null headline when no rate could produce one.
+   */
+  export async function fetchBankAccountsTotalBalance(): Promise<BankBalanceSummary> {
+    const response = await api.get<BankBalanceSummary>('/BankAccounts/summary/total-balance');
+    return response.data;
   }
 
   export async function createBankAccount(newBankAccount: BankAccount): Promise<BankAccount> {

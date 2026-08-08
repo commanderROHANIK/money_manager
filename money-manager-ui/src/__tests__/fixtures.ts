@@ -63,6 +63,7 @@ export const portfolio = {
   propertyCount: 3, currency: 'HUF', mixedCurrency: false,
   totalInvested: 188500000, totalCurrentValue: 231000000, totalEquity: 142400000,
   totalMonthlyCashFlow: 128000, totalAnnualRentUplift: 852000, portfolioRoi: 0.187,
+  baseCurrency: 'EUR', converted: false, missingRates: [], appliedRates: [], warnings: [],
 };
 
 /**
@@ -88,15 +89,72 @@ export const propertyMetricsUnknown = {
 };
 
 /**
- * A portfolio spanning two currencies. Totals are null and `mixedCurrency` is true, because
- * adding HUF to EUR without a rate produces a plausible wrong number — the API refuses, and the
- * UI has to say so rather than render a total.
+ * A portfolio spanning two currencies with no rate on record. Every total is null, because adding
+ * HUF to EUR without a rate produces a plausible wrong number — the API refuses, names the pair
+ * it would need, and the UI has to say so rather than render a total.
  */
+const viennaFlat = metric({
+  propertyId: 5, propertyName: 'Vienna flat', currencyCode: 'EUR',
+  totalInvested: 300000, cashInvested: 60000, currentValue: 320000, equity: 150000,
+  monthlyCashFlow: 240, cumulativeNetCashFlow: 8000, annualRentUplift: 1200,
+});
+
 export const portfolioMixedCurrency = {
-  properties: [propertyMetrics, metric({ propertyId: 5, propertyName: 'Vienna flat', currencyCode: 'EUR' })],
-  propertyCount: 2, currency: null, mixedCurrency: true,
+  properties: [propertyMetrics, viennaFlat],
+  propertyCount: 2, currency: 'EUR', mixedCurrency: true,
   totalInvested: null, totalCurrentValue: null, totalEquity: null,
   totalMonthlyCashFlow: null, totalAnnualRentUplift: null, portfolioRoi: null,
+  baseCurrency: 'EUR', converted: false,
+  missingRates: [{ from: 'HUF', to: 'EUR' }],
+  appliedRates: [],
+  warnings: [
+    { code: 'missing_exchange_rate', message: 'No exchange rate on record for HUF→EUR, so totals spanning those currencies cannot be worked out. Add the rate in Settings and they will appear.' },
+  ],
+};
+
+/**
+ * The same portfolio once a HUF→EUR rate exists: totals are real, expressed in the base currency,
+ * and carry the rate that produced them so the UI can show its working.
+ *
+ * The figures are the ones the server would actually return, at 1 EUR = 400 HUF — so the HUF flat
+ * converts at 0.0025 and, for example, invested is 18,600,000 × 0.0025 + 60,000 = 106,500. A
+ * fixture whose numbers do not follow from its own inputs teaches the next person to read past it.
+ */
+export const portfolioConverted = {
+  ...portfolioMixedCurrency,
+  currency: 'EUR', converted: true,
+  totalInvested: 106500, totalCurrentValue: 505000, totalEquity: 273000,
+  totalMonthlyCashFlow: 348.33, totalAnnualRentUplift: 2550, portfolioRoi: 1.6817,
+  missingRates: [],
+  appliedRates: [{ from: 'HUF', to: 'EUR', rate: 0.0025, asOf: iso('2026-07-01'), inverted: true }],
+  warnings: [],
+};
+
+export const exchangeRates = [
+  { id: 1, baseCurrency: 'EUR', quoteCurrency: 'HUF', rate: 400, asOf: iso('2026-07-01'), source: 0 },
+  { id: 2, baseCurrency: 'GBP', quoteCurrency: 'HUF', rate: 462.5, asOf: iso('2026-06-15'), source: 0 },
+];
+
+export const settings = { baseCurrency: 'HUF', alwaysConvertToBaseCurrency: false };
+
+/** Every account in one currency: an exact total, no rate involved. */
+export const bankBalanceSummary = {
+  totalBalance: 2358350, currency: 'HUF', mixedCurrency: false, converted: false,
+  baseCurrency: 'HUF',
+  byCurrency: [{ currencyCode: 'HUF', total: 2358350 }],
+  missingRates: [], appliedRates: [], warnings: [],
+};
+
+/** Accounts spanning currencies with no rate: the breakdown is still exact, the headline is not knowable. */
+export const bankBalanceSummaryUnconvertible = {
+  ...bankBalanceSummary,
+  totalBalance: null, currency: 'EUR', mixedCurrency: true, baseCurrency: 'EUR',
+  byCurrency: [
+    { currencyCode: 'EUR', total: 1200 },
+    { currencyCode: 'HUF', total: 2358350 },
+  ],
+  missingRates: [{ from: 'HUF', to: 'EUR' }],
+  warnings: [{ code: 'missing_exchange_rate', message: 'No exchange rate on record for HUF→EUR.' }],
 };
 
 export const transactions = [

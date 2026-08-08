@@ -35,7 +35,7 @@ vi.mock('../services/api', async () => {
   deleteUpcomingEvent: () => Promise.resolve(),
   createUpcomingEvent: () => Promise.resolve(f.upcomingEvents[0]),
   fetchBankAccounts: () => Promise.resolve(f.bankAccounts),
-  fetchBankAccountsTotalBalance: () => Promise.resolve(2358350),
+  fetchBankAccountsTotalBalance: () => Promise.resolve(f.bankBalanceSummary),
   createBankAccount: () => Promise.resolve(f.bankAccounts[0]),
   updateBankAccount: () => Promise.resolve(),
   deleteBankAccount: () => Promise.resolve(),
@@ -72,6 +72,25 @@ vi.mock('../services/propertyApi', async () => {
   fetchValuations: () => Promise.resolve(f.valuations),
   createValuation: () => Promise.resolve(f.valuations[0]),
   fetchPropertyEvents: () => Promise.resolve(f.propertyEvents),
+  };
+});
+
+// Mocked here rather than in fixtures.ts: vi.mock is file-scoped and hoisted, so a widget whose
+// service is not stubbed in this file fires a real axios request into jsdom.
+vi.mock('../services/exchangeRateApi', async () => {
+  const f = await import('./fixtures');
+  return {
+    fetchExchangeRates: () => Promise.resolve(f.exchangeRates),
+    upsertExchangeRate: () => Promise.resolve(f.exchangeRates[0]),
+    deleteExchangeRate: () => Promise.resolve(),
+  };
+});
+
+vi.mock('../services/settingsApi', async () => {
+  const f = await import('./fixtures');
+  return {
+    fetchSettings: () => Promise.resolve(f.settings),
+    updateSettings: () => Promise.resolve(f.settings),
   };
 });
 

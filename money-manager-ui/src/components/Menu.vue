@@ -37,6 +37,7 @@
     { to: '/properties', label: 'Properties' },
     { to: '/stocks', label: 'Stocks' },
     { to: '/events', label: 'Events' },
+    { to: '/settings', label: 'Settings' },
   ];
 
   // RouterLink's own active-class matches on route records, and the routes are flat, so

@@ -89,8 +89,16 @@ excluded from income because they are repayable.
 ### Multi-tenancy
 
 Each property is denominated in a single currency, fixed at creation, so per-property
-analytics involve no FX at all. Portfolio totals refuse to add across currencies and say so
-rather than producing a plausible wrong number.
+analytics involve no FX at all. Conversion happens only at a rollup — portfolio totals and
+the bank-balance summary — using rates the user enters themselves under Settings; nothing is
+fetched, because the app makes no outbound calls. A pair with no rate on record leaves the
+affected totals null and names the rate that would fill them in, rather than adding unlike
+amounts into a plausible wrong number, and any total that did come from a conversion is
+labelled with the rate and the date it was recorded.
+
+Whether a portfolio that already shares one currency is converted into the user's base
+currency is their choice, in Settings. It is off by default, so a landlord holding only HUF
+gets exact totals without entering a rate at all.
 
 Tenant isolation is enforced in the data layer, not in controllers: every owned entity has a
 global query filter, and the owner is stamped in `SaveChanges` and pinned on update. A
@@ -113,6 +121,7 @@ later is a provider swap.
 
 ## Not built yet
 
-Exchange rates for consolidated multi-currency totals; an automatic market-rent feed
+A rate feed (rates are typed in, and dated rate history for past-period analytics is not
+modelled — the latest rate on record is used and the output says so); an automatic market-rent feed
 (market estimates are entered by hand today, behind the same `RentPricePoint` model a feed
 would write to); IRR; tax and depreciation modelling; billing and subscriptions.

@@ -21,17 +21,21 @@ export default defineConfig({
         // Type declarations only — covering them measures nothing.
         'src/models/**',
       ],
-      // Set from the measured baseline (69.2 / 68.1 / 69.5 / 69.0 at the time of writing),
-      // rounded down a couple of points. Deliberately NOT an aspirational number: the job of a
-      // floor is to catch a pull request that deletes coverage, and a target nobody can hit
-      // just teaches people to write assertion-free tests to clear it.
+      // Set from the measured baseline, rounded down a couple of points. Deliberately NOT an
+      // aspirational number: the job of a floor is to catch a pull request that deletes
+      // coverage, and a target nobody can hit just teaches people to write assertion-free
+      // tests to clear it.
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
+      //
+      // Last measured 70.0 / 71.14 / 70.98 / 69.6, up from 69.2 / 68.1 / 69.5 / 69.0, when the
+      // multi-currency rollup work brought the two bank-balance widgets, the settings page and
+      // the exchange-rate service under test.
       thresholds: {
-        statements: 67,
-        branches: 66,
-        functions: 67,
-        lines: 67,
+        statements: 68,
+        branches: 69,
+        functions: 69,
+        lines: 68,
       },
     },
   },

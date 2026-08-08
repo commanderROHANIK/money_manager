@@ -18,6 +18,7 @@ vi.mock('../components/RentalPropertyPage.vue', () => ({ default: { template: '<
 vi.mock('../components/PropertyDetailPage.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('../components/StockPage.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('../components/UpcomingEvents.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('../components/SettingsPage.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('../components/Login.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('../components/Register.vue', () => ({ default: { template: '<div />' } }));
 
@@ -35,7 +36,7 @@ const go = async (path: string) => {
 };
 
 describe('unauthenticated', () => {
-  it.each(['/', '/accounts', '/loans', '/properties', '/properties/1', '/stocks', '/events'])(
+  it.each(['/', '/accounts', '/loans', '/properties', '/properties/1', '/stocks', '/events', '/settings'])(
     'redirects %s to the login screen',
     async (path) => {
       expect((await go(path)).path).toBe('/login');
@@ -51,7 +52,7 @@ describe('unauthenticated', () => {
 describe('authenticated', () => {
   beforeEach(() => localStorage.setItem('token', 'a-token'));
 
-  it.each(['/', '/accounts', '/loans', '/properties', '/stocks', '/events'])(
+  it.each(['/', '/accounts', '/loans', '/properties', '/stocks', '/events', '/settings'])(
     'allows %s',
     async (path) => {
       expect((await go(path)).path).toBe(path);
