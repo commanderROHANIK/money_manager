@@ -25,7 +25,7 @@
          makes the handler call a Base64UrlEncoder overload that does not exist, and every
          token fails validation with IDX14102 at runtime. Let JwtBearer pick a coherent set. -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.18" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
   <ItemGroup>
