@@ -13,6 +13,7 @@
         <span>Total:</span>
         <span class="tabular-nums">{{ formattedTotal }}</span>
       </div>
+      <p v-if="totalNote" class="text-xs text-text-muted">{{ totalNote }}</p>
     </div>
   </BaseCard>
 </template>
@@ -20,10 +21,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { fetchBankAccountsTotalBalance, fetchStocks } from '../../../services/api';
-import type { Stock } from '../../../models/models';
+import type { BankBalanceSummary, Stock } from '../../../models/models';
+import { formatMoney, sumSameCurrency } from '../../../utils/money';
 import BaseCard from '../../ui/BaseCard.vue';
 
-const cash = ref<number | null>(null);
+const cash = ref<BankBalanceSummary | null>(null);
 const stocks = ref<Stock[]>([]);
 
 onMounted(async () => {
@@ -41,28 +43,48 @@ onMounted(async () => {
 });
 
 const invested = computed(() =>
-  stocks.value.reduce((sum, stock) => sum + stock.sharesOwned * stock.currentPrice, 0)
+  sumSameCurrency(
+    stocks.value,
+    (stock) => stock.sharesOwned * stock.currentPrice,
+    (stock) => stock.currencyCode
+  )
 );
 
-const total = computed(() =>
-  (cash.value ?? 0) + invested.value
-);
-
-const formatter = new Intl.NumberFormat('hu-HU', {
-  style: 'currency',
-  currency: 'HUF',
-  maximumFractionDigits: 0,
+const formattedCash = computed(() => {
+  const s = cash.value;
+  if (!s) return '';
+  return s.totalBalance === null ? '—' : formatMoney(s.totalBalance, s.currency);
 });
 
-const formattedCash = computed(() =>
-  cash.value !== null ? formatter.format(cash.value) : ''
-);
-
 const formattedInvested = computed(() =>
-  formatter.format(invested.value)
+  invested.value.mixed ? '—' : formatMoney(invested.value.total, invested.value.currency)
 );
 
-const formattedTotal = computed(() =>
-  formatter.format(total.value)
-);
+/**
+ * Cash and holdings only add up when they are in the same currency and both figures are known.
+ * Adding a EUR cash balance to HUF holdings would produce a number that looks like net worth and
+ * is wrong by two orders of magnitude, which is the exact defect this rollup work exists to end.
+ */
+const combinable = computed(() => {
+  const s = cash.value;
+  return (
+    s !== null &&
+    s.totalBalance !== null &&
+    !invested.value.mixed &&
+    invested.value.currency === s.currency
+  );
+});
+
+const formattedTotal = computed(() => {
+  const s = cash.value;
+  if (!combinable.value || !s || s.totalBalance === null) return '—';
+  return formatMoney(s.totalBalance + invested.value.total, s.currency);
+});
+
+const totalNote = computed(() => {
+  if (combinable.value || !cash.value) return '';
+  if (invested.value.mixed) return 'Holdings span several currencies, so they are not totalled here.';
+  if (cash.value.totalBalance === null) return 'Cash cannot be totalled without an exchange rate.';
+  return `Cash is in ${cash.value.currency} and holdings are in ${invested.value.currency}, so they are not added together.`;
+});
 </script>

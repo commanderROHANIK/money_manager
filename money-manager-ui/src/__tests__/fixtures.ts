@@ -63,6 +63,7 @@ export const portfolio = {
   propertyCount: 3, currency: 'HUF', mixedCurrency: false,
   totalInvested: 188500000, totalCurrentValue: 231000000, totalEquity: 142400000,
   totalMonthlyCashFlow: 128000, totalAnnualRentUplift: 852000, portfolioRoi: 0.187,
+  baseCurrency: 'EUR', converted: false, missingRates: [], appliedRates: [], warnings: [],
 };
 
 /**
@@ -88,15 +89,62 @@ export const propertyMetricsUnknown = {
 };
 
 /**
- * A portfolio spanning two currencies. Totals are null and `mixedCurrency` is true, because
- * adding HUF to EUR without a rate produces a plausible wrong number — the API refuses, and the
- * UI has to say so rather than render a total.
+ * A portfolio spanning two currencies with no rate on record. Every total is null, because adding
+ * HUF to EUR without a rate produces a plausible wrong number — the API refuses, names the pair
+ * it would need, and the UI has to say so rather than render a total.
  */
 export const portfolioMixedCurrency = {
   properties: [propertyMetrics, metric({ propertyId: 5, propertyName: 'Vienna flat', currencyCode: 'EUR' })],
-  propertyCount: 2, currency: null, mixedCurrency: true,
+  propertyCount: 2, currency: 'EUR', mixedCurrency: true,
   totalInvested: null, totalCurrentValue: null, totalEquity: null,
   totalMonthlyCashFlow: null, totalAnnualRentUplift: null, portfolioRoi: null,
+  baseCurrency: 'EUR', converted: false,
+  missingRates: [{ from: 'HUF', to: 'EUR' }],
+  appliedRates: [],
+  warnings: [
+    { code: 'missing_exchange_rate', message: 'No exchange rate on record for HUF→EUR, so totals spanning those currencies cannot be worked out. Add the rate in Settings and they will appear.' },
+  ],
+};
+
+/**
+ * The same portfolio once a HUF→EUR rate exists: totals are real, expressed in the base currency,
+ * and carry the rate that produced them so the UI can show its working.
+ */
+export const portfolioConverted = {
+  ...portfolioMixedCurrency,
+  currency: 'EUR', converted: true,
+  totalInvested: 511250, totalCurrentValue: 727500, totalEquity: 273000,
+  totalMonthlyCashFlow: 1108, totalAnnualRentUplift: 2130, portfolioRoi: 0.187,
+  missingRates: [],
+  appliedRates: [{ from: 'HUF', to: 'EUR', rate: 0.0025, asOf: iso('2026-07-01'), inverted: true }],
+  warnings: [],
+};
+
+export const exchangeRates = [
+  { id: 1, baseCurrency: 'EUR', quoteCurrency: 'HUF', rate: 400, asOf: iso('2026-07-01'), source: 0 },
+  { id: 2, baseCurrency: 'GBP', quoteCurrency: 'HUF', rate: 462.5, asOf: iso('2026-06-15'), source: 0 },
+];
+
+export const settings = { baseCurrency: 'HUF', alwaysConvertToBaseCurrency: false };
+
+/** Every account in one currency: an exact total, no rate involved. */
+export const bankBalanceSummary = {
+  totalBalance: 2358350, currency: 'HUF', mixedCurrency: false, converted: false,
+  baseCurrency: 'HUF',
+  byCurrency: [{ currencyCode: 'HUF', total: 2358350 }],
+  missingRates: [], appliedRates: [], warnings: [],
+};
+
+/** Accounts spanning currencies with no rate: the breakdown is still exact, the headline is not knowable. */
+export const bankBalanceSummaryUnconvertible = {
+  ...bankBalanceSummary,
+  totalBalance: null, currency: 'EUR', mixedCurrency: true, baseCurrency: 'EUR',
+  byCurrency: [
+    { currencyCode: 'EUR', total: 1200 },
+    { currencyCode: 'HUF', total: 2358350 },
+  ],
+  missingRates: [{ from: 'HUF', to: 'EUR' }],
+  warnings: [{ code: 'missing_exchange_rate', message: 'No exchange rate on record for HUF→EUR.' }],
 };
 
 export const transactions = [
