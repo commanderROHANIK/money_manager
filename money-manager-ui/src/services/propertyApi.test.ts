@@ -65,6 +65,12 @@ const CALLS: [string, string, string, () => Promise<unknown>][] = [
       () => p.createValuation(PROPERTY_ID, '2026-01-01', 100)],
     ['fetchPropertyEvents', 'get', '/RentalProperties/7/events',
       () => p.fetchPropertyEvents(PROPERTY_ID)],
+    ['fetchRentSchedule', 'get', '/RentalProperties/7/rent-schedule',
+      () => p.fetchRentSchedule(PROPERTY_ID)],
+    ['recordRentForPeriod', 'post', '/RentalProperties/7/rent-schedule/2026-08/record',
+      () => p.recordRentForPeriod(PROPERTY_ID, '2026-08')],
+    ['fetchArrears', 'get', '/RentalProperties/rent-schedule/arrears',
+      () => p.fetchArrears()],
 ];
 
 /** Drives the completeness check below, from the same table the assertions use. */
@@ -114,5 +120,25 @@ describe('request bodies', () => {
     await p.createValuation(PROPERTY_ID, '2026-02-01', 74_000_000, 2);
 
     expect(JSON.parse(seen.data).source).toBe(2);
+  });
+
+  it('records rent with an empty body so the server fills it from the tenancy', async () => {
+    // The whole point of the endpoint is that the amount and the due date are already known.
+    // Sending a client-guessed amount here would reintroduce the hand-entry this replaces.
+    await p.recordRentForPeriod(PROPERTY_ID, '2026-08');
+
+    expect(JSON.parse(seen.data)).toEqual({});
+  });
+
+  it('passes an override through when the tenant paid something else', async () => {
+    await p.recordRentForPeriod(PROPERTY_ID, '2026-08', { amount: 200000, date: '2026-08-12' });
+
+    expect(JSON.parse(seen.data)).toEqual({ amount: 200000, date: '2026-08-12' });
+  });
+
+  it('sends the rent-schedule range as query parameters', async () => {
+    await p.fetchRentSchedule(PROPERTY_ID, '2026-01-01', '2026-06-30');
+
+    expect(seen.params).toEqual({ from: '2026-01-01', to: '2026-06-30' });
   });
 });
