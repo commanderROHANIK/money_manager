@@ -1,6 +1,6 @@
 import {
   PropertyType, PropertyStatus, TransactionCategory, RentPriceSource,
-  ValuationSource, PropertyEventType, LoanType,
+  ValuationSource, PropertyEventType, LoanType, RentPeriodStatus,
 } from '../models/models';
 
 const iso = (d: string) => new Date(d).toISOString();
@@ -161,6 +161,58 @@ export const transactions = [
   { id: 1, rentalPropertyId: 1, date: iso('2026-07-10'), amount: 240000, currencyCode: 'HUF', category: TransactionCategory.RentIncome, description: 'July rent' },
   { id: 2, rentalPropertyId: 1, date: iso('2026-07-02'), amount: 18400, currencyCode: 'HUF', category: TransactionCategory.Insurance, description: 'Building insurance' },
   { id: 3, rentalPropertyId: 1, date: iso('2026-06-21'), amount: 96500, currencyCode: 'HUF', category: TransactionCategory.Repairs, description: 'Boiler replacement' },
+];
+
+/**
+ * Six months of the Bartók flat's rent, read at FROZEN_NOW (2026-08-01).
+ *
+ * The tenancy charges 240,000 due on the 10th. March is short by 40,000 and May was never paid,
+ * so arrears are 40,000 + 240,000 = 280,000 across two months — and August is deliberately not
+ * one of them: its rent falls due on the 10th, which has not arrived yet, so an unpaid August is
+ * not yet a debt. A fixture whose totals do not follow from its own rows teaches the next person
+ * to read past it.
+ */
+export const rentSchedule = {
+  propertyId: 1,
+  currencyCode: 'HUF',
+  asOf: iso('2026-08-01'),
+  periods: [
+    { period: '2026-03', dueDate: iso('2026-03-10'), status: RentPeriodStatus.Partial, expectedAmount: 240000, receivedAmount: 200000, shortfall: 40000, isOverdue: true, leaseId: 1, tenantName: 'Kovács Anna', paymentIds: [11] },
+    { period: '2026-04', dueDate: iso('2026-04-10'), status: RentPeriodStatus.Paid, expectedAmount: 240000, receivedAmount: 240000, shortfall: 0, isOverdue: false, leaseId: 1, tenantName: 'Kovács Anna', paymentIds: [12] },
+    { period: '2026-05', dueDate: iso('2026-05-10'), status: RentPeriodStatus.Unpaid, expectedAmount: 240000, receivedAmount: 0, shortfall: 240000, isOverdue: true, leaseId: 1, tenantName: 'Kovács Anna', paymentIds: [] },
+    { period: '2026-06', dueDate: iso('2026-06-10'), status: RentPeriodStatus.Paid, expectedAmount: 240000, receivedAmount: 240000, shortfall: 0, isOverdue: false, leaseId: 1, tenantName: 'Kovács Anna', paymentIds: [13] },
+    { period: '2026-07', dueDate: iso('2026-07-10'), status: RentPeriodStatus.Paid, expectedAmount: 240000, receivedAmount: 240000, shortfall: 0, isOverdue: false, leaseId: 1, tenantName: 'Kovács Anna', paymentIds: [14] },
+    { period: '2026-08', dueDate: iso('2026-08-10'), status: RentPeriodStatus.Unpaid, expectedAmount: 240000, receivedAmount: 0, shortfall: 240000, isOverdue: false, leaseId: 1, tenantName: 'Kovács Anna', paymentIds: [] },
+  ],
+  totalExpected: 1440000,
+  totalReceived: 920000,
+  arrears: 280000,
+  overduePeriodCount: 2,
+  oldestOverduePeriod: '2026-03',
+};
+
+/**
+ * A vacant month, which the populated schedule above cannot express: expected and shortfall are
+ * null rather than zero, because nothing was owed. A zero in both would make an empty property
+ * read exactly like a fully collected one.
+ */
+export const rentScheduleWithVacancy = {
+  ...rentSchedule,
+  propertyId: 2,
+  periods: [
+    { period: '2026-06', dueDate: iso('2026-06-01'), status: RentPeriodStatus.Vacant, expectedAmount: null, receivedAmount: 0, shortfall: null, isOverdue: false, leaseId: null, tenantName: null, paymentIds: [] },
+    { period: '2026-07', dueDate: iso('2026-07-01'), status: RentPeriodStatus.Vacant, expectedAmount: null, receivedAmount: 0, shortfall: null, isOverdue: false, leaseId: null, tenantName: null, paymentIds: [] },
+  ],
+  totalExpected: 0,
+  totalReceived: 0,
+  arrears: 0,
+  overduePeriodCount: 0,
+  oldestOverduePeriod: null,
+};
+
+/** Matches the schedule above: only properties that owe something appear. */
+export const arrears = [
+  { propertyId: 1, propertyName: 'Bartók flat', currencyCode: 'HUF', arrears: 280000, overduePeriodCount: 2, oldestOverduePeriod: '2026-03' },
 ];
 
 export const leases = [

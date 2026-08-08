@@ -2,6 +2,7 @@ import {
   PropertyEventType,
   PropertyStatus,
   PropertyType,
+  RentPeriodStatus,
   RentPriceSource,
   TransactionCategory,
 } from '../models/models';
@@ -62,6 +63,13 @@ const INCOME_CATEGORIES = new Set<TransactionCategory>([
 export function isIncome(category: TransactionCategory): boolean {
   return INCOME_CATEGORIES.has(category);
 }
+
+export const RENT_STATUS_LABELS: Record<RentPeriodStatus, string> = {
+  [RentPeriodStatus.Vacant]: 'Vacant',
+  [RentPeriodStatus.Unpaid]: 'Unpaid',
+  [RentPeriodStatus.Partial]: 'Partial',
+  [RentPeriodStatus.Paid]: 'Paid',
+};
 
 export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   [PropertyType.Apartment]: 'Apartment',

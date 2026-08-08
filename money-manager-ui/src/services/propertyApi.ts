@@ -2,11 +2,14 @@ import { api } from './api';
 import type {
   Lease,
   PortfolioAnalytics,
+  PropertyArrears,
   PropertyEvent,
   PropertyMetrics,
   PropertyTransaction,
   PropertyValuation,
+  RentPeriod,
   RentPricePoint,
+  RentSchedule,
   RentalProperty,
 } from '../models/models';
 
@@ -78,6 +81,45 @@ export async function createTransaction(
 
 export async function deleteTransaction(propertyId: number, id: number): Promise<void> {
   await api.delete(`/RentalProperties/${propertyId}/transactions/${id}`);
+}
+
+export async function fetchRentSchedule(
+  propertyId: number,
+  from?: string,
+  to?: string
+): Promise<RentSchedule> {
+  const response = await api.get<RentSchedule>(`/RentalProperties/${propertyId}/rent-schedule`, {
+    params: { from, to },
+  });
+  return response.data;
+}
+
+/** Everything is optional: the tenancy already knows the amount and the day it fell due. */
+export interface RecordRentRequest {
+  amount?: number | null;
+  date?: string | null;
+  description?: string | null;
+}
+
+/**
+ * Records the rent for one month and returns that month recomputed, so the caller renders the
+ * row a reload would produce rather than one it patched together itself.
+ */
+export async function recordRentForPeriod(
+  propertyId: number,
+  period: string,
+  request: RecordRentRequest = {}
+): Promise<RentPeriod> {
+  const response = await api.post<RentPeriod>(
+    `/RentalProperties/${propertyId}/rent-schedule/${period}/record`,
+    request
+  );
+  return response.data;
+}
+
+export async function fetchArrears(): Promise<PropertyArrears[]> {
+  const response = await api.get<PropertyArrears[]>('/RentalProperties/rent-schedule/arrears');
+  return response.data;
 }
 
 export async function fetchLeases(propertyId: number): Promise<Lease[]> {

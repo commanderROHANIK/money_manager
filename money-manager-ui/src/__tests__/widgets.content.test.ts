@@ -11,12 +11,13 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import type { PortfolioAnalytics, PropertyMetrics } from '../models/models';
+import type { PortfolioAnalytics, PropertyMetrics, RentSchedule } from '../models/models';
 import * as f from './fixtures';
 import { FROZEN_NOW } from './fixtures';
 
 import PropertyMetricsWidget from '../components/Widgets/Properties/PropertyMetricsWidget.vue';
 import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSummaryWidget.vue';
+import RentCollectionWidget from '../components/Widgets/Properties/RentCollectionWidget.vue';
 import TransactionLedgerWidget from '../components/Widgets/Properties/TransactionLedgerWidget.vue';
 import UnderpricedPropertiesWidget from '../components/Widgets/Properties/UnderpricedPropertiesWidget.vue';
 
@@ -158,6 +159,78 @@ describe('TransactionLedgerWidget', () => {
     const wrapper = mount(TransactionLedgerWidget, { props: { transactions: [] } });
 
     expect(wrapper.text()).toContain('No entries yet');
+  });
+});
+
+describe('RentCollectionWidget', () => {
+  const mountWith = (schedule: unknown) =>
+    mount(RentCollectionWidget, {
+      props: { schedule: schedule as RentSchedule, currencyCode: 'HUF' },
+    });
+
+  it('renders a vacant month as unknown rather than as nothing owed', () => {
+    // The distinction the whole product turns on. A vacant month owed nothing; a let month that
+    // collected nothing owed everything. Rendering both as 0 would make an empty property read
+    // exactly like a fully collected one.
+    const text = mountWith(f.rentScheduleWithVacancy).text();
+
+    expect(text).toContain('Vacant');
+    expect(text).toContain('—');
+  });
+
+  it('separates a month that is late from one that is merely unpaid', () => {
+    // August is unpaid but not yet due, so it is not a debt and must not be counted as one.
+    // May is unpaid and overdue. Both render as "Unpaid"; only one is in the arrears figure.
+    const text = mountWith(f.rentSchedule).text();
+
+    expect(text).toContain('Unpaid');
+    expect(text).toContain('behind');
+
+    // 280,000 = March's 40,000 shortfall + May's 240,000. August's 240,000 is excluded.
+    expect(text).toContain((280000).toLocaleString(undefined, { maximumFractionDigits: 0 }));
+    expect(text).not.toContain((520000).toLocaleString(undefined, { maximumFractionDigits: 0 }));
+  });
+
+  it('says it is up to date when nothing is overdue', () => {
+    const text = mountWith({ ...f.rentSchedule, arrears: 0, overduePeriodCount: 0 }).text();
+
+    expect(text).toContain('Up to date');
+  });
+
+  it('offers to record only the months that are actually owed', () => {
+    // Not a settled month, and not a vacant one — pressing it there would either double-book the
+    // rent or invent a charge nobody owes.
+    const wrapper = mountWith(f.rentSchedule);
+    const buttons = wrapper.findAll('button').filter((b) => b.text() === 'Mark received');
+
+    // 2026-05 and 2026-08 are the two Unpaid rows.
+    expect(buttons).toHaveLength(2);
+  });
+
+  it('asks the page to record the month it was pressed for', async () => {
+    const wrapper = mountWith(f.rentSchedule);
+    const button = wrapper.findAll('button').filter((b) => b.text() === 'Mark received')[0];
+
+    await button.trigger('click');
+
+    // Newest first, so the first button is August's.
+    expect(wrapper.emitted('record')).toEqual([['2026-08']]);
+  });
+
+  it('shows the server’s reason when a record call was refused', () => {
+    const wrapper = mount(RentCollectionWidget, {
+      props: {
+        schedule: f.rentSchedule as unknown as RentSchedule,
+        currencyCode: 'HUF',
+        error: 'Rent for 2026-05 is already recorded.',
+      },
+    });
+
+    expect(wrapper.text()).toContain('already recorded');
+  });
+
+  it('invites a tenancy rather than rendering an empty table', () => {
+    expect(mountWith(null).text()).toContain('No tenancy on record');
   });
 });
 
