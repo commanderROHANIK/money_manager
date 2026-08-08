@@ -15,6 +15,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
+    <!-- Hosts the real app in-process for the Integration/ suite. Deliberately not paired with
+         an explicit Microsoft.IdentityModel.Tokens reference: the whole point of those tests is
+         to exercise the package set JwtBearer resolves on its own, so pinning it here would
+         defeat the check the same way pinning it in the API project would. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
   </ItemGroup>
 
   <ItemGroup>
