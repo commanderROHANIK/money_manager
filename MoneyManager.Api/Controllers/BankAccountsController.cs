@@ -192,7 +192,7 @@ namespace MoneyManager.Api.Controllers
                 total.Amount,
                 target,
                 currencies.Count > 1,
-                currencies.Any(c => !string.Equals(c, target, StringComparison.Ordinal)),
+                currencies.Any(c => !string.Equals(c, target, StringComparison.OrdinalIgnoreCase)),
                 rollup.BaseCurrency,
                 byCurrency,
                 missingRates,

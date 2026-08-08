@@ -93,8 +93,14 @@ export const propertyMetricsUnknown = {
  * HUF to EUR without a rate produces a plausible wrong number — the API refuses, names the pair
  * it would need, and the UI has to say so rather than render a total.
  */
+const viennaFlat = metric({
+  propertyId: 5, propertyName: 'Vienna flat', currencyCode: 'EUR',
+  totalInvested: 300000, cashInvested: 60000, currentValue: 320000, equity: 150000,
+  monthlyCashFlow: 240, cumulativeNetCashFlow: 8000, annualRentUplift: 1200,
+});
+
 export const portfolioMixedCurrency = {
-  properties: [propertyMetrics, metric({ propertyId: 5, propertyName: 'Vienna flat', currencyCode: 'EUR' })],
+  properties: [propertyMetrics, viennaFlat],
   propertyCount: 2, currency: 'EUR', mixedCurrency: true,
   totalInvested: null, totalCurrentValue: null, totalEquity: null,
   totalMonthlyCashFlow: null, totalAnnualRentUplift: null, portfolioRoi: null,
@@ -109,12 +115,16 @@ export const portfolioMixedCurrency = {
 /**
  * The same portfolio once a HUF→EUR rate exists: totals are real, expressed in the base currency,
  * and carry the rate that produced them so the UI can show its working.
+ *
+ * The figures are the ones the server would actually return, at 1 EUR = 400 HUF — so the HUF flat
+ * converts at 0.0025 and, for example, invested is 18,600,000 × 0.0025 + 60,000 = 106,500. A
+ * fixture whose numbers do not follow from its own inputs teaches the next person to read past it.
  */
 export const portfolioConverted = {
   ...portfolioMixedCurrency,
   currency: 'EUR', converted: true,
-  totalInvested: 511250, totalCurrentValue: 727500, totalEquity: 273000,
-  totalMonthlyCashFlow: 1108, totalAnnualRentUplift: 2130, portfolioRoi: 0.187,
+  totalInvested: 106500, totalCurrentValue: 505000, totalEquity: 273000,
+  totalMonthlyCashFlow: 348.33, totalAnnualRentUplift: 2550, portfolioRoi: 1.6817,
   missingRates: [],
   appliedRates: [{ from: 'HUF', to: 'EUR', rate: 0.0025, asOf: iso('2026-07-01'), inverted: true }],
   warnings: [],

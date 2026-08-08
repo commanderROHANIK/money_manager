@@ -38,10 +38,13 @@ namespace MoneyManager.Api.Services.Currency
             string baseCurrency,
             bool alwaysConvertToBaseCurrency)
         {
+            // Upper-cased on the way out so it compares cleanly against the source codes below.
+            // A stored "huf" would otherwise look like a different currency from "HUF" and quietly
+            // produce an identity conversion labelled as a real one.
             if (currencies.Count == 1 && !alwaysConvertToBaseCurrency)
-                return currencies.First();
+                return currencies.First().Trim().ToUpperInvariant();
 
-            return baseCurrency;
+            return baseCurrency.Trim().ToUpperInvariant();
         }
 
         /// <summary>
