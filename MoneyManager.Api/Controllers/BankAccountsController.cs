@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.Analytics;
+using MoneyManager.Api.Services.Currency;
 
 namespace MoneyManager.Api.Controllers
 {
@@ -12,10 +14,12 @@ namespace MoneyManager.Api.Controllers
     public class BankAccountsController : ControllerBase
     {
         private readonly MoneyManagerDbContext _context;
+        private readonly CurrencyRollupService _rollups;
 
-        public BankAccountsController(MoneyManagerDbContext context)
+        public BankAccountsController(MoneyManagerDbContext context, CurrencyRollupService rollups)
         {
             _context = context;
+            _rollups = rollups;
         }
 
         [HttpGet]
@@ -39,14 +43,26 @@ namespace MoneyManager.Api.Controllers
             return bankAccount;
         }
 
+        /// <summary>
+        /// Total held across every account, plus the per-currency breakdown it was built from.
+        ///
+        /// <para>
+        /// This used to add <c>Balance</c> across accounts while ignoring <c>CurrencyCode</c>,
+        /// so a EUR account and a HUF account produced a confident nonsense number. Accounts in
+        /// different currencies are now converted at the owner's own rates, and if a rate is
+        /// missing the total is null with the pair named — the breakdown below is still exact
+        /// either way.
+        /// </para>
+        /// </summary>
         [HttpGet("summary/total-balance")]
-        public async Task<IActionResult> GetTotalBalance()
+        public async Task<ActionResult<BankBalanceSummaryDto>> GetTotalBalance()
         {
             // Materialized before summing on purpose: SQLite has no native decimal type, so
             // aggregating decimals in SQL either fails or loses precision.
             var accounts = await _context.BankAccounts.ToListAsync();
+            var rollup = await _rollups.LoadAsync();
 
-            return Ok(new { totalBalance = accounts.Sum(a => a.Balance) });
+            return BankBalanceSummaryDto.From(accounts, rollup);
         }
 
         [HttpPost]
@@ -115,4 +131,73 @@ namespace MoneyManager.Api.Controllers
         string AccountNumber,
         string AccountType,
         string? CurrencyCode = null);
+
+    /// <summary>What is held in one currency. Always exact — no rate is involved in a subtotal.</summary>
+    public record CurrencyTotal(string CurrencyCode, decimal Total);
+
+    /// <summary>
+    /// <c>Currency</c> names the unit <c>TotalBalance</c> is in, and is never a guess: when the
+    /// accounts share a currency it is that one, and when they do not it is the owner's base
+    /// currency, which is also the only case where a rate is applied.
+    ///
+    /// <para>
+    /// <c>ByCurrency</c> is the part that is always true. If a rate is missing the headline total
+    /// is null rather than approximate, and the breakdown still tells the user exactly what they
+    /// hold.
+    /// </para>
+    /// </summary>
+    public record BankBalanceSummaryDto(
+        decimal? TotalBalance,
+        string Currency,
+        bool MixedCurrency,
+        bool Converted,
+        string BaseCurrency,
+        IReadOnlyList<CurrencyTotal> ByCurrency,
+        IReadOnlyList<CurrencyPair> MissingRates,
+        IReadOnlyList<AppliedRate> AppliedRates,
+        IReadOnlyList<MetricWarning> Warnings)
+    {
+        public static BankBalanceSummaryDto From(IReadOnlyList<BankAccount> accounts, RollupContext rollup)
+        {
+            var byCurrency = accounts
+                .GroupBy(a => a.CurrencyCode.Trim().ToUpperInvariant(), StringComparer.Ordinal)
+                .Select(g => new CurrencyTotal(g.Key, Math.Round(g.Sum(a => a.Balance), 2)))
+                .OrderBy(t => t.CurrencyCode, StringComparer.Ordinal)
+                .ToList();
+
+            // No accounts is not the same shape of unknown as a missing rate: nothing held is
+            // genuinely zero, and reporting it as such needs no rate at all.
+            if (byCurrency.Count == 0)
+            {
+                return new BankBalanceSummaryDto(
+                    0m, rollup.BaseCurrency, false, false, rollup.BaseCurrency, byCurrency, [], [], []);
+            }
+
+            var currencies = byCurrency.Select(t => t.CurrencyCode).ToList();
+            var target = rollup.ResolveTarget(currencies);
+            var missingRates = CurrencyRollup.MissingRates(currencies, rollup.Rates, target);
+
+            // Summed from the accounts rather than from the rounded subtotals above, so the
+            // headline figure is not the sum of a set of roundings.
+            var total = CurrencyRollup.Sum(
+                accounts.Select(a => ((decimal?)a.Balance, a.CurrencyCode)),
+                rollup.Rates,
+                target);
+
+            var warnings = new List<MetricWarning>();
+            if (missingRates.Count > 0)
+                warnings.Add(CurrencyRollup.MissingRateWarning(missingRates));
+
+            return new BankBalanceSummaryDto(
+                total.Amount,
+                target,
+                currencies.Count > 1,
+                currencies.Any(c => !string.Equals(c, target, StringComparison.Ordinal)),
+                rollup.BaseCurrency,
+                byCurrency,
+                missingRates,
+                CurrencyRollup.AppliedRates(currencies, rollup.Rates, target),
+                warnings);
+        }
+    }
 }
