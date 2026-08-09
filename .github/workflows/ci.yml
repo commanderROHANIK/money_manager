@@ -21,7 +21,10 @@ jobs:
   api:
     name: API
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    # Raised from 6 when the image build joined this job. The build runs npm ci, a Vite build and
+    # a dotnet publish from a cold cache, so the old ceiling was close enough to the new runtime
+    # to fail on a slow runner rather than on a defect.
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -57,6 +60,26 @@ jobs:
       # catches it, including the tests.
       - name: Check for model changes with no migration
         run: dotnet ef migrations has-pending-model-changes --project MoneyManager.Api
+
+      # The image is a third build path, and until now nothing exercised it: this job compiles
+      # the API and the UI job builds the bundle, but neither assembles the artifact that
+      # actually gets deployed. Its failure modes are invisible to both and would first appear
+      # on a deploy —
+      #
+      #   - a stale obj/ from the build context landing on top of the restore layer, which fails
+      #     as NETSDK1064 for packages that are present;
+      #   - Directory.Build.props not reaching the SDK stage, so the image builds green under
+      #     laxer rules than this job enforces;
+      #   - a narrowed UI copy, which breaks vue-tsc because tsconfig.node.json pulls
+      #     vitest.config.ts into the build graph.
+      #
+      # It lives in this job rather than a job of its own on purpose. A new job would report as a
+      # new check name, and every check promoted into this workflow so far has been folded into
+      # API or UI precisely so branch protection keeps blocking on those two and never needs
+      # editing. A separate "Image" check would be advisory by default, which is the opposite of
+      # what a build path nothing else covers deserves.
+      - name: Build the deployment image
+        run: docker build --tag moneymanager:ci .
 
   ui:
     name: UI

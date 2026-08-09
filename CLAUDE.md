@@ -206,3 +206,34 @@ why. Do not instead widen the path list to avoid the check.
 The linter is worth trusting on one rule in particular. `vue/no-undef-components` catches a
 template using a component the script never imported — the defect that shipped in
 `TenancyWidget`, which `vue-tsc` and `vite build` both pass cleanly. If it fires, it is right.
+
+The **API** job also builds the `Dockerfile`. That is a third build path — compiling the API and
+building the bundle do not assemble the artifact that ships — and its failure modes (a stale
+`obj/` landing on the restore layer, `Directory.Build.props` not reaching the SDK stage) are
+invisible to every other check. It sits inside the API job rather than a job of its own so the
+required check names stay `API` and `UI`.
+
+## Deployment
+
+One container serving both halves from one origin: the Dockerfile builds the Vite bundle into the
+API's `wwwroot`. `docs/deployment.md` covers the variables, the volume and the open verification
+items. The things that break silently:
+
+- **Never set `ASPNETCORE_ENVIRONMENT=Development` on a deployment.** It registers the developer
+  exception page, which puts stack traces and the connection string on a public URL, and
+  publishes the full Swagger surface. Both are unconditional. Gate Swagger on its own flag.
+- **`UseDefaultFiles`/`UseStaticFiles` must stay ahead of `UseAuthorization`.** The SPA fallback's
+  route pattern is `{*path:nonfile}`, so a path with a file extension matches no endpoint — and
+  the deny-by-default `FallbackPolicy` applies to endpoint-less requests too. Served after
+  authorization, every script and stylesheet 401s behind an `index.html` that still loads.
+- **Seeding goes through `SeedCurrentUser`, never by relaxing `ApplyOwnership`.** Owned entities
+  cannot be persisted without an owner and there is no `HttpContext` at startup, so seeding
+  through the request-scoped tenant crash-loops the container before it listens. The same named
+  owner is what makes the "already seeded" check work: asked through a null tenant, the query
+  filter compares `UserId` against NULL, reports empty on every boot, and duplicates the demo rows
+  on every redeploy.
+- **One replica, pinned in `railway.json`.** `Database.Migrate()` runs on every boot and SQLite has
+  no advisory lock. This is a constraint of the SQLite decision, not a preference.
+- **A relative `ConnectionStrings:Default` is fatal outside Development.** The shipped default
+  resolves into the container's own writable layer, so the app would boot, migrate, work, and lose
+  everything on redeploy without logging anything.
