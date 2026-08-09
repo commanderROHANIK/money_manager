@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
 using MoneyManager.Api.Services.Currency;
@@ -124,13 +126,18 @@ namespace MoneyManager.Api.Controllers
         }
     }
 
+    /// <summary>
+    /// Attributes are written as <c>[property: ...]</c> throughout. On a positional record the
+    /// default target is the constructor parameter, and it is the property metadata that model
+    /// validation reads — so the shorter form would bind and validate nothing, silently.
+    /// </summary>
     public record BankAccountRequest(
-        string AccountName,
-        decimal Balance,
-        string BankName,
-        string AccountNumber,
-        string AccountType,
-        string? CurrencyCode = null);
+        [property: Required, MaxLength(120)] string AccountName,
+        [property: NonNegative] decimal Balance,
+        [property: MaxLength(120)] string BankName,
+        [property: MaxLength(64)] string AccountNumber,
+        [property: MaxLength(40)] string AccountType,
+        [property: SupportedCurrency] string? CurrencyCode = null);
 
     /// <summary>What is held in one currency. Always exact — no rate is involved in a subtotal.</summary>
     public record CurrencyTotal(string CurrencyCode, decimal Total);

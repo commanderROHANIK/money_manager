@@ -32,7 +32,7 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
 
             if (request.Value <= 0)
-                return BadRequest(new { message = "A valuation must be greater than zero." });
+                return ValidationProblem(detail: "A valuation must be greater than zero.");
 
             var valuation = new PropertyValuation
             {
@@ -108,7 +108,7 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
 
             if (request.Amount <= 0)
-                return BadRequest(new { message = "A market estimate must be greater than zero." });
+                return ValidationProblem(detail: "A market estimate must be greater than zero.");
 
             var point = new RentPricePoint
             {

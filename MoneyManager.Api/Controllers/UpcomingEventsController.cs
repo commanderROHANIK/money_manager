@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +13,13 @@ namespace MoneyManager.Api.Controllers
     public class UpcomingEventsController : ControllerBase
     {
         private readonly MoneyManagerDbContext _context;
-        private readonly ILogger<UpcomingEventsController> _logger;
 
-        public UpcomingEventsController(MoneyManagerDbContext context, ILogger<UpcomingEventsController> logger)
+        // The ILogger this used to take existed solely for the try/catch around CreateEvent.
+        // UseExceptionHandler logs unhandled exceptions now, so keeping the dependency would
+        // leave a field that is assigned and never read.
+        public UpcomingEventsController(MoneyManagerDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         [HttpGet]
@@ -39,25 +41,20 @@ namespace MoneyManager.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<UpcomingEvent>> CreateEvent([FromBody] UpcomingEventRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Title) || request.EventDate == DateTime.MinValue)
-            {
-                return BadRequest("Event title and valid date are required.");
-            }
-
+            // The title and date checks that used to live here are now DataAnnotations on the
+            // request record, so they fail as ValidationProblemDetails naming the offending field
+            // rather than as a bare string the UI could only show as a toast.
+            //
+            // The try/catch that used to wrap the save is gone too. It logged and returned a
+            // string with status 500, which was the only endpoint in the app to answer that
+            // shape; UseExceptionHandler now does both, uniformly and without a stack trace.
             var ev = new UpcomingEvent();
             Apply(request, ev);
 
-            try
-            {
-                _context.UpcomingEvents.Add(ev);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction(nameof(GetEvent), new { id = ev.Id }, ev);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating event.");
-                return StatusCode(500, "An error occurred while creating the event.");
-            }
+            _context.UpcomingEvents.Add(ev);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetEvent), new { id = ev.Id }, ev);
         }
 
         [HttpPut("{id}")]
@@ -96,11 +93,22 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record UpcomingEventRequest(
-        string Title,
-        string? Description,
+        [property: Required, MaxLength(200)] string Title,
+        [property: MaxLength(2000)] string? Description,
         DateTime EventDate,
         bool IsRecurring,
         bool IsNotified,
         int? RentalPropertyId = null,
-        int? LoanId = null);
+        int? LoanId = null) : IValidatableObject
+    {
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // [Required] cannot catch this: EventDate is a non-nullable DateTime, so an absent or
+            // unparseable value binds to default(DateTime) and looks like a supplied one.
+            if (EventDate == default)
+            {
+                yield return new ValidationResult("A valid event date is required.", [nameof(EventDate)]);
+            }
+        }
+    }
 }

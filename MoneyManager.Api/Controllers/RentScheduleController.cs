@@ -61,41 +61,34 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
 
             if (!RentScheduleBuilder.TryParsePeriod(period, out var monthStart))
-                return BadRequest(new { message = "Period must be a month in yyyy-MM form, for example 2026-08." });
+                return ValidationProblem(detail: "Period must be a month in yyyy-MM form, for example 2026-08.");
 
             var schedule = await _schedules.GetForPropertyAsync(propertyId, monthStart, monthStart);
             var month = schedule?.Periods.FirstOrDefault(p => p.Period == period);
 
             if (month is null)
             {
-                return BadRequest(new
-                {
-                    message = $"{period} has not started yet, so there is no rent to record against it."
-                });
+                return ValidationProblem(detail: $"{period} has not started yet, so there is no rent to record against it.");
             }
 
             if (month.Status == RentPeriodStatus.Vacant || month.ExpectedAmount is not { } expected)
             {
-                return BadRequest(new
-                {
-                    message = $"No tenancy was running when rent fell due in {period}, so nothing was owed."
-                });
+                return ValidationProblem(detail: $"No tenancy was running when rent fell due in {period}, so nothing was owed.");
             }
 
             // The point of the 409 is that this endpoint is a button. A double click, a retried
             // request, or two devices open on the same page must not book the rent twice.
             if (month.ReceivedAmount > 0m)
             {
-                return Conflict(new
-                {
-                    message = $"Rent for {period} is already recorded. Edit the existing entry in the "
-                              + "ledger rather than adding a second one."
-                });
+                return Problem(
+                    detail: $"Rent for {period} is already recorded. Edit the existing entry in the "
+                              + "ledger rather than adding a second one.",
+                    statusCode: StatusCodes.Status409Conflict);
             }
 
             var amount = request?.Amount ?? expected;
             if (amount <= 0m)
-                return BadRequest(new { message = "Amount must be positive." });
+                return ValidationProblem(detail: "Amount must be positive.");
 
             var date = (request?.Date ?? month.DueDate).Date;
             var note = request?.Description;
@@ -105,11 +98,8 @@ namespace MoneyManager.Api.Controllers
             // that leaves the month it was meant to settle still showing as unpaid.
             if (date < monthStart || date > monthStart.AddMonths(1).AddDays(-1))
             {
-                return BadRequest(new
-                {
-                    message = $"A payment dated {date:yyyy-MM-dd} falls outside {period}, so it would not "
-                              + "settle that month. Record it against the month it belongs to."
-                });
+                return ValidationProblem(detail: $"A payment dated {date:yyyy-MM-dd} falls outside {period}, so it would not "
+                              + "settle that month. Record it against the month it belongs to.");
             }
 
             _context.PropertyTransactions.Add(new PropertyTransaction

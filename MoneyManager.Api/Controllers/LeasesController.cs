@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 
 namespace MoneyManager.Api.Controllers
@@ -36,9 +38,6 @@ namespace MoneyManager.Api.Controllers
             var property = await _context.RentalProperties.FirstOrDefaultAsync(p => p.Id == propertyId);
             if (property is null)
                 return NotFound();
-
-            if (request.EndDate is { } end && end < request.StartDate)
-                return BadRequest(new { message = "A tenancy cannot end before it starts." });
 
             var lease = new Lease
             {
@@ -104,9 +103,6 @@ namespace MoneyManager.Api.Controllers
             if (lease is null)
                 return NotFound();
 
-            if (request.EndDate is { } end && end < request.StartDate)
-                return BadRequest(new { message = "A tenancy cannot end before it starts." });
-
             var rentChanged = lease.MonthlyRent != request.MonthlyRent;
             var previousRent = lease.MonthlyRent;
 
@@ -167,13 +163,26 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record LeaseRequest(
-        string TenantName,
+        [property: Required, MaxLength(120)] string TenantName,
         DateTime StartDate,
-        decimal MonthlyRent,
+        [property: NonNegative] decimal MonthlyRent,
         DateTime? EndDate = null,
-        string? TenantEmail = null,
-        string? TenantPhone = null,
-        int RentDueDayOfMonth = 1,
-        decimal? DepositAmount = null,
-        string? Notes = null);
+        [property: EmailAddress, MaxLength(200)] string? TenantEmail = null,
+        [property: MaxLength(40)] string? TenantPhone = null,
+        [property: Range(1, 31)] int RentDueDayOfMonth = 1,
+        [property: NonNegative] decimal? DepositAmount = null,
+        [property: MaxLength(2000)] string? Notes = null) : IValidatableObject
+    {
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // Was a hand-written check in Create and Update that returned { message } with no
+            // field named. Here it is enforced once, on both endpoints, and the UI can put the
+            // message against the input that caused it.
+            if (EndDate is { } end && end < StartDate)
+            {
+                yield return new ValidationResult(
+                    "A tenancy cannot end before it starts.", [nameof(EndDate)]);
+            }
+        }
+    }
 }

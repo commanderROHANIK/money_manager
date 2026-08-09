@@ -24,6 +24,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// [ApiController] already turns an invalid ModelState into an RFC 7807 ValidationProblemDetails,
+// which is why the request records carry DataAnnotations rather than hand-written checks. This
+// registers the same shape for everything else — a 404 from a route that matched nothing, and the
+// 500 produced by the exception handler below — so a caller parses one envelope for every failure
+// rather than four.
+builder.Services.AddProblemDetails();
+
 var connectionString = builder.Configuration.GetConnectionString("Default")
                        ?? "Data Source=moneymanager.db";
 
@@ -225,7 +232,14 @@ using (var scope = app.Services.CreateScope())
     await DemoDataSeeder.SeedAsync(scope.ServiceProvider);
 }
 
-// First in the pipeline, ahead of everything that reads the client address or the scheme —
+// Ahead of everything, so it wraps the whole pipeline rather than only the endpoints. Outside
+// Development this writes a ProblemDetails 500 carrying no stack trace and no exception message:
+// the details go to the log, where they belong, and not to a public URL. It is also what makes an
+// unhandled exception answer in the same shape as every other failure — before this, one would
+// have produced an empty body the SPA had no way to interpret.
+app.UseExceptionHandler();
+
+// Then forwarded headers, ahead of everything that reads the client address or the scheme —
 // which here means the rate limiter. Registered without the options above it is a silent no-op,
 // the same class of quiet failure it exists to prevent.
 app.UseForwardedHeaders();
