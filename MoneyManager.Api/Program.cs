@@ -14,6 +14,7 @@ using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
+using MoneyManager.Api.Services.Banking;
 using MoneyManager.Api.Services.Currency;
 using MoneyManager.Api.Services.Rent;
 
@@ -134,6 +135,13 @@ builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<PropertyAnalyticsService>();
 builder.Services.AddScoped<CurrencyRollupService>();
 builder.Services.AddScoped<RentScheduleService>();
+
+// The seam, with a deliberate no-op behind it. A real provider is registered here instead once
+// one is configured, and nothing above IBankDataProvider changes when that happens — which is
+// the point. docs/research/banking-data-integration.md sets out why assuming the current vendor
+// will be replaced is the safe assumption in this market.
+builder.Services.AddScoped<IBankDataProvider, ManualBankDataProvider>();
+
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // Deployed behind an edge proxy, every request reaches Kestrel from the proxy — so

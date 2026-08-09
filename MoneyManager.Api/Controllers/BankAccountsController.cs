@@ -25,13 +25,15 @@ namespace MoneyManager.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BankAccount>>> GetBankAccounts()
+        public async Task<ActionResult<IEnumerable<BankAccountResponse>>> GetBankAccounts()
         {
-            return await _context.BankAccounts.ToListAsync();
+            var accounts = await _context.BankAccounts.ToListAsync();
+
+            return accounts.Select(BankAccountResponse.From).ToList();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<BankAccount>> GetBankAccount(int id)
+        public async Task<ActionResult<BankAccountResponse>> GetBankAccount(int id)
         {
             // FirstOrDefaultAsync, not FindAsync: Find can return a change-tracked instance
             // without querying, which would sidestep the tenant query filter entirely.
@@ -42,7 +44,7 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
             }
 
-            return bankAccount;
+            return BankAccountResponse.From(bankAccount);
         }
 
         /// <summary>
@@ -68,7 +70,7 @@ namespace MoneyManager.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<BankAccount>> CreateBankAccount([FromBody] BankAccountRequest request)
+        public async Task<ActionResult<BankAccountResponse>> CreateBankAccount([FromBody] BankAccountRequest request)
         {
             var bankAccount = new BankAccount();
             Apply(request, bankAccount);
@@ -76,7 +78,10 @@ namespace MoneyManager.Api.Controllers
             _context.BankAccounts.Add(bankAccount);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetBankAccount), new { id = bankAccount.Id }, bankAccount);
+            return CreatedAtAction(
+                nameof(GetBankAccount),
+                new { id = bankAccount.Id },
+                BankAccountResponse.From(bankAccount));
         }
 
         [HttpPut("{id}")]
@@ -151,6 +156,43 @@ namespace MoneyManager.Api.Controllers
         [MaxLength(64)] string AccountNumber,
         [MaxLength(40)] string AccountType,
         [SupportedCurrency] string? CurrencyCode = null);
+
+    /// <summary>
+    /// What a bank account looks like over HTTP. The endpoints return this rather than the
+    /// entity.
+    ///
+    /// <para>
+    /// The entity is one field away from being unsafe to publish. Connecting a provider means
+    /// adding a consent token, an external account id, or a session reference to something the
+    /// controller currently hands to the client verbatim — and nobody adding a column thinks of
+    /// themselves as changing an API response. This exists so that the day the connection entity
+    /// arrives, publishing it is a deliberate act rather than the default.
+    /// </para>
+    ///
+    /// <para>
+    /// <c>UserId</c> is left off for the same reason it is never read from a request body:
+    /// ownership is not the caller's business, and a response that states it invites a client to
+    /// start believing it.
+    /// </para>
+    /// </summary>
+    public record BankAccountResponse(
+        int Id,
+        string AccountName,
+        decimal Balance,
+        string BankName,
+        string AccountNumber,
+        string AccountType,
+        string CurrencyCode)
+    {
+        public static BankAccountResponse From(BankAccount account) => new(
+            account.Id,
+            account.AccountName,
+            account.Balance,
+            account.BankName,
+            account.AccountNumber,
+            account.AccountType,
+            account.CurrencyCode);
+    }
 
     /// <summary>What is held in one currency. Always exact — no rate is involved in a subtotal.</summary>
     public record CurrencyTotal(string CurrencyCode, decimal Total);
