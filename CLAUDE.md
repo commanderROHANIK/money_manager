@@ -106,6 +106,12 @@ The trap has a specific shape: you bump `Microsoft.AspNetCore.Authentication.Jwt
 restore fails, and adding an explicit `<PackageReference Include="Microsoft.IdentityModel.Tokens" ...>`
 looks like the obvious fix. It is the bug. Let JwtBearer pick the set.
 
+`Integration/AuthenticationTests.cs` is what catches it: it hosts the real app, logs in, and
+presents the returned token back over HTTP. Nothing else does — no other test sends a request,
+so IDX14102 is invisible to the rest of the suite. That is what lets a JwtBearer bump be reviewed
+on its CI result rather than on faith, so do not stub the authentication handler out of it, and
+do not add `Microsoft.IdentityModel.Tokens` to the test project either.
+
 ### Authorization is deny-by-default
 
 `Program.cs` sets a `FallbackPolicy` requiring an authenticated user, so an endpoint that
@@ -143,7 +149,8 @@ A change to… | needs a test in…
 `Models/` or `Data/MoneyManagerDbContext.cs` | `MoneyManager.Api.Tests/TenantIsolationTests.cs`
 `Services/Analytics/PropertyAnalyticsCalculator.cs` | `PropertyAnalyticsCalculatorTests.cs`, plus the worked example in its docblock
 `Services/Rent/RentScheduleBuilder.cs` | `RentScheduleBuilderTests.cs`, plus the worked example in its docblock
-`Controllers/` | an integration test (see `MoneyManager.Api.Tests/Integration/` once it exists)
+`Controllers/` | an integration test in `MoneyManager.Api.Tests/Integration/`
+`Program.cs`'s auth, or any `Microsoft.IdentityModel.*` / `JwtBearer` version | `Integration/AuthenticationTests.cs`
 a new widget | fixture props in `src/__tests__/fixtures.ts`, so the smoke suite mounts it
 `src/utils/` or `src/services/` | a colocated unit test
 
