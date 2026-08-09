@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -22,9 +23,32 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<MoneyManagerDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("Default")
-                      ?? "Data Source=moneymanager.db"));
+var connectionString = builder.Configuration.GetConnectionString("Default")
+                       ?? "Data Source=moneymanager.db";
+
+// appsettings.json ships a relative path so a fresh clone runs with no setup. That same default
+// is a silent data-loss bug in a container: it resolves against the working directory, which is
+// the image's own writable layer, so the app boots, migrates, serves traffic — and loses
+// everything on the next deploy. Nothing warns, because nothing is wrong until the redeploy.
+//
+// Outside Development the database therefore has to be an absolute path, which on a deployment
+// means the mounted volume, the only storage that outlives the container.
+if (!builder.Environment.IsDevelopment())
+{
+    var dataSource = new SqliteConnectionStringBuilder(connectionString).DataSource;
+
+    // In-memory databases are addressed rather than stored, so "does this survive a redeploy"
+    // is not a question that applies to them.
+    if (!dataSource.Contains(":memory:", StringComparison.Ordinal) && !Path.IsPathRooted(dataSource))
+    {
+        throw new InvalidOperationException(
+            $"ConnectionStrings:Default points at the relative path '{dataSource}', which resolves " +
+            "inside the container and is discarded on the next deploy. Point it at a mounted " +
+            "volume, for example ConnectionStrings__Default=\"Data Source=/data/moneymanager.db\".");
+    }
+}
+
+builder.Services.AddDbContext<MoneyManagerDbContext>(options => options.UseSqlite(connectionString));
 
 // ---------------------------------------------------------------------------
 // Authentication
@@ -152,6 +176,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// The SPA is served from this same origin in a deployed image: the Dockerfile copies the Vite
+// bundle into wwwroot. In a dev checkout wwwroot does not exist, these are no-ops, and the Vite
+// dev server on :5173 serves the UI as before.
+//
+// Both must stay ahead of UseAuthorization. MapFallbackToFile registers the pattern
+// "{*path:nonfile}", which by design does not match a path whose last segment has a file
+// extension — so /assets/index-abc123.js matches no endpoint at all, and the FallbackPolicy
+// below is applied to endpoint-less requests too. Served after authorization, every script and
+// stylesheet would come back 401: a blank page behind a working index.html, which reads like a
+// CORS or build problem and not like an authorization one.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Order matters: CORS has to run before endpoint routing terminates the request, and
 // authentication has to populate the principal before authorization inspects it.
 app.UseCors();
@@ -160,6 +197,25 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// The three endpoints below are the only anonymous ones outside register and login, and each is
+// a deliberate exception to the deny-by-default FallbackPolicy rather than an oversight.
+//
+// None of them exposes data. Requiring a token for the SPA shell would be circular anyway — the
+// token lives in localStorage, which the browser can only read once the shell it is gating has
+// already loaded.
+
+// Liveness for the platform healthcheck, which has no credentials to present.
+app.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
+
+// Without this, the SPA fallback below swallows an unmatched /api path and answers 200 HTML
+// where every caller expects JSON, turning "no such endpoint" into a parse error. Both
+// fallbacks sit at the same route order, so the more specific pattern wins.
+app.MapFallback("/api/{**slug}", () => Results.NotFound()).AllowAnonymous();
+
+// vue-router runs in history mode, so a deep link such as /properties/3 reaches the server as a
+// real navigation and has to be answered with the shell for the client-side router to take over.
+app.MapFallbackToFile("index.html").AllowAnonymous();
 
 app.Run();
 
