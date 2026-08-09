@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue';
-import type { StyleValue } from 'vue';
+import type { ClassValue, StyleValue } from 'vue';
 
 // See BaseInput: class/style go to the <label> so parent layout classes apply to the element
 // the parent actually lays out.
@@ -30,7 +30,8 @@ const props = withDefaults(
 );
 
 const attrs = useAttrs();
-const wrapperClass = computed(() => attrs.class as unknown);
+// See BaseInput: Vue types the class binding now, so `unknown` no longer satisfies it.
+const wrapperClass = computed(() => attrs.class as ClassValue);
 const wrapperStyle = computed(() => attrs.style as StyleValue);
 const selectAttrs = computed(() => {
   const { class: _class, style: _style, ...rest } = attrs;

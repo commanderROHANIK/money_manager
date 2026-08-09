@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue';
-import type { StyleValue } from 'vue';
+import type { ClassValue, StyleValue } from 'vue';
 
 // class/style are applied to the <label>, not the <input>: the label is the element the parent
 // lays out (grid cell, flex item), so `col-span-2` / `flex-1` have to land there to do anything.
@@ -38,7 +38,10 @@ const props = withDefaults(
 );
 
 const attrs = useAttrs();
-const wrapperClass = computed(() => attrs.class as unknown);
+// Cast to ClassValue rather than unknown: Vue now types the class binding, so `unknown` no
+// longer satisfies it. useAttrs() is untyped by design, so a cast is unavoidable — this one at
+// least names the shape the template actually requires.
+const wrapperClass = computed(() => attrs.class as ClassValue);
 const wrapperStyle = computed(() => attrs.style as StyleValue);
 const inputAttrs = computed(() => {
   const { class: _class, style: _style, ...rest } = attrs;

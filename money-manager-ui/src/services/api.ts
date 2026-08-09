@@ -48,7 +48,7 @@ export async function updateUpcomingEvent(id: number, updatedEvent: UpcomingEven
         await api.put(`/UpcomingEvents/${id}`, updatedEvent);
     } catch (error) {
         console.error('Failed to update event:', error);
-        throw new Error('Failed to update event');
+        throw new Error('Failed to update event', { cause: error });
     }
 }
 
@@ -57,7 +57,7 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
       await api.delete(`/UpcomingEvents/${id}`);
     } catch (error) {
       console.error('Failed to delete event:', error);
-      throw new Error('Failed to delete event');
+      throw new Error('Failed to delete event', { cause: error });
     }
   }
 
