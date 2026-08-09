@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 
 namespace MoneyManager.Api.Controllers
@@ -85,10 +87,10 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record StockRequest(
-        string Ticker,
-        int SharesOwned,
-        decimal PurchasePrice,
-        decimal CurrentPrice,
+        [Required, MaxLength(16)] string Ticker,
+        [NonNegative] int SharesOwned,
+        [NonNegative] decimal PurchasePrice,
+        [NonNegative] decimal CurrentPrice,
         DateTime PurchaseDate,
-        string? CurrencyCode = null);
+        [SupportedCurrency] string? CurrencyCode = null);
 }

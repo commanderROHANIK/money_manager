@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
 using MoneyManager.Api.Services.Currency;
@@ -188,21 +190,34 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record RentalPropertyRequest(
-        string PropertyName,
-        string Address,
-        string? City = null,
-        string? PostalCode = null,
+        [Required, MaxLength(160)] string PropertyName,
+        [Required, MaxLength(300)] string Address,
+        [MaxLength(120)] string? City = null,
+        [MaxLength(20)] string? PostalCode = null,
+        [RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Country code must be two letters.")]
         string? CountryCode = null,
         PropertyType PropertyType = PropertyType.Apartment,
-        decimal? SizeSqm = null,
-        int? Bedrooms = null,
-        decimal? PurchasePrice = null,
+        [NonNegative] decimal? SizeSqm = null,
+        [NonNegative] int? Bedrooms = null,
+        [NonNegative] decimal? PurchasePrice = null,
         DateTime? PurchaseDate = null,
         PropertyStatus Status = PropertyStatus.Active,
-        decimal? SalePrice = null,
+        [NonNegative] decimal? SalePrice = null,
         DateTime? SaleDate = null,
-        string? Notes = null,
-        string? CurrencyCode = null);
+        [MaxLength(2000)] string? Notes = null,
+        [SupportedCurrency] string? CurrencyCode = null) : IValidatableObject
+    {
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // A sale before the purchase inverts the holding period, which is the denominator of
+            // every annualised return on this property.
+            if (SaleDate is { } sold && PurchaseDate is { } bought && sold < bought)
+            {
+                yield return new ValidationResult(
+                    "A property cannot be sold before it was purchased.", [nameof(SaleDate)]);
+            }
+        }
+    }
 
     /// <summary>
     /// Occupancy and current rent are derived from the active tenancy rather than stored on

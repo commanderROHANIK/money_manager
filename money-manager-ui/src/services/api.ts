@@ -38,6 +38,70 @@ api.interceptors.response.use(
   }
 );
 
+/**
+ * A failed write, in the shape a form can actually render.
+ *
+ * `fields` is keyed by the form's own field names so a component can look up
+ * `errors.fields.accountName` directly. `message` carries the cases that belong to no single
+ * field — a 409 conflict, a 500 — which is what a toast or a banner should show instead.
+ */
+export interface ApiError {
+  fields: Record<string, string>;
+  message: string | null;
+  status: number | null;
+}
+
+/** ASP.NET names fields as they are declared (`AccountName`); the forms use `accountName`. */
+function toFieldName(key: string): string {
+  return key.charAt(0).toLowerCase() + key.slice(1);
+}
+
+/**
+ * Turns whatever the API rejected a write with into one predictable object.
+ *
+ * The server answers every failure as RFC 7807 now: a validation failure carries an `errors` map
+ * keyed by field, and everything else carries a `detail` string. This is the single place that
+ * knows that, so a component never reaches into `err.response.data` and guesses.
+ *
+ * Defensive about the envelope on purpose — a network failure, a proxy's HTML error page, or a
+ * response that predates this convention all have to come back as *something* a form can show,
+ * rather than throwing a second error inside the error handler.
+ */
+export function extractApiError(error: unknown): ApiError {
+  const empty: ApiError = { fields: {}, message: null, status: null };
+
+  if (!axios.isAxiosError(error)) {
+    return { ...empty, message: error instanceof Error ? error.message : 'Something went wrong.' };
+  }
+
+  const status = error.response?.status ?? null;
+  const data = error.response?.data as
+    | { errors?: Record<string, string[] | string>; detail?: string; title?: string }
+    | undefined;
+
+  if (!data || typeof data !== 'object') {
+    return { fields: {}, message: error.message, status };
+  }
+
+  const fields: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(data.errors ?? {})) {
+    // Only the first message per field: a form shows one line under an input, and the rest are
+    // almost always restatements of the same problem.
+    const first = Array.isArray(value) ? value[0] : value;
+    if (typeof first === 'string' && first.length > 0) {
+      fields[toFieldName(key)] = first;
+    }
+  }
+
+  // `title` is the last resort: on a validation failure it is the generic "One or more validation
+  // errors occurred", which is worth showing only when nothing more specific came back.
+  const message =
+    data.detail ?? (Object.keys(fields).length > 0 ? null : (data.title ?? error.message));
+
+  return { fields, message, status };
+}
+
 export async function fetchUpcomingEvents(): Promise<UpcomingEvent[]> {
     const response = await api.get<UpcomingEvent[]>('/UpcomingEvents');
     return response.data;

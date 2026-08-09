@@ -45,11 +45,8 @@ namespace MoneyManager.Api.Controllers
 
             if (request.Amount <= 0)
             {
-                return BadRequest(new
-                {
-                    message = "Amount must be positive. Whether it is money in or money out "
-                              + "is determined by the category."
-                });
+                return ValidationProblem(detail: "Amount must be positive. Whether it is money in or money out "
+                              + "is determined by the category.");
             }
 
             // One property, one currency. Accepting a foreign-currency line here would make
@@ -60,15 +57,12 @@ namespace MoneyManager.Api.Controllers
 
             if (currency != property.CurrencyCode)
             {
-                return BadRequest(new
-                {
-                    message = $"This property is denominated in {property.CurrencyCode}; "
-                              + $"a {currency} transaction cannot be recorded against it."
-                });
+                return ValidationProblem(detail: $"This property is denominated in {property.CurrencyCode}; "
+                              + $"a {currency} transaction cannot be recorded against it.");
             }
 
             if (!await LeaseBelongsToProperty(request.LeaseId, propertyId))
-                return BadRequest(new { message = "The given lease does not belong to this property." });
+                return ValidationProblem(detail: "The given lease does not belong to this property.");
 
             var transaction = new PropertyTransaction
             {
@@ -118,10 +112,10 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
 
             if (request.Amount <= 0)
-                return BadRequest(new { message = "Amount must be positive." });
+                return ValidationProblem(detail: "Amount must be positive.");
 
             if (!await LeaseBelongsToProperty(request.LeaseId, propertyId))
-                return BadRequest(new { message = "The given lease does not belong to this property." });
+                return ValidationProblem(detail: "The given lease does not belong to this property.");
 
             transaction.Date = request.Date;
             transaction.Amount = request.Amount;

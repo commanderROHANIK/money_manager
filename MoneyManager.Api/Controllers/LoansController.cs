@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 
 namespace MoneyManager.Api.Controllers
@@ -39,7 +41,7 @@ namespace MoneyManager.Api.Controllers
         public async Task<ActionResult<Loan>> CreateLoan([FromBody] LoanRequest request)
         {
             if (!await PropertyLinkIsValid(request))
-                return BadRequest(new { message = "The property this loan is secured on was not found." });
+                return ValidationProblem(detail: "The property this loan is secured on was not found.");
 
             var loan = new Loan();
             Apply(request, loan);
@@ -59,7 +61,7 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
 
             if (!await PropertyLinkIsValid(request))
-                return BadRequest(new { message = "The property this loan is secured on was not found." });
+                return ValidationProblem(detail: "The property this loan is secured on was not found.");
 
             Apply(request, loan);
             await _context.SaveChangesAsync();
@@ -113,16 +115,29 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record LoanRequest(
-        string LoanName,
-        decimal LoanAmount,
-        decimal RemainingBalance,
-        decimal InterestRate,
+        [Required, MaxLength(120)] string LoanName,
+        [NonNegative] decimal LoanAmount,
+        [NonNegative] decimal RemainingBalance,
+        [NonNegative] decimal InterestRate,
         DateTime DueDate,
         bool IsPaidOff,
-        string? CurrencyCode = null,
+        [SupportedCurrency] string? CurrencyCode = null,
         LoanType LoanType = LoanType.Personal,
         int? RentalPropertyId = null,
-        decimal? MonthlyPayment = null,
+        [NonNegative] decimal? MonthlyPayment = null,
         DateTime? StartDate = null,
-        int? TermMonths = null);
+        [NonNegative] int? TermMonths = null) : IValidatableObject
+    {
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // Owing more than was ever borrowed is not a loan, it is a typo — and it feeds
+            // straight into equity and cash-on-cash, where it would read as a plausible number.
+            if (RemainingBalance > LoanAmount)
+            {
+                yield return new ValidationResult(
+                    "Remaining balance cannot exceed the original loan amount.",
+                    [nameof(RemainingBalance)]);
+            }
+        }
+    }
 }

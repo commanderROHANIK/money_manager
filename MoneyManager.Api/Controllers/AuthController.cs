@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
+using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 
 namespace MoneyManager.Api.Controllers
@@ -52,12 +54,9 @@ namespace MoneyManager.Api.Controllers
             if (!_authOptions.AllowRegistration)
                 return NotFound();
 
-            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
-                return BadRequest(new { message = "Username and password are required" });
-
-            if (request.Password.Length < 8)
-                return BadRequest(new { message = "Password must be at least 8 characters" });
-
+            // The required-and-long-enough checks that used to sit here are DataAnnotations on
+            // RegisterRequest now, so a rejection names the field rather than describing it in
+            // prose the form cannot place.
             var user = new User
             {
                 Username = request.Username.Trim(),
@@ -81,7 +80,9 @@ namespace MoneyManager.Api.Controllers
             {
                 // The unique indexes on the normalized columns are the real guard; checking
                 // first and inserting after would race two concurrent registrations.
-                return Conflict(new { message = "That username or email address is already registered" });
+                return Problem(
+                    detail: "That username or email address is already registered",
+                    statusCode: StatusCodes.Status409Conflict);
             }
 
             return Ok(new { message = "User registered successfully" });
@@ -137,6 +138,17 @@ namespace MoneyManager.Api.Controllers
         }
     }
 
-    public record RegisterRequest(string Username, string Email, string Password, string? BaseCurrency = null);
+    /// <summary>
+    /// The length rule lives here rather than in the controller so the response names
+    /// <c>Password</c> as the offending field. It must stay at least as strict as it was, since
+    /// with registration disabled on a deployment the seeded account is the only way in and this
+    /// is the only other door.
+    /// </summary>
+    public record RegisterRequest(
+        [Required, MaxLength(64)] string Username,
+        [Required, EmailAddress, MaxLength(200)] string Email,
+        [Required, MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
+        string Password,
+        [SupportedCurrency] string? BaseCurrency = null);
     public record LoginRequest(string Username, string Password);
 }
