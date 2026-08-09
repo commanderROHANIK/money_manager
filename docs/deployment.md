@@ -29,7 +29,7 @@ path, and `numReplicas: 1`. Everything else is set in the Railway dashboard.
 
 | Variable | Value | Why |
 |---|---|---|
-| `ASPNETCORE_HTTP_PORTS` | `${{PORT}}` | Railway assigns the port and the app must bind it. |
+| `ASPNETCORE_URLS` | `http://0.0.0.0:8080` | Literal, not a variable reference. See below — this one cost a deploy. |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | See the warning below — do **not** set `Development`. |
 | `JwtSettings__SecretKey` | generated | `openssl rand -base64 48`. Startup refuses a key under 32 bytes. |
 | `ConnectionStrings__Default` | `Data Source=/data/moneymanager.db` | Must match the volume mount path. |
@@ -39,15 +39,36 @@ path, and `numReplicas: 1`. Everything else is set in the Railway dashboard.
 | `Seed__Password` | set explicitly | **No default exists and startup fails without one.** |
 | `Seed__IncludeDemoData` | `true` for previews | Consider `false` on a long-lived environment holding real records. |
 
-### `ASPNETCORE_HTTP_PORTS`, not `ASPNETCORE_URLS`
+### Bind a literal address, never `${{PORT}}`
 
-Both work. `ASPNETCORE_URLS=http://0.0.0.0:${{PORT}}` expands to `http://0.0.0.0:` if `PORT` is
-ever missing, and Kestrel throws on the unparseable URL before anything is logged.
-`ASPNETCORE_HTTP_PORTS` cannot fail that way.
+This section previously recommended `ASPNETCORE_HTTP_PORTS=${{PORT}}` on the reasoning that
+`ASPNETCORE_URLS` would produce an unparseable URL if `PORT` were missing, and that
+`ASPNETCORE_HTTP_PORTS` "cannot fail that way". **That was wrong, and it cost the first
+deployment.** It does not fail loudly — it fails silently, which is worse.
 
-Note that the widely repeated "Kestrel binds to localhost by default" is true of `dotnet run` and
-**not** of `mcr.microsoft.com/dotnet/aspnet:9.0`, which sets `ASPNETCORE_HTTP_PORTS=8080` and
-binds all interfaces. Do not add `UseUrls()` in code to fix a problem the image does not have.
+What actually happened: no `PORT` variable existed on the service, because no domain had been
+generated yet. `${{PORT}}` resolved to an empty string, and `ASPNETCORE_HTTP_PORTS=""` **overrode
+the base image's default of 8080 with nothing**. ASP.NET then fell back to its own built-in
+default and logged:
+
+```
+Now listening on: http://localhost:5000
+```
+
+Loopback only, on a port nothing routes to. The container was healthy, the app had migrated and
+seeded successfully, and the only symptom was Railway's healthcheck reporting
+`service unavailable` — with no error anywhere, because nothing had gone wrong from the app's
+point of view.
+
+So: **`ASPNETCORE_URLS=http://0.0.0.0:8080`**, with the host and port written out. No variable
+reference to resolve, and the bind address stated rather than inherited. The domain's target port
+must then be `8080` — a domain generated against an earlier, broken deployment can keep pointing
+at whatever port Railway detected back then, which presents as a 502 rather than a timeout.
+
+The corollary is worth stating too, because the previous version of this section got it backwards:
+the widely repeated "Kestrel binds to localhost by default" is true of `dotnet run`, and *also*
+true of the published image the moment anything blanks out its port configuration. The image's
+`ASPNETCORE_HTTP_PORTS=8080` default is only a default.
 
 ### Never set `ASPNETCORE_ENVIRONMENT=Development`
 
@@ -83,7 +104,15 @@ Constraints that come with choosing SQLite, all of them accepted for a dev deplo
   has no advisory lock, so two overlapping containers writing `__EFMigrationsHistory` against one
   file is a real hazard. This is a hard constraint, not a preference.
 - **No horizontal scaling**, for the same reason.
-- **WAL is not enabled**, so readers block writers and a busy moment can surface `SQLITE_BUSY`.
+- **WAL is enabled**, and not by us: EF's SQLite provider issues `PRAGMA journal_mode = 'wal'` on
+  connect, which the first deployment's logs confirm. An earlier version of this document claimed
+  the opposite and warned that readers would block writers — that warning was wrong, and the
+  sidecar `-wal`/`-shm` files on the volume are expected rather than a symptom.
+- **DataProtection keys are not persisted.** The app logs a warning that it is storing them in
+  `/root/.aspnet/DataProtection-Keys`, which is inside the container rather than on the volume, so
+  they are regenerated on every deploy. Harmless as things stand — authentication is JWT, signed
+  with `JwtSettings__SecretKey`, and nothing here uses DataProtection — but it would matter the
+  day anything starts issuing cookies or protected tokens.
 - **No backups.** One volume holds everything. Accepted; worth revisiting before anything real
   lives here.
 - The base image runs as root, which is why the root-owned volume is writable. Switching to a
@@ -125,10 +154,23 @@ absent, and the demo portfolio only if the seeded user has no properties.
   config-as-code needs an absolute repo path, and there are reports of the `builder` directive
   being ignored in some setups — harmless here, since Railway auto-detects the Dockerfile anyway.
 
+## Confirmed on the first deployment
+
+Written down because these were all reasoned about at length before anything ran, and the
+reasoning turned out to be right in a way that only a real boot could establish:
+
+- The volume mounts and the database lives on it — `Mounting volume on: .../vol_…`, followed by
+  all three migrations applying against it.
+- **Seeding does not crash the container.** The demo portfolio persisted at startup without
+  `ApplyOwnership` throwing, which is the failure this design was built to avoid.
+- **The idempotency guard asks a real question.** The check ran as
+  `SELECT EXISTS (… WHERE "r"."UserId" = @__ef_filter__UserId_0)` with the filter parameter bound
+  to the seeded user's id. Through a null tenant it would have compared against NULL, matched
+  nothing, and re-seeded the demo rows on every single boot.
+
 ## Still to verify on a running instance
 
-Three things could not be settled from the code or the documentation, and each is a real
-possibility rather than a formality:
+Each of these is a real possibility rather than a formality:
 
 1. **That the auth rate limiter actually partitions per client.** `UseForwardedHeaders` runs with
    `KnownProxies` cleared, which switches off per-hop verification entirely, and `ForwardLimit=1`
