@@ -41,4 +41,30 @@ namespace MoneyManager.Api.Infrastructure
     {
         public int? UserId => null;
     }
+
+    /// <summary>
+    /// A named owner for work that runs outside any request but still has to write owned rows —
+    /// which today means the startup seeder, and nothing else.
+    ///
+    /// <para>
+    /// <see cref="NoCurrentUser"/> cannot do that job. Every seeded entity implements
+    /// <c>IOwnedByUser</c>, and <c>ApplyOwnership</c> throws rather than persist one with
+    /// no owner, so seeding through a null tenant fails on the first <c>SaveChanges</c> — before
+    /// the app starts, which is a crash loop rather than an error. Supplying the owner here
+    /// leaves that guard exactly as it was: ownership is still stamped by the data layer, from
+    /// an identity passed in out of band and never from a request payload.
+    /// </para>
+    ///
+    /// <para>
+    /// It also makes the global query filter mean something while seeding, which is what lets
+    /// "has this already been seeded" work at all. Asked through a null tenant, that filter
+    /// compares <c>UserId</c> against NULL, matches nothing, and reports an empty database on
+    /// every single boot — so a guard that reads as obviously correct would duplicate the demo
+    /// rows on every redeploy.
+    /// </para>
+    /// </summary>
+    public sealed class SeedCurrentUser(int userId) : ICurrentUser
+    {
+        public int? UserId { get; } = userId;
+    }
 }

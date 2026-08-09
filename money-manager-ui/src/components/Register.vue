@@ -40,6 +40,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import axios from 'axios';
 import { register } from "../services/authService";
 import BaseInput from './ui/BaseInput.vue';
 import BaseButton from './ui/BaseButton.vue';
@@ -73,8 +74,14 @@ export default defineComponent({
         this.message = "Registered successfully";
         this.username = this.email = this.password = this.confirmPassword = "";
       } catch (err) {
+        // A deployment can close registration, in which case the endpoint is not there at all —
+        // 404 rather than 403, so it does not advertise itself. Without this branch the page
+        // renders "Error registering: Request failed with status code 404", which reads like the
+        // app is broken rather than like a deliberate setting.
         this.message =
-          "Error registering: " + (err instanceof Error ? err.message : "please try again");
+          axios.isAxiosError(err) && err.response?.status === 404
+            ? "Registration is closed on this deployment. Ask for an account to be set up for you."
+            : "Error registering: " + (err instanceof Error ? err.message : "please try again");
       } finally {
         this.loading = false;
       }

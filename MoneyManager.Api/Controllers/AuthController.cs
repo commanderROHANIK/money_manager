@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
@@ -18,6 +19,7 @@ namespace MoneyManager.Api.Controllers
         private readonly TokenProvider _tokenProvider;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly ICurrentUser _currentUser;
+        private readonly AuthOptions _authOptions;
 
         /// <summary>
         /// Verified against when no user matches, so a failed login costs the same whether or
@@ -30,18 +32,26 @@ namespace MoneyManager.Api.Controllers
             MoneyManagerDbContext context,
             TokenProvider tokenProvider,
             IPasswordHasher<User> passwordHasher,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IOptions<AuthOptions> authOptions)
         {
             _context = context;
             _tokenProvider = tokenProvider;
             _passwordHasher = passwordHasher;
             _currentUser = currentUser;
+            _authOptions = authOptions.Value;
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            // 404 rather than 403, and checked before anything else in the method: a deployment
+            // with registration closed should not confirm that the endpoint exists, nor answer
+            // questions about what it would have accepted. Accounts are seeded there instead.
+            if (!_authOptions.AllowRegistration)
+                return NotFound();
+
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
                 return BadRequest(new { message = "Username and password are required" });
 
