@@ -70,6 +70,13 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("JwtSettings__ExpiryHours", "12");
         Environment.SetEnvironmentVariable("ConnectionStrings__Default", $"Data Source={_databasePath}");
 
+        // Registration is off by default outside Development, and this factory runs the app as
+        // Production. Most of AuthenticationTests registers a user as its first step, so leaving
+        // it closed here would fail a dozen tests for a reason unrelated to what they assert.
+        // RegistrationDisabledTests turns it back off for the host it builds, which is the only
+        // place the closed behaviour is under test.
+        Environment.SetEnvironmentVariable("Auth__AllowRegistration", "true");
+
         // A deployed image has the Vite bundle in wwwroot; a test run has no wwwroot at all,
         // because WebApplicationFactory roots the app at this test project's directory. Without a
         // stand-in web root every static-file assertion would pass for the wrong reason — the SPA

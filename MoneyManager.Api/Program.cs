@@ -54,6 +54,23 @@ builder.Services.AddDbContext<MoneyManagerDbContext>(options => options.UseSqlit
 // ---------------------------------------------------------------------------
 // Authentication
 // ---------------------------------------------------------------------------
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
+builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.SectionName));
+
+var seed = builder.Configuration.GetSection(SeedOptions.SectionName).Get<SeedOptions>() ?? new SeedOptions();
+
+// Refusing to start beats seeding a default. With registration disabled the seeded account is
+// the only way into the deployment, and preview URLs are public with nothing in front of them —
+// so a built-in password would mean one known credential opening every environment built from
+// this image. A container that will not boot is a much cheaper failure than that.
+if (seed.Enabled && seed.Password.Length < SeedOptions.MinimumPasswordLength)
+{
+    throw new InvalidOperationException(
+        $"{SeedOptions.SectionName}:Password must be at least {SeedOptions.MinimumPasswordLength} characters " +
+        $"when {SeedOptions.SectionName}:Enabled is true. Set it via the {SeedOptions.SectionName}__Password " +
+        "environment variable; there is deliberately no default.");
+}
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 var jwt = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
@@ -201,6 +218,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     scope.ServiceProvider.GetRequiredService<MoneyManagerDbContext>().Database.Migrate();
+
+    // After Migrate, because a fresh volume has no schema to seed into. Deliberately not
+    // wrapped in a try/catch: a seeder that failed leaves the environment in a state nobody
+    // asked for, and the unhandled exception on stdout is the only diagnosis available.
+    await DemoDataSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 // First in the pipeline, ahead of everything that reads the client address or the scheme —

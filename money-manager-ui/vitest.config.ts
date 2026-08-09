@@ -28,7 +28,11 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 70.35 / 71.04 / 71.54 / 69.97, from 70.0 / 71.14 / 70.98 / 69.6, after the
+      // Last measured 70.35 / 71.2 / 71.54 / 69.97, after the registration-disabled branch in
+      // Register.vue arrived with its own test: branches moved a sixth of a point and nothing
+      // else moved at all, which is the rounding these floors already absorb.
+      //
+      // Before that: 70.35 / 71.04 / 71.54 / 69.97, from 70.0 / 71.14 / 70.98 / 69.6, after the
       // rent-collection work. The floors do not move with it: the new widget and service arrived
       // with their own tests, so the ratio barely shifted — branches even dipped a tenth — and
       // ratcheting on noise would fail the next honest pull request for no gain. The floors move

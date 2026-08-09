@@ -142,6 +142,26 @@ describe('Register', () => {
     expect(wrapper.findAll('input')[0].element.value).toBe('alice');
   });
 
+  it('explains that registration is closed rather than reporting a 404', async () => {
+    // A deployment can disable registration, and the endpoint then answers 404 so it does not
+    // advertise itself. Reported verbatim that reads as a broken app, which is the wrong thing
+    // to tell someone about a deliberate setting.
+    register.mockRejectedValue(
+      Object.assign(new Error('Request failed with status code 404'), {
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+    );
+    const wrapper = mountWith(Register);
+
+    await fill(wrapper, ['alice', 'a@e.com', 'password', 'password']);
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Registration is closed');
+    expect(wrapper.text()).not.toContain('404');
+  });
+
   it('re-enables the submit button after a failure', async () => {
     // The loading flag is cleared in a finally block; without it a failed attempt would leave
     // the form permanently disabled.
