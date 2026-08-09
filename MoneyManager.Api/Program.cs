@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.Sqlite;
@@ -112,6 +113,38 @@ builder.Services.AddScoped<CurrencyRollupService>();
 builder.Services.AddScoped<RentScheduleService>();
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
+// Deployed behind an edge proxy, every request reaches Kestrel from the proxy — so
+// Connection.RemoteIpAddress is the same value for all of them and the partition key below
+// collapses to a constant. That is not a weakened mitigation, it is precisely the one-shared-
+// bucket outcome the limiter's own comment rules out, arrived at by deploying rather than by
+// editing. Nothing fails and nothing logs.
+//
+// It is an availability bug rather than only a security one: [EnableRateLimiting("auth")] sits
+// on the whole AuthController, which includes the /api/auth/me the SPA calls on every page
+// load. One bucket means the entire deployment shares ten requests a minute, and two people
+// browsing at once throttle each other out of the app.
+//
+// KnownNetworks and KnownProxies are cleared because the edge's address is neither loopback nor
+// knowable in advance. That switches off the middleware's per-hop verification altogether — it
+// no longer stops at the first unrecognised peer — so what keeps this honest is ForwardLimit
+// staying at 1: only the rightmost X-Forwarded-For entry is read, which is the one the edge
+// itself appended rather than anything a caller wrote. That entry is the real client only if
+// exactly one hop appends to the header, and there is no signal if that assumption is wrong.
+// It has to be confirmed by observing the resolved address vary per client on a deployment.
+//
+// XForwardedProto is included so a Location header from CreatedAtAction carries the scheme the
+// caller actually used rather than the http:// the proxy forwards over. With KnownProxies
+// cleared it is caller-controlled, which is harmless while nothing branches on the scheme —
+// there is no UseHttpsRedirection here — but it would become an open redirect the day one is
+// added.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // Credential stuffing is the obvious attack on a login form. A fixed window on the auth
 // endpoints costs nothing and is table stakes for anything sold as a service. Partitioned
 // by client IP so one caller hitting the limit can't lock everyone else out of login —
@@ -169,6 +202,11 @@ using (var scope = app.Services.CreateScope())
 {
     scope.ServiceProvider.GetRequiredService<MoneyManagerDbContext>().Database.Migrate();
 }
+
+// First in the pipeline, ahead of everything that reads the client address or the scheme —
+// which here means the rate limiter. Registered without the options above it is a silent no-op,
+// the same class of quiet failure it exists to prevent.
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {
