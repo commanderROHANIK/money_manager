@@ -37,14 +37,19 @@
     </BaseCard>
 
     <BaseCard class="col-span-1 xl:col-span-3">
-      <AddPropertyWidget @create="_addProperty" />
+      <AddPropertyWidget
+        :key="addFormKey"
+        :errors="addErrors"
+        :error="addError"
+        @create="_addProperty"
+      />
     </BaseCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchRentalProperties, deleteRentalProperty } from '../services/api';
+import { extractApiError, fetchRentalProperties, deleteRentalProperty } from '../services/api';
 import { createProperty, fetchArrears, fetchPortfolioAnalytics } from '../services/propertyApi';
 import type { RentalPropertyRequest } from '../services/propertyApi';
 import type { PortfolioAnalytics, PropertyArrears, RentalProperty } from '../models/models';
@@ -64,6 +69,14 @@ const properties = ref<RentalProperty[]>([]);
 const portfolio = ref<PortfolioAnalytics | null>(null);
 const arrears = ref<PropertyArrears[]>([]);
 
+const addErrors = ref<Record<string, string>>({});
+const addError = ref<string | null>(null);
+
+// Bumped after a successful create, which remounts the add form and empties it. A key rather
+// than a reset() call on the child: the form's cleared state is just its initial state, so
+// remounting expresses it without the widget needing an imperative handle at all.
+const addFormKey = ref(0);
+
 async function load() {
   [properties.value, portfolio.value, arrears.value] = await Promise.all([
     fetchRentalProperties(),
@@ -79,8 +92,34 @@ async function _deleteProperty(id: number) {
   await load();
 }
 
+/**
+ * The page owns the request, so it owns what happens to the form afterwards.
+ *
+ * On success the widget is remounted by bumping its key, which is what empties it — the widget
+ * cannot do that itself, because at the moment it emits it has no idea whether the write will be
+ * accepted. It used to clear regardless, which meant a rejected write left the user staring at
+ * empty inputs with error messages underneath them.
+ *
+ * On failure the form is left exactly as typed, with the server's messages placed against the
+ * fields that caused them.
+ */
 async function _addProperty(request: RentalPropertyRequest) {
-  await createProperty(request);
+  addErrors.value = {};
+  addError.value = null;
+
+  try {
+    await createProperty(request);
+  } catch (err) {
+    const { fields, message } = extractApiError(err);
+
+    addErrors.value = fields;
+    // Only when there is no field to hang it on, so the user is not told the same thing twice.
+    addError.value = Object.keys(fields).length > 0 ? null : message;
+
+    return;
+  }
+
+  addFormKey.value += 1;
   await load();
 }
 </script>
