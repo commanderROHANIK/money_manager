@@ -28,7 +28,21 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 70.35 / 71.2 / 71.54 / 69.97, after the registration-disabled branch in
+      // Last measured 71.24 / 71.61 / 69.63 / 70.95, on vite 8 + @vitest/coverage-v8 against the
+      // upgraded toolchain. The floors do not move, and the reason is worth writing down: this
+      // measurement is not comparable to the ones below it. The function *denominator* jumped
+      // from 471 to 517 on identical source — the newer build pipeline emits different function
+      // boundaries, so v8 counts more of them — which dropped functions to 67.69% on the same
+      // tests that had measured 71.54% the day before.
+      //
+      // That was a measurement change, not a coverage loss, and the honest fix was neither to
+      // lower the floor nor to pretend nothing happened: chartTheme.ts got the colocated unit
+      // test the testing table already asked for, which put functions back to 69.63% on the new
+      // basis. Statements and lines gained about a point in the process. The floors stay where
+      // they are until this basis has a couple of runs behind it — ratcheting onto a denominator
+      // that has just moved is how you get a floor nobody can reproduce.
+      //
+      // Before that: 70.35 / 71.2 / 71.54 / 69.97, after the registration-disabled branch in
       // Register.vue arrived with its own test: branches moved a sixth of a point and nothing
       // else moved at all, which is the rounding these floors already absorb.
       //
