@@ -28,7 +28,20 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 71.24 / 71.61 / 69.63 / 70.95, on vite 8 + @vitest/coverage-v8 against the
+      // Last measured 71.6 / 72.18 / 70.32 / 71.36, after the validation work brought the API
+      // error extractor and the add-property form under test.
+      //
+      // The floors move with it, which they did not last time: the vite 8 basis now has several
+      // runs behind it and the numbers have risen twice on it, so this is a real gain rather
+      // than a denominator shifting. Statements and lines go to 70, branches to 71 — each a
+      // point or so under measured reality, the same margin the earlier floors carried.
+      //
+      // Functions stays at 69 on purpose. It measures 70.32, which is only 1.3 above the floor
+      // where the others clear 3, and it is the metric the toolchain upgrade moved most. A floor
+      // set that close to the measurement would fail an honest pull request on noise, which is
+      // the failure mode these are written to avoid.
+      //
+      // Before that: 71.24 / 71.61 / 69.63 / 70.95, on vite 8 + @vitest/coverage-v8 against the
       // upgraded toolchain. The floors do not move, and the reason is worth writing down: this
       // measurement is not comparable to the ones below it. The function *denominator* jumped
       // from 471 to 517 on identical source — the newer build pipeline emits different function
@@ -55,10 +68,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 68,
-        branches: 69,
+        statements: 70,
+        branches: 71,
         functions: 69,
-        lines: 68,
+        lines: 70,
       },
     },
   },
