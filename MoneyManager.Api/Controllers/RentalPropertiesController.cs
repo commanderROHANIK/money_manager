@@ -190,22 +190,22 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record RentalPropertyRequest(
-        [property: Required, MaxLength(160)] string PropertyName,
-        [property: Required, MaxLength(300)] string Address,
-        [property: MaxLength(120)] string? City = null,
-        [property: MaxLength(20)] string? PostalCode = null,
-        [property: RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Country code must be two letters.")]
+        [Required, MaxLength(160)] string PropertyName,
+        [Required, MaxLength(300)] string Address,
+        [MaxLength(120)] string? City = null,
+        [MaxLength(20)] string? PostalCode = null,
+        [RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Country code must be two letters.")]
         string? CountryCode = null,
         PropertyType PropertyType = PropertyType.Apartment,
-        [property: NonNegative] decimal? SizeSqm = null,
-        [property: NonNegative] int? Bedrooms = null,
-        [property: NonNegative] decimal? PurchasePrice = null,
+        [NonNegative] decimal? SizeSqm = null,
+        [NonNegative] int? Bedrooms = null,
+        [NonNegative] decimal? PurchasePrice = null,
         DateTime? PurchaseDate = null,
         PropertyStatus Status = PropertyStatus.Active,
-        [property: NonNegative] decimal? SalePrice = null,
+        [NonNegative] decimal? SalePrice = null,
         DateTime? SaleDate = null,
-        [property: MaxLength(2000)] string? Notes = null,
-        [property: SupportedCurrency] string? CurrencyCode = null) : IValidatableObject
+        [MaxLength(2000)] string? Notes = null,
+        [SupportedCurrency] string? CurrencyCode = null) : IValidatableObject
     {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

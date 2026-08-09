@@ -87,10 +87,10 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record StockRequest(
-        [property: Required, MaxLength(16)] string Ticker,
-        [property: NonNegative] int SharesOwned,
-        [property: NonNegative] decimal PurchasePrice,
-        [property: NonNegative] decimal CurrentPrice,
+        [Required, MaxLength(16)] string Ticker,
+        [NonNegative] int SharesOwned,
+        [NonNegative] decimal PurchasePrice,
+        [NonNegative] decimal CurrentPrice,
         DateTime PurchaseDate,
-        [property: SupportedCurrency] string? CurrencyCode = null);
+        [SupportedCurrency] string? CurrencyCode = null);
 }

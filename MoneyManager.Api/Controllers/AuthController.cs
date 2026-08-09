@@ -145,10 +145,10 @@ namespace MoneyManager.Api.Controllers
     /// is the only other door.
     /// </summary>
     public record RegisterRequest(
-        [property: Required, MaxLength(64)] string Username,
-        [property: Required, EmailAddress, MaxLength(200)] string Email,
-        [property: Required, MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
+        [Required, MaxLength(64)] string Username,
+        [Required, EmailAddress, MaxLength(200)] string Email,
+        [Required, MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
         string Password,
-        [property: SupportedCurrency] string? BaseCurrency = null);
+        [SupportedCurrency] string? BaseCurrency = null);
     public record LoginRequest(string Username, string Password);
 }

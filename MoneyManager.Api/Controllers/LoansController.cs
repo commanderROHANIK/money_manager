@@ -115,18 +115,18 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record LoanRequest(
-        [property: Required, MaxLength(120)] string LoanName,
-        [property: NonNegative] decimal LoanAmount,
-        [property: NonNegative] decimal RemainingBalance,
-        [property: NonNegative] decimal InterestRate,
+        [Required, MaxLength(120)] string LoanName,
+        [NonNegative] decimal LoanAmount,
+        [NonNegative] decimal RemainingBalance,
+        [NonNegative] decimal InterestRate,
         DateTime DueDate,
         bool IsPaidOff,
-        [property: SupportedCurrency] string? CurrencyCode = null,
+        [SupportedCurrency] string? CurrencyCode = null,
         LoanType LoanType = LoanType.Personal,
         int? RentalPropertyId = null,
-        [property: NonNegative] decimal? MonthlyPayment = null,
+        [NonNegative] decimal? MonthlyPayment = null,
         DateTime? StartDate = null,
-        [property: NonNegative] int? TermMonths = null) : IValidatableObject
+        [NonNegative] int? TermMonths = null) : IValidatableObject
     {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

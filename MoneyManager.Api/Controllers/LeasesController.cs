@@ -163,15 +163,15 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record LeaseRequest(
-        [property: Required, MaxLength(120)] string TenantName,
+        [Required, MaxLength(120)] string TenantName,
         DateTime StartDate,
-        [property: NonNegative] decimal MonthlyRent,
+        [NonNegative] decimal MonthlyRent,
         DateTime? EndDate = null,
-        [property: EmailAddress, MaxLength(200)] string? TenantEmail = null,
-        [property: MaxLength(40)] string? TenantPhone = null,
-        [property: Range(1, 31)] int RentDueDayOfMonth = 1,
-        [property: NonNegative] decimal? DepositAmount = null,
-        [property: MaxLength(2000)] string? Notes = null) : IValidatableObject
+        [EmailAddress, MaxLength(200)] string? TenantEmail = null,
+        [MaxLength(40)] string? TenantPhone = null,
+        [Range(1, 31)] int RentDueDayOfMonth = 1,
+        [NonNegative] decimal? DepositAmount = null,
+        [MaxLength(2000)] string? Notes = null) : IValidatableObject
     {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

@@ -93,8 +93,8 @@ namespace MoneyManager.Api.Controllers
     }
 
     public record UpcomingEventRequest(
-        [property: Required, MaxLength(200)] string Title,
-        [property: MaxLength(2000)] string? Description,
+        [Required, MaxLength(200)] string Title,
+        [MaxLength(2000)] string? Description,
         DateTime EventDate,
         bool IsRecurring,
         bool IsNotified,

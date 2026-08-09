@@ -127,22 +127,30 @@ namespace MoneyManager.Api.Controllers
     }
 
     /// <summary>
-    /// Attributes are written as <c>[property: ...]</c> throughout. On a positional record the
-    /// default target is the constructor parameter, and it is the property metadata that model
-    /// validation reads — so the shorter form would bind and validate nothing, silently.
+    /// Validation attributes go on the record's <b>constructor parameters</b>, with no
+    /// <c>property:</c> target — here and in every other request record.
+    ///
+    /// <para>
+    /// Worth stating, because targeting the property is the intuitive guess: model binding reads
+    /// property metadata for an ordinary class, so <c>property:</c> looks like the careful
+    /// choice. On a positional record it is wrong, and MVC does not ignore it quietly — it throws
+    /// <c>InvalidOperationException</c> on the first request, saying the metadata "will be
+    /// ignored" and must be associated with the constructor parameter. Every write endpoint 500s
+    /// at once, which is how this was found.
+    /// </para>
     /// </summary>
     public record BankAccountRequest(
-        [property: Required, MaxLength(120)] string AccountName,
+        [Required, MaxLength(120)] string AccountName,
         // Deliberately not NonNegative, against what #9's acceptance criteria asked for. An
         // overdraft is an ordinary current-account feature — routine in Hungary, among other
         // places — and a credit card balance is negative by definition. Rejecting it would refuse
         // to record accounts that genuinely exist, which is a worse failure than accepting a
         // typo. Every other amount in this file stays non-negative.
         decimal Balance,
-        [property: MaxLength(120)] string BankName,
-        [property: MaxLength(64)] string AccountNumber,
-        [property: MaxLength(40)] string AccountType,
-        [property: SupportedCurrency] string? CurrencyCode = null);
+        [MaxLength(120)] string BankName,
+        [MaxLength(64)] string AccountNumber,
+        [MaxLength(40)] string AccountType,
+        [SupportedCurrency] string? CurrencyCode = null);
 
     /// <summary>What is held in one currency. Always exact — no rate is involved in a subtotal.</summary>
     public record CurrencyTotal(string CurrencyCode, decimal Total);
