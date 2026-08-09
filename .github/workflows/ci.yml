@@ -26,8 +26,8 @@ jobs:
     # to fail on a slow runner rather than on a defect.
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 
@@ -36,7 +36,7 @@ jobs:
       # set that MoneyManager.Api.csproj deliberately leaves unpinned. Caching on the csproj hash
       # gets the same speedup without introducing that trap.
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
@@ -89,8 +89,8 @@ jobs:
       run:
         working-directory: money-manager-ui
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
