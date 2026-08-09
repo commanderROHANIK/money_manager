@@ -10,7 +10,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
@@ -187,25 +186,16 @@ builder.Services.AddRateLimiter(options =>
         }));
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "MoneyManager API", Version = "v1" });
-
-    var scheme = new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Paste the token returned by /api/auth/login.",
-        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-    };
-
-    options.AddSecurityDefinition("Bearer", scheme);
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement { [scheme] = Array.Empty<string>() });
-});
+// Microsoft.AspNetCore.OpenApi, which was already a dependency and unused, rather than
+// Swashbuckle. Two OpenAPI stacks shipped here and only one was called; the one that was called
+// could not be upgraded without a four-major migration, for a convenience that never leaves
+// Development. Removing the redundancy was the cheaper answer than migrating it.
+//
+// The document only, with no UI. Every browser UI for this — Swagger UI, Scalar, Redoc — loads
+// its assets from a CDN by default, and CLAUDE.md forbids the page making a third-party request.
+// Bundling one locally is possible and is more weight than a dev-only convenience is worth, so
+// the JSON is served and whoever wants a UI points their own client at it.
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
                      ?? ["http://localhost:5173"];
@@ -246,8 +236,15 @@ app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // AllowAnonymous for the same reason /health needs it: this is an endpoint, so the
+    // deny-by-default FallbackPolicy applies, and a document describing how to authenticate is
+    // useless if reading it requires having already done so.
+    //
+    // Development-gated, so it is not reachable on a deployment. docs/deployment.md is explicit
+    // that the environment must never be set to Development there — if the document is ever
+    // wanted on the dev deploy, it needs its own flag rather than that switch, which also turns
+    // on the developer exception page.
+    app.MapOpenApi().AllowAnonymous();
 }
 
 // The SPA is served from this same origin in a deployed image: the Dockerfile copies the Vite

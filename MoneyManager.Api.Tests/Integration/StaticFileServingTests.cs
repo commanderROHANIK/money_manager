@@ -127,6 +127,23 @@ public sealed class StaticFileServingTests
     // ------------------------------------------------------------------
 
     [Fact]
+    public async Task The_openapi_document_is_not_served_outside_development()
+    {
+        using var client = _factory.CreateIsolatedClient();
+
+        // MapOpenApi is registered only in Development, and this factory hosts the app as
+        // Production. The document describes every route in the API, so it should not be
+        // retrievable from a deployment — and docs/deployment.md turns on ASPNETCORE_ENVIRONMENT
+        // being Production there for reasons that have nothing to do with this.
+        var response = await client.GetAsync("/openapi/v1.json");
+
+        // Deliberately not asserting a specific code. With no endpoint registered the request
+        // falls through to the deny-by-default policy rather than to a 404, and which of the two
+        // answers is an implementation detail. That it is not the document is the point.
+        Assert.NotEqual(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Serving_the_spa_does_not_make_the_api_anonymous()
     {
         using var client = _factory.CreateIsolatedClient();
