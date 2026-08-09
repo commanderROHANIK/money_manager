@@ -39,8 +39,20 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     /// </summary>
     public const string ClientAddressHeader = "X-Test-Client-Address";
 
+    /// <summary>
+    /// Marker inside the stand-in <c>index.html</c>, so a test can tell the SPA shell apart from
+    /// any other 200 the pipeline might have produced.
+    /// </summary>
+    public const string ShellMarker = "<!-- integration-test-spa-shell -->";
+
+    /// <summary>Stand-in built asset, used to prove static files are served ahead of authorization.</summary>
+    public const string AssetPath = "/assets/app.js";
+
     private readonly string _databasePath =
         Path.Combine(Path.GetTempPath(), $"moneymanager-integration-{Guid.NewGuid():N}.db");
+
+    private readonly string _webRootPath =
+        Path.Combine(Path.GetTempPath(), $"moneymanager-integration-wwwroot-{Guid.NewGuid():N}");
 
     private int _addressCounter;
 
@@ -57,6 +69,27 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("JwtSettings__Audience", Audience);
         Environment.SetEnvironmentVariable("JwtSettings__ExpiryHours", "12");
         Environment.SetEnvironmentVariable("ConnectionStrings__Default", $"Data Source={_databasePath}");
+
+        // A deployed image has the Vite bundle in wwwroot; a test run has no wwwroot at all,
+        // because WebApplicationFactory roots the app at this test project's directory. Without a
+        // stand-in web root every static-file assertion would pass for the wrong reason — the SPA
+        // fallback would 404 because index.html is missing rather than because routing was
+        // correct, and "not challenged" would be indistinguishable from "not found".
+        //
+        // Set through the environment for the same reason as everything above it: the host reads
+        // ASPNETCORE_-prefixed variables into host configuration before the builder resolves the
+        // web root, which UseSetting and ConfigureAppConfiguration are both too late for.
+        Directory.CreateDirectory(Path.Combine(_webRootPath, "assets"));
+
+        File.WriteAllText(
+            Path.Combine(_webRootPath, "index.html"),
+            $"<!doctype html><html><head><title>MoneyManager</title></head><body>{ShellMarker}</body></html>");
+
+        File.WriteAllText(
+            Path.Combine(_webRootPath, "assets", "app.js"),
+            "// stand-in for the built bundle" + Environment.NewLine);
+
+        Environment.SetEnvironmentVariable("ASPNETCORE_WEBROOT", _webRootPath);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
@@ -100,6 +133,19 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
             {
                 // A file still held open is not worth failing an otherwise green suite over.
             }
+        }
+
+        try
+        {
+            Directory.Delete(_webRootPath, recursive: true);
+        }
+        catch (IOException)
+        {
+            // Same reasoning as above.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Same reasoning as above.
         }
     }
 

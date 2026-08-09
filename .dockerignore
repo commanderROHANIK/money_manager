@@ -1,0 +1,46 @@
+# Every entry here is a build break, a correctness risk, or weight that slows the context
+# upload. The first two are not hygiene — they change whether the image builds and what it runs.
+
+# THE BUILD BREAK. `COPY MoneyManager.Api/ MoneyManager.Api/` would land the host's
+# obj/project.assets.json on top of the one `dotnet restore` just wrote in the same layer. That
+# file records absolute package paths from whatever machine last built, so the image build then
+# fails with NETSDK1064 for packages that are sitting right there. It is the most common
+# multi-stage .NET Dockerfile failure and it only appears when building from a used worktree.
+**/obj/
+**/bin/
+
+# THE CONFIGURATION OVERRIDE. Program.cs calls DotEnv.Load() before the configuration builder
+# exists, and dotenv.net overwrites already-set variables by default. A .env baked into the
+# image would silently take precedence over the platform's own environment — including
+# JwtSettings__SecretKey and ConnectionStrings__Default — while the dashboard went on showing
+# the values it thought were in effect. .env.example documents copying one into
+# MoneyManager.Api/, so this needs to match at any depth.
+#
+# Note the committed .env.development and .env.production are deliberately NOT matched here:
+# the Vite build reads .env.production to point the SPA at the relative /api.
+**/.env
+**/.env.local
+**/.env.*.local
+
+# node_modules destroys the npm ci layer cache, and a host tsbuildinfo inside it can make
+# `vue-tsc -b` skip work it should have done.
+**/node_modules/
+
+# A local database must never become the image's starting data. *.db does not match SQLite's
+# sidecar files, so they are listed in their own right.
+*.db
+*.db-wal
+*.db-shm
+
+# Build output and reports. dist/ and coverage/ both exist in a working tree that has run the
+# UI build or the coverage suite.
+**/dist/
+**/coverage/
+**/test-results/
+**/playwright-report/
+
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
