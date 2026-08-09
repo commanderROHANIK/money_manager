@@ -129,6 +129,61 @@ export interface Lease {
     notes?: string | null;
 }
 
+/** Ordered so a larger value means "further along" — a sort ascending puts the worst months first. */
+export enum RentPeriodStatus {
+    /** No tenancy was running when rent fell due. Nothing was owed. */
+    Vacant = 0,
+    Unpaid = 1,
+    Partial = 2,
+    Paid = 3,
+}
+
+/**
+ * One month of one property's rent.
+ *
+ * `expectedAmount` and `shortfall` are null for a vacant month rather than zero: nothing owed
+ * is a different fact from everything owed having been paid, and a 0 in both would make an
+ * empty property read like a performing one.
+ */
+export interface RentPeriod {
+    period: string; // yyyy-MM
+    dueDate: string;
+    status: RentPeriodStatus;
+    expectedAmount: number | null;
+    receivedAmount: number;
+    shortfall: number | null;
+    isOverdue: boolean;
+    leaseId?: number | null;
+    tenantName?: string | null;
+    paymentIds: number[];
+}
+
+/**
+ * `arrears` counts only months already past their due date, so rent that is merely not yet due
+ * never reads as debt. `totalExpected` and `totalReceived` cover every month in range.
+ */
+export interface RentSchedule {
+    propertyId: number;
+    currencyCode: string;
+    asOf: string;
+    periods: RentPeriod[];
+    totalExpected: number;
+    totalReceived: number;
+    arrears: number;
+    overduePeriodCount: number;
+    oldestOverduePeriod: string | null;
+}
+
+/** Only properties that owe something appear; a property absent from the list is square. */
+export interface PropertyArrears {
+    propertyId: number;
+    propertyName: string;
+    currencyCode: string;
+    arrears: number;
+    overduePeriodCount: number;
+    oldestOverduePeriod: string | null;
+}
+
 export enum RentPriceSource {
     Contracted = 0,
     MarketEstimate = 1,

@@ -72,6 +72,9 @@ vi.mock('../services/propertyApi', async () => {
   fetchValuations: () => Promise.resolve(f.valuations),
   createValuation: () => Promise.resolve(f.valuations[0]),
   fetchPropertyEvents: () => Promise.resolve(f.propertyEvents),
+  fetchRentSchedule: () => Promise.resolve(f.rentSchedule),
+  recordRentForPeriod: () => Promise.resolve(f.rentSchedule.periods[0]),
+  fetchArrears: () => Promise.resolve(f.arrears),
   };
 });
 
@@ -111,10 +114,11 @@ const props: Record<string, Record<string, unknown>> = {
   TotalLoanAmountWidget: { loans: f.loans },
   MostExpensivePropertyWidget: { properties: f.properties },
   PortfolioSummaryWidget: { portfolio: f.portfolio },
-  PropertyListWidget: { properties: f.properties },
+  PropertyListWidget: { properties: f.properties, arrears: f.arrears },
   PropertyMetricsWidget: { metrics: f.propertyMetrics },
   PropertyTimelineWidget: { events: f.propertyEvents },
   RentByMonthChartWidget: { properties: f.properties },
+  RentCollectionWidget: { schedule: f.rentSchedule, currencyCode: 'HUF' },
   RentOverTimeChartWidget: { history: f.rentHistory, currencyCode: 'HUF' },
   RentVsMarketWidget: { metrics: f.propertyMetrics },
   RentedVsVacantPieWidget: { properties: f.properties },

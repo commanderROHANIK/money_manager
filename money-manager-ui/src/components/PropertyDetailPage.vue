@@ -36,6 +36,16 @@
         </BaseCard>
       </div>
 
+      <BaseCard>
+        <RentCollectionWidget
+          :schedule="rentSchedule"
+          :currency-code="property.currencyCode"
+          :error="rentError"
+          :recording="recordingPeriod"
+          @record="onRecordRent"
+        />
+      </BaseCard>
+
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <BaseCard>
           <TenancyWidget :leases="leases" @create="onCreateLease" />
@@ -75,6 +85,7 @@ import type {
   PropertyTransaction,
   PropertyValuation,
   RentPricePoint,
+  RentSchedule,
   RentalProperty,
 } from '../models/models';
 import {
@@ -88,8 +99,10 @@ import {
   fetchPropertyEvents,
   fetchPropertyMetrics,
   fetchRentHistory,
+  fetchRentSchedule,
   fetchTransactions,
   fetchValuations,
+  recordRentForPeriod,
 } from '../services/propertyApi';
 import type { LeaseRequest } from '../services/propertyApi';
 import { PROPERTY_TYPE_LABELS } from '../utils/labels';
@@ -97,6 +110,7 @@ import { PROPERTY_TYPE_LABELS } from '../utils/labels';
 import PropertyMetricsWidget from './Widgets/Properties/PropertyMetricsWidget.vue';
 import RentVsMarketWidget from './Widgets/Properties/RentVsMarketWidget.vue';
 import RentOverTimeChartWidget from './Widgets/Properties/RentOverTimeChartWidget.vue';
+import RentCollectionWidget from './Widgets/Properties/RentCollectionWidget.vue';
 import TenancyWidget from './Widgets/Properties/TenancyWidget.vue';
 import TransactionLedgerWidget from './Widgets/Properties/TransactionLedgerWidget.vue';
 import PropertyTimelineWidget from './Widgets/Properties/PropertyTimelineWidget.vue';
@@ -119,6 +133,10 @@ const leases = ref<Lease[]>([]);
 const rentHistory = ref<RentPricePoint[]>([]);
 const valuations = ref<PropertyValuation[]>([]);
 const events = ref<PropertyEvent[]>([]);
+const rentSchedule = ref<RentSchedule | null>(null);
+
+const rentError = ref('');
+const recordingPeriod = ref<string | null>(null);
 
 // The page owns every fetch and passes data down, keeping the widgets presentational.
 async function load() {
@@ -134,6 +152,7 @@ async function load() {
       rentHistory.value,
       valuations.value,
       events.value,
+      rentSchedule.value,
     ] = await Promise.all([
       fetchProperty(propertyId),
       fetchPropertyMetrics(propertyId),
@@ -142,6 +161,7 @@ async function load() {
       fetchRentHistory(propertyId),
       fetchValuations(propertyId),
       fetchPropertyEvents(propertyId),
+      fetchRentSchedule(propertyId),
     ]);
   } catch {
     error.value = 'Could not load this property.';
@@ -167,6 +187,31 @@ async function onCreateTransaction(payload: {
 async function onDeleteTransaction(id: number) {
   await deleteTransaction(propertyId, id);
   await load();
+}
+
+/**
+ * The server refuses a second payment for a month that already has one, and refuses a month
+ * where no tenancy was running. Both come back as a message worth showing rather than swallowing
+ * — a button that silently does nothing is worse than one that says why.
+ */
+async function onRecordRent(period: string) {
+  recordingPeriod.value = period;
+  rentError.value = '';
+
+  try {
+    await recordRentForPeriod(propertyId, period);
+    await load();
+  } catch (e) {
+    rentError.value = messageFrom(e) ?? `Could not record the rent for ${period}.`;
+  } finally {
+    recordingPeriod.value = null;
+  }
+}
+
+/** Pulls the server's own explanation out of an axios error, when it sent one. */
+function messageFrom(error: unknown): string | null {
+  const body = (error as { response?: { data?: { message?: unknown } } })?.response?.data;
+  return typeof body?.message === 'string' ? body.message : null;
 }
 
 async function onCreateLease(payload: LeaseRequest) {

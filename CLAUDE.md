@@ -82,6 +82,12 @@ to make a type check pass.
 Occupancy and current rent come from the tenancy running today (`Lease.IsActiveOn`), so they
 cannot drift out of date. Do not add stored `isRented` or `currentRent` columns.
 
+The rent schedule works the same way: `RentScheduleBuilder` derives every month from the
+tenancies and the ledger on each request. There is no stored row per month and no stored
+`isPaid` flag — editing a transaction changes what the schedule says immediately, which is only
+true because nothing was written down. The one thing that *is* stored is the payment itself,
+because that is a fact rather than a conclusion.
+
 ### The analytics calculator is pure
 
 `Services/Analytics/PropertyAnalyticsCalculator` takes no `DbContext`, no clock, and no
@@ -142,6 +148,7 @@ A change to… | needs a test in…
 ---|---
 `Models/` or `Data/MoneyManagerDbContext.cs` | `MoneyManager.Api.Tests/TenantIsolationTests.cs`
 `Services/Analytics/PropertyAnalyticsCalculator.cs` | `PropertyAnalyticsCalculatorTests.cs`, plus the worked example in its docblock
+`Services/Rent/RentScheduleBuilder.cs` | `RentScheduleBuilderTests.cs`, plus the worked example in its docblock
 `Controllers/` | an integration test in `MoneyManager.Api.Tests/Integration/`
 `Program.cs`'s auth, or any `Microsoft.IdentityModel.*` / `JwtBearer` version | `Integration/AuthenticationTests.cs`
 a new widget | fixture props in `src/__tests__/fixtures.ts`, so the smoke suite mounts it

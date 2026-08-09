@@ -26,6 +26,11 @@
           </div>
         </template>
         <template #trailing>
+          <!-- Arrears first: it is the thing that needs acting on, and "Rented" next to two
+               months of missing rent is the more comforting half of the truth. -->
+          <Badge v-if="arrearsFor(property.id)" variant="danger">
+            {{ arrearsLabel(property.id) }}
+          </Badge>
           <Badge :variant="property.isRented ? 'primary' : 'neutral'">
             {{ property.isRented ? 'Rented' : 'Vacant' }}
           </Badge>
@@ -49,14 +54,31 @@
 </template>
 
 <script setup lang="ts">
-import type { RentalProperty } from '../../../models/models';
+import type { PropertyArrears, RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import ListRow from '../../ui/ListRow.vue';
 import Badge from '../../ui/Badge.vue';
 
-defineProps<{
-  properties: RentalProperty[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    properties: RentalProperty[];
+    /** Only properties that owe something appear here; absent means square. */
+    arrears?: PropertyArrears[];
+  }>(),
+  { arrears: () => [] }
+);
+
+function arrearsFor(propertyId: number): PropertyArrears | undefined {
+  return props.arrears.find((a) => a.propertyId === propertyId);
+}
+
+function arrearsLabel(propertyId: number): string {
+  const owed = arrearsFor(propertyId);
+  if (!owed) return '';
+
+  const months = owed.overduePeriodCount === 1 ? 'month' : 'months';
+  return `${formatMoney(owed.arrears, owed.currencyCode)} behind · ${owed.overduePeriodCount} ${months}`;
+}
 
 // The parent has always listened for this; the button that raises it was never built.
 const emit = defineEmits<{ (e: 'delete-property', id: number): void }>();

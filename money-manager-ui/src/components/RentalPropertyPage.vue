@@ -29,7 +29,11 @@
 
     <!-- Properties List -->
     <BaseCard class="col-span-1 xl:col-span-3">
-      <PropertyListWidget :properties="properties" @delete-property="_deleteProperty" />
+      <PropertyListWidget
+        :properties="properties"
+        :arrears="arrears"
+        @delete-property="_deleteProperty"
+      />
     </BaseCard>
 
     <BaseCard class="col-span-1 xl:col-span-3">
@@ -41,9 +45,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { fetchRentalProperties, deleteRentalProperty } from '../services/api';
-import { createProperty, fetchPortfolioAnalytics } from '../services/propertyApi';
+import { createProperty, fetchArrears, fetchPortfolioAnalytics } from '../services/propertyApi';
 import type { RentalPropertyRequest } from '../services/propertyApi';
-import type { PortfolioAnalytics, RentalProperty } from '../models/models';
+import type { PortfolioAnalytics, PropertyArrears, RentalProperty } from '../models/models';
 
 // Widgets
 import TotalRentWidget from '../components/Widgets/Properties/TotalRentWidget.vue';
@@ -58,11 +62,13 @@ import BaseCard from './ui/BaseCard.vue';
 
 const properties = ref<RentalProperty[]>([]);
 const portfolio = ref<PortfolioAnalytics | null>(null);
+const arrears = ref<PropertyArrears[]>([]);
 
 async function load() {
-  [properties.value, portfolio.value] = await Promise.all([
+  [properties.value, portfolio.value, arrears.value] = await Promise.all([
     fetchRentalProperties(),
     fetchPortfolioAnalytics(),
+    fetchArrears(),
   ]);
 }
 
