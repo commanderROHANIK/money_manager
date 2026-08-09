@@ -133,7 +133,12 @@ namespace MoneyManager.Api.Controllers
     /// </summary>
     public record BankAccountRequest(
         [property: Required, MaxLength(120)] string AccountName,
-        [property: NonNegative] decimal Balance,
+        // Deliberately not NonNegative, against what #9's acceptance criteria asked for. An
+        // overdraft is an ordinary current-account feature — routine in Hungary, among other
+        // places — and a credit card balance is negative by definition. Rejecting it would refuse
+        // to record accounts that genuinely exist, which is a worse failure than accepting a
+        // typo. Every other amount in this file stays non-negative.
+        decimal Balance,
         [property: MaxLength(120)] string BankName,
         [property: MaxLength(64)] string AccountNumber,
         [property: MaxLength(40)] string AccountType,

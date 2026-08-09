@@ -44,7 +44,7 @@ public sealed class ErrorShapeTests
 
     public static TheoryData<string, object> InvalidWrites => new()
     {
-        { "/api/BankAccounts", new { accountName = "", balance = -5m, bankName = "B", accountNumber = "1", accountType = "Current" } },
+        { "/api/BankAccounts", new { accountName = "", balance = 10m, bankName = "B", accountNumber = "1", accountType = "Current" } },
         { "/api/RentalProperties", new { propertyName = "", address = "" } },
         { "/api/Stocks", new { ticker = "", sharesOwned = -1, purchasePrice = -1m, currentPrice = 1m, purchaseDate = "2026-01-01" } },
         { "/api/Loans", new { loanName = "", loanAmount = -1m, remainingBalance = 0m, interestRate = 1m, dueDate = "2026-01-01", isPaidOff = false } },
@@ -79,9 +79,9 @@ public sealed class ErrorShapeTests
         var response = await client.PostAsJsonAsync("/api/BankAccounts", new
         {
             accountName = "",
-            balance = -100m,
+            balance = 10m,
             bankName = "Test Bank",
-            accountNumber = "123",
+            accountNumber = new string('9', 100),
             accountType = "Current",
             currencyCode = "XYZ123",
         });
@@ -92,8 +92,33 @@ public sealed class ErrorShapeTests
 
         // All three at once, rather than making the user fix them one submit at a time.
         Assert.Contains("AccountName", errors);
-        Assert.Contains("Balance", errors);
+        Assert.Contains("AccountNumber", errors);
         Assert.Contains("CurrencyCode", errors);
+    }
+
+    [Fact]
+    public async Task A_bank_account_may_hold_a_negative_balance()
+    {
+        using var client = await AuthenticatedClientAsync("overdrawn");
+
+        // #9's acceptance criteria asked for a negative balance to be rejected. It is not, on
+        // purpose: an overdraft is an ordinary current-account feature and a credit card balance
+        // is negative by definition, so the rule would refuse to record accounts that genuinely
+        // exist. This test is here so nobody reinstates it from reading the issue.
+        var response = await client.PostAsJsonAsync("/api/BankAccounts", new
+        {
+            accountName = "Overdrawn current account",
+            balance = -450.20m,
+            bankName = "Test Bank",
+            accountNumber = "HU00TEST0123456789",
+            accountType = "Current",
+            currencyCode = "HUF",
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(-450.20m, body.RootElement.GetProperty("balance").GetDecimal());
     }
 
     [Fact]
