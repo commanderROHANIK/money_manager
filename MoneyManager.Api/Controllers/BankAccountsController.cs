@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Analytics;
@@ -12,6 +13,7 @@ namespace MoneyManager.Api.Controllers
 {
     [ApiController]
     [Authorize]
+    [FeatureGate(Feature.Banking)]
     [Route("api/[controller]")]
     public class BankAccountsController : ControllerBase
     {

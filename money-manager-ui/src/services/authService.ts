@@ -1,5 +1,6 @@
 import router from '../router';
 import { api, TOKEN_STORAGE_KEY } from './api';
+import { clearFeatures } from './features';
 
 export interface AuthResponse {
   token: string;
@@ -51,6 +52,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser> {
 
 export function logout(): void {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
+  clearFeatures();
   router.push('/login');
 }
 

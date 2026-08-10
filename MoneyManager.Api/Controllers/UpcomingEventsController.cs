@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
 
 namespace MoneyManager.Api.Controllers
 {
     [ApiController]
     [Authorize]
+    [FeatureGate(Feature.Events)]
     [Route("api/[controller]")]
     public class UpcomingEventsController : ControllerBase
     {
