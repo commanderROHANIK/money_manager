@@ -1,3 +1,4 @@
+import { watch } from 'vue';
 import { createI18n } from 'vue-i18n';
 import en from '../locales/en.json';
 import hu from '../locales/hu.json';
@@ -27,22 +28,36 @@ export const i18n = createI18n({
 });
 
 /**
- * Switches language everywhere at once: the translated strings, the number and date formatting
- * (through `currentLocale`, which the formatters read), the `<html lang>` a screen reader
- * announces, and the stored preference for the next visit.
+ * `currentLocale` is the single source of truth, and everything else follows it.
  *
- * <p>One function rather than four call sites, because the failure mode of doing it piecemeal is
- * a half-translated page — Hungarian labels next to English dates — which reads as a bug in the
- * data rather than a missed call.</p>
+ * <p>The obvious alternative — having `setLocale` assign to both `currentLocale` and
+ * `i18n.global.locale` — leaves two pieces of state that are only equal because one function
+ * happens to write both. Anything that set one directly would produce a page with Hungarian
+ * labels and English dates, which reads as a data bug rather than a missed assignment. Driving
+ * one from the other makes that state unrepresentable.</p>
+ *
+ * <p>The dependency only goes this way: `locale.ts` imports nothing from here, so the formatters
+ * can read the locale without pulling vue-i18n in behind them.</p>
+ */
+watch(
+  currentLocale,
+  (locale) => {
+    i18n.global.locale.value = locale;
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('lang', locale);
+    }
+  },
+  { immediate: true }
+);
+
+/**
+ * Switches language everywhere at once: the translated strings, the number and date formatting,
+ * the `<html lang>` a screen reader announces, and the stored preference for the next visit.
  */
 export function setLocale(locale: Locale): void {
   currentLocale.value = locale;
-  i18n.global.locale.value = locale;
   storeLocale(locale);
-
-  if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('lang', locale);
-  }
 }
 
 /** Applies whatever the last visit chose. Called once, before the app mounts. */

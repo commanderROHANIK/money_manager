@@ -32,11 +32,11 @@ const membersOf = (e: object): number[] => Object.values(e).filter((v) => typeof
 
 describe('label completeness', () => {
   it.each([
-    ['TransactionCategory', TransactionCategory, TRANSACTION_CATEGORY_LABELS],
-    ['PropertyType', PropertyType, PROPERTY_TYPE_LABELS],
-    ['PropertyStatus', PropertyStatus, PROPERTY_STATUS_LABELS],
-    ['PropertyEventType', PropertyEventType, PROPERTY_EVENT_LABELS],
-    ['RentPriceSource', RentPriceSource, RENT_SOURCE_LABELS],
+    ['TransactionCategory', TransactionCategory, TRANSACTION_CATEGORY_LABELS.value],
+    ['PropertyType', PropertyType, PROPERTY_TYPE_LABELS.value],
+    ['PropertyStatus', PropertyStatus, PROPERTY_STATUS_LABELS.value],
+    ['PropertyEventType', PropertyEventType, PROPERTY_EVENT_LABELS.value],
+    ['RentPriceSource', RentPriceSource, RENT_SOURCE_LABELS.value],
   ])('every %s member has a label', (_name, enumObject, labels) => {
     for (const member of membersOf(enumObject)) {
       const label = (labels as Record<number, string>)[member];
@@ -48,7 +48,7 @@ describe('label completeness', () => {
 });
 
 describe('TRANSACTION_CATEGORY_GROUPS', () => {
-  const grouped = TRANSACTION_CATEGORY_GROUPS.flatMap((g) => g.categories);
+  const grouped = TRANSACTION_CATEGORY_GROUPS.value.flatMap((g) => g.categories);
 
   it('accounts for every category exactly once', () => {
     // A category missing from the groups is unreachable in the entry form even though it has a
@@ -58,7 +58,7 @@ describe('TRANSACTION_CATEGORY_GROUPS', () => {
   });
 
   it('gives every group a non-empty label', () => {
-    for (const group of TRANSACTION_CATEGORY_GROUPS) {
+    for (const group of TRANSACTION_CATEGORY_GROUPS.value) {
       expect(group.label.trim()).not.toBe('');
       expect(group.categories.length).toBeGreaterThan(0);
     }

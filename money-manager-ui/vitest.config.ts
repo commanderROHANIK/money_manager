@@ -6,6 +6,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.ts'],
+    // Installs vue-i18n for every mount. Without it, the first component to call useI18n()
+    // fails its test for a reason that has nothing to do with what the test asserts.
+    setupFiles: ['src/__tests__/setup.ts'],
     coverage: {
       // Must track the vitest major: a v3 provider fails silently against vitest 4.
       provider: 'v8',

@@ -49,9 +49,18 @@ async function mountMenuWith(flags: Features) {
   const { ensureFeaturesLoaded } = await import('../services/features');
   await ensureFeaturesLoaded();
 
+  const { i18n, setLocale } = await import('../i18n');
+
+  // English, so the expectations below read as the labels themselves rather than as a second
+  // copy of hu.json. Which language each link is written in is the locale files' business and is
+  // covered by the parity test; this file is about which links exist at all.
+  setLocale('en');
+
   const Menu = (await import('./Menu.vue')).default;
 
-  return mount(Menu, { global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } } });
+  return mount(Menu, {
+    global: { plugins: [i18n], stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+  });
 }
 
 afterEach(() => {
