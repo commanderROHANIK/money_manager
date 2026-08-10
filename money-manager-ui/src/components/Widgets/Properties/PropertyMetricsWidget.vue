@@ -1,8 +1,10 @@
 <template>
   <div>
     <div class="flex items-baseline justify-between mb-4">
-      <h2 class="font-heading text-lg font-bold">Investment performance</h2>
-      <span class="text-xs text-text-muted">as of {{ formatDate(metrics.asOf) }}</span>
+      <h2 class="font-heading text-lg font-bold">{{ t('property.metrics.title') }}</h2>
+      <span class="text-xs text-text-muted">{{
+        t('property.metrics.asOf', { date: formatDate(metrics.asOf) })
+      }}</span>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -32,6 +34,9 @@ import { computed } from 'vue';
 import type { PropertyMetrics } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatDate, formatPercent } from '../../../utils/labels';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{ metrics: PropertyMetrics }>();
 
@@ -46,60 +51,60 @@ function sign(value: number | null): string {
 
 const tiles = computed(() => [
   {
-    label: 'Total ROI',
+    label: t('property.metrics.roi'),
     value: formatPercent(props.metrics.totalRoi),
     tone: sign(props.metrics.totalRoi),
     hint: props.metrics.annualizedRoi === null
       ? undefined
-      : `${formatPercent(props.metrics.annualizedRoi)} a year`,
+      : t('property.metrics.roiHint', { rate: formatPercent(props.metrics.annualizedRoi) }),
   },
   {
-    label: 'Monthly cash flow',
+    label: t('property.metrics.cashFlow'),
     value: money(props.metrics.monthlyCashFlow),
     tone: sign(props.metrics.monthlyCashFlow),
-    hint: 'after running costs and mortgage',
+    hint: t('property.metrics.cashFlowHint'),
   },
   {
-    label: 'Cash invested',
+    label: t('property.metrics.invested'),
     value: money(props.metrics.cashInvested),
     tone: '',
     hint: props.metrics.totalInvested === null
       ? undefined
-      : `${money(props.metrics.totalInvested)} total cost`,
+      : t('property.metrics.investedHint', { amount: money(props.metrics.totalInvested) }),
   },
   {
-    label: 'Equity',
+    label: t('property.metrics.equity'),
     value: money(props.metrics.equity),
     tone: '',
     hint: props.metrics.currentValue === null
       ? undefined
-      : `${money(props.metrics.currentValue)} value`,
+      : t('property.metrics.equityHint', { amount: money(props.metrics.currentValue) }),
   },
   {
-    label: 'Gross yield',
+    label: t('property.metrics.grossYield'),
     value: formatPercent(props.metrics.grossYield, 2),
     tone: '',
-    hint: 'rent ÷ total invested',
+    hint: t('property.metrics.grossYieldHint'),
   },
   {
-    label: 'Cap rate',
+    label: t('property.metrics.capRate'),
     value: formatPercent(props.metrics.capRate, 2),
     tone: '',
-    hint: 'net income ÷ value',
+    hint: t('property.metrics.capRateHint'),
   },
   {
-    label: 'Cash-on-cash',
+    label: t('property.metrics.cashOnCash'),
     value: formatPercent(props.metrics.cashOnCashReturn, 2),
     tone: sign(props.metrics.cashOnCashReturn),
-    hint: 'return on money actually put in',
+    hint: t('property.metrics.cashOnCashHint'),
   },
   {
-    label: 'Occupancy',
+    label: t('property.metrics.occupancy'),
     value: formatPercent(props.metrics.occupancyRate, 0),
     tone: '',
     hint: props.metrics.yearsHeld === null
       ? undefined
-      : `held ${props.metrics.yearsHeld.toFixed(1)} yrs`,
+      : t('property.metrics.occupancyHint', { years: props.metrics.yearsHeld.toFixed(1) }),
   },
 ]);
 </script>

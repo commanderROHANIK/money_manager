@@ -179,6 +179,38 @@
       "empty": "Noch kein Mietverlauf. Er füllt sich automatisch, sobald Mietverhältnisse beginnen und Mieten sich ändern.",
       "charged": "Verlangte Miete",
       "marketEstimate": "Marktschätzung"
+    },
+    "metrics": {
+      "title": "Anlageergebnis",
+      "asOf": "Stand {date}",
+      "roi": "Gesamtrendite",
+      "roiHint": "{rate} pro Jahr",
+      "cashFlow": "Monatlicher Cashflow",
+      "cashFlowHint": "nach laufenden Kosten und Kreditrate",
+      "invested": "Eingesetztes Kapital",
+      "investedHint": "{amount} Gesamtkosten",
+      "equity": "Eigenkapital",
+      "equityHint": "{amount} Wert",
+      "grossYield": "Bruttorendite",
+      "grossYieldHint": "Miete ÷ Gesamtinvestition",
+      "capRate": "Kapitalisierungszins",
+      "capRateHint": "Nettoertrag ÷ Wert",
+      "cashOnCash": "Eigenkapitalrendite",
+      "cashOnCashHint": "Rendite auf das tatsächlich eingesetzte Geld",
+      "occupancy": "Auslastung",
+      "occupancyHint": "seit {years} Jahren im Bestand"
+    },
+    "tenancy": {
+      "title": "Mietverhältnisse",
+      "rentLine": "{rent} / Monat, fällig am {day}.",
+      "since": "Seit {start}",
+      "sinceUntil": "Seit {start} bis {end}",
+      "vacant": "Leerstand — derzeit läuft kein Mietverhältnis.",
+      "tenantName": "Name des Mieters",
+      "endOptional": "Ende (optional)",
+      "monthlyRent": "Monatsmiete",
+      "dueDay": "Fälligkeitstag",
+      "add": "Mietverhältnis anlegen"
     }
   }
 }

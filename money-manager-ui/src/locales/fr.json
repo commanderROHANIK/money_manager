@@ -179,6 +179,38 @@
       "empty": "Pas encore d'historique. Il se remplit automatiquement à mesure que les baux démarrent et que les loyers changent.",
       "charged": "Loyer demandé",
       "marketEstimate": "Estimation du marché"
+    },
+    "metrics": {
+      "title": "Performance de l'investissement",
+      "asOf": "au {date}",
+      "roi": "Rendement total",
+      "roiHint": "{rate} par an",
+      "cashFlow": "Flux de trésorerie mensuel",
+      "cashFlowHint": "après charges courantes et mensualité",
+      "invested": "Capital investi",
+      "investedHint": "{amount} de coût total",
+      "equity": "Fonds propres",
+      "equityHint": "{amount} de valeur",
+      "grossYield": "Rendement brut",
+      "grossYieldHint": "loyer ÷ investissement total",
+      "capRate": "Taux de capitalisation",
+      "capRateHint": "revenu net ÷ valeur",
+      "cashOnCash": "Rendement sur fonds propres",
+      "cashOnCashHint": "rendement de l'argent réellement engagé",
+      "occupancy": "Taux d'occupation",
+      "occupancyHint": "détenu depuis {years} ans"
+    },
+    "tenancy": {
+      "title": "Baux",
+      "rentLine": "{rent} / mois, dû le {day}",
+      "since": "Depuis le {start}",
+      "sinceUntil": "Du {start} au {end}",
+      "vacant": "Vacant — aucun bail en cours aujourd'hui.",
+      "tenantName": "Nom du locataire",
+      "endOptional": "Fin (facultatif)",
+      "monthlyRent": "Loyer mensuel",
+      "dueDay": "Jour d'échéance",
+      "add": "Ajouter un bail"
     }
   }
 }

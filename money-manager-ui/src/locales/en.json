@@ -179,6 +179,38 @@
       "empty": "No rent history yet. It fills in automatically as tenancies start and rents change.",
       "charged": "Rent charged",
       "marketEstimate": "Market estimate"
+    },
+    "metrics": {
+      "title": "Investment performance",
+      "asOf": "as of {date}",
+      "roi": "Total ROI",
+      "roiHint": "{rate} a year",
+      "cashFlow": "Monthly cash flow",
+      "cashFlowHint": "after running costs and mortgage",
+      "invested": "Cash invested",
+      "investedHint": "{amount} total cost",
+      "equity": "Equity",
+      "equityHint": "{amount} value",
+      "grossYield": "Gross yield",
+      "grossYieldHint": "rent ÷ total invested",
+      "capRate": "Cap rate",
+      "capRateHint": "net income ÷ value",
+      "cashOnCash": "Cash-on-cash",
+      "cashOnCashHint": "return on money actually put in",
+      "occupancy": "Occupancy",
+      "occupancyHint": "held {years} yrs"
+    },
+    "tenancy": {
+      "title": "Tenancies",
+      "rentLine": "{rent} / month, due on day {day}",
+      "since": "Since {start}",
+      "sinceUntil": "Since {start} until {end}",
+      "vacant": "Vacant — no tenancy is running today.",
+      "tenantName": "Tenant name",
+      "endOptional": "End (optional)",
+      "monthlyRent": "Monthly rent",
+      "dueDay": "Due day",
+      "add": "Add tenancy"
     }
   }
 }

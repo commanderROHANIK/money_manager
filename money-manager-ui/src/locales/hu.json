@@ -179,6 +179,38 @@
       "empty": "Még nincs bérletidíj-előzmény. Automatikusan feltöltődik, ahogy bérletek indulnak és a díjak változnak.",
       "charged": "Kért bérleti díj",
       "marketEstimate": "Piaci becslés"
+    },
+    "metrics": {
+      "title": "Befektetés teljesítménye",
+      "asOf": "{date} állapot szerint",
+      "roi": "Teljes megtérülés",
+      "roiHint": "évi {rate}",
+      "cashFlow": "Havi cash flow",
+      "cashFlowHint": "működési költségek és hiteltörlesztés után",
+      "invested": "Befektetett tőke",
+      "investedHint": "{amount} teljes költség",
+      "equity": "Saját tőke",
+      "equityHint": "{amount} érték",
+      "grossYield": "Bruttó hozam",
+      "grossYieldHint": "bérleti díj ÷ teljes befektetés",
+      "capRate": "Tőkésítési ráta",
+      "capRateHint": "nettó bevétel ÷ érték",
+      "cashOnCash": "Készpénzhozam",
+      "cashOnCashHint": "a ténylegesen befektetett pénz hozama",
+      "occupancy": "Kihasználtság",
+      "occupancyHint": "{years} éve tulajdonban"
+    },
+    "tenancy": {
+      "title": "Bérletek",
+      "rentLine": "{rent} / hó, a hónap {day}. napján esedékes",
+      "since": "{start} óta",
+      "sinceUntil": "{start} — {end}",
+      "vacant": "Üres — jelenleg nincs futó bérlet.",
+      "tenantName": "Bérlő neve",
+      "endOptional": "Vége (nem kötelező)",
+      "monthlyRent": "Havi bérleti díj",
+      "dueDay": "Esedékesség napja",
+      "add": "Bérlet hozzáadása"
     }
   }
 }
