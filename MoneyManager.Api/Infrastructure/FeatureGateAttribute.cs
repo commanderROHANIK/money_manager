@@ -27,6 +27,17 @@ namespace MoneyManager.Api.Infrastructure
     /// </para>
     ///
     /// <para>
+    /// <c>StatusCodeResult</c> rather than the more obvious <c>NotFoundResult</c>, and the
+    /// difference is the whole point. <c>NotFoundResult</c> implements
+    /// <c>IClientErrorActionResult</c>, so <c>[ApiController]</c>'s client-error mapping fills it
+    /// in with a <c>ProblemDetails</c> body — which is exactly the tell this gate exists to
+    /// remove: an empty 404 for a path that does not exist and a described 404 for one that does
+    /// says which routes are real. <c>StatusCodeResult</c> carries no such interface and is
+    /// written out untouched. This was not a guess; it is what
+    /// <c>A_disabled_section_is_indistinguishable_from_one_that_was_never_built</c> failed on.
+    /// </para>
+    ///
+    /// <para>
     /// A resource filter, so it runs before model binding — there is no reason to bind or
     /// validate a request body for a section that does not exist here. It runs after the
     /// authorization middleware, which is what keeps the anonymous answers unchanged: an
@@ -51,7 +62,7 @@ namespace MoneyManager.Api.Infrastructure
                 .GetRequiredService<IOptions<FeatureOptions>>().Value;
 
             if (!options.IsEnabled(_feature))
-                context.Result = new NotFoundResult();
+                context.Result = new StatusCodeResult(StatusCodes.Status404NotFound);
         }
 
         public void OnResourceExecuted(ResourceExecutedContext context)

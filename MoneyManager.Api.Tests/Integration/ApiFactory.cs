@@ -77,6 +77,16 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         // place the closed behaviour is under test.
         Environment.SetEnvironmentVariable("Auth__AllowRegistration", "true");
 
+        // And every section is switched on, for the same reason. The flags default to the MVP
+        // shape — bank accounts and stocks off — so leaving them alone here would fail
+        // BankAccountResponseTests and half of ErrorShapeTests with a 404 that has nothing to do
+        // with what either of them asserts. FeatureGateTests builds its own hosts with specific
+        // flags, which is the only place the switched-off behaviour is under test.
+        Environment.SetEnvironmentVariable("Features__Banking", "true");
+        Environment.SetEnvironmentVariable("Features__Stocks", "true");
+        Environment.SetEnvironmentVariable("Features__Loans", "true");
+        Environment.SetEnvironmentVariable("Features__Events", "true");
+
         // A deployed image has the Vite bundle in wwwroot; a test run has no wwwroot at all,
         // because WebApplicationFactory roots the app at this test project's directory. Without a
         // stand-in web root every static-file assertion would pass for the wrong reason — the SPA
