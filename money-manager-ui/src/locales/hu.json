@@ -76,5 +76,24 @@
       "hu": "Magyar",
       "en": "English"
     }
+  },
+  "auth": {
+    "welcomeBack": "Üdv újra itt",
+    "welcomeBackHint": "Nézzük meg, hogy áll a pénzed.",
+    "createAccount": "Fiók létrehozása",
+    "createAccountHint": "Kezdjük el követni a pénzed.",
+    "username": "Felhasználónév",
+    "email": "E-mail cím",
+    "password": "Jelszó",
+    "confirmPassword": "Jelszó megerősítése",
+    "logIn": "Bejelentkezés",
+    "register": "Regisztráció",
+    "registering": "Regisztráció folyamatban…",
+    "invalidLogin": "Hibás felhasználónév vagy jelszó",
+    "passwordsDoNotMatch": "A két jelszó nem egyezik",
+    "registeredSuccessfully": "Sikeres regisztráció",
+    "registrationClosed": "Ezen a példányon nincs regisztráció. Kérj fiókot az üzemeltetőtől.",
+    "registerFailed": "Hiba a regisztráció során: {reason}",
+    "registerFailedFallback": "próbáld meg újra"
   }
 }

@@ -76,5 +76,24 @@
       "hu": "Magyar",
       "en": "English"
     }
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "welcomeBackHint": "Good to see you — let's check your money.",
+    "createAccount": "Create an account",
+    "createAccountHint": "Let's get your money tracked.",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "logIn": "Log in",
+    "register": "Register",
+    "registering": "Registering...",
+    "invalidLogin": "Invalid login",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "registeredSuccessfully": "Registered successfully",
+    "registrationClosed": "Registration is closed on this deployment. Ask for an account to be set up for you.",
+    "registerFailed": "Error registering: {reason}",
+    "registerFailedFallback": "please try again"
   }
 }

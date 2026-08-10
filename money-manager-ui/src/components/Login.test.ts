@@ -5,7 +5,7 @@
  * last plain-JS components in the tree, so nothing type-checked them. Written first, so the
  * conversion has something to prove it preserved behaviour.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import type { Component } from 'vue';
 
@@ -19,6 +19,8 @@ vi.mock('../services/authService', () => ({
 const push = vi.fn();
 const reload = vi.fn();
 
+import { setLocale } from '../i18n';
+import { DEFAULT_LOCALE } from '../i18n/locale';
 import Login from './Login.vue';
 import Register from './Register.vue';
 
@@ -27,7 +29,11 @@ import Register from './Register.vue';
 const mountWith = (component: Component) =>
   mount(component, { global: { mocks: { $router: { push } } } });
 
+// English, so the assertions below read as the messages themselves. These tests are about
+// which message appears and when — the wording in each language is the locale files' business,
+// and messages.test.ts is what holds those to account.
 beforeEach(() => {
+  setLocale('en');
   vi.clearAllMocks();
   Object.defineProperty(window, 'location', {
     value: { pathname: '/login', reload, assign: vi.fn() },
@@ -175,3 +181,5 @@ describe('Register', () => {
     expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeUndefined();
   });
 });
+
+afterEach(() => setLocale(DEFAULT_LOCALE));
