@@ -1,7 +1,11 @@
 <template>
   <div class="p-4 space-y-4">
     <LoadingSkeleton v-if="loading" />
-    <ErrorState v-else-if="error" title="Could not load this property" :description="error" />
+    <ErrorState
+      v-else-if="error"
+      :title="t('property.detail.loadFailed')"
+      :description="error"
+    />
 
     <template v-else-if="property && metrics">
       <!-- Header -->
@@ -119,6 +123,9 @@ import BaseCard from './ui/BaseCard.vue';
 import Badge from './ui/Badge.vue';
 import LoadingSkeleton from './ui/LoadingSkeleton.vue';
 import ErrorState from './ui/ErrorState.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const route = useRoute();
 const propertyId = Number(route.params.id);
@@ -164,7 +171,7 @@ async function load() {
       fetchRentSchedule(propertyId),
     ]);
   } catch {
-    error.value = 'Could not load this property.';
+    error.value = t('property.detail.loadFailed');
   } finally {
     loading.value = false;
   }

@@ -4,7 +4,7 @@
  * base currency changes which pairs matter, and a rate list left showing the old answer is how a
  * user ends up entering a rate they do not need and missing the one they do.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import * as f from '../__tests__/fixtures';
@@ -34,6 +34,14 @@ vi.mock('../services/settingsApi', async () => {
   };
 });
 
+import { setLocale } from '../i18n';
+import { DEFAULT_LOCALE } from '../i18n/locale';
+
+// English, so the expectations below read as the labels themselves rather than as a second copy
+// of hu.json. This file is about which settings the page offers and what it loads, not about how
+// each language words them — messages.test.ts is what holds the wording to account.
+beforeEach(() => setLocale('en'));
+afterEach(() => setLocale(DEFAULT_LOCALE));
 import SettingsPage from './SettingsPage.vue';
 
 async function settle() {

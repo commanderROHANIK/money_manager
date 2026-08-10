@@ -77,7 +77,30 @@
       "en": "English",
       "de": "Deutsch",
       "fr": "Français"
-    }
+    },
+    "currencyTitle": "Reporting currency",
+    "currencyIntro": "The currency consolidated totals are reported in. Each property and account keeps its own currency; this only decides the unit the portfolio and balance rollups add up to.",
+    "baseCurrency": "Base currency",
+    "save": "Save",
+    "saved": "Saved.",
+    "saveFailed": "Could not save that. Please try again.",
+    "alwaysConvert": "Always convert to {currency}",
+    "alwaysConvertHint": "Off by default: totals stay in their own currency while everything shares one, so no exchange rate is needed. Turn this on to see every total in {currency} — which means a rate is required for each other currency you hold.",
+    "ratesTitle": "Exchange rates",
+    "oneUnitOf": "One unit of",
+    "isWorthIn": "Is worth, in",
+    "amount": "Amount",
+    "asOf": "As of",
+    "saveRate": "Save rate",
+    "remove": "Remove",
+    "recorded": "recorded {date}",
+    "noRates": "No rates yet",
+    "noRatesHint": "Add one above and portfolios spanning currencies will start reporting totals.",
+    "rateTooSmall": "Enter a rate greater than zero.",
+    "rateSaveFailed": "Could not save that rate. Please try again.",
+    "rateRemoveFailed": "Could not remove that rate. Please try again.",
+    "ratesIntro": "Rates you enter yourself — nothing is fetched, so a converted total is only ever as good as what is on this list, and every one is shown with the date you recorded it. Entering one direction is enough; the other is read off the same row.",
+    "sameCurrency": "A currency is always worth one of itself; pick two different currencies."
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -249,6 +272,9 @@
       "markReceived": "Mark received",
       "showRecent": "Show recent months",
       "showAll": "Show all {count} months"
+    },
+    "detail": {
+      "loadFailed": "Could not load this property."
     }
   },
   "event": {
@@ -273,5 +299,47 @@
     "confirmDelete": "Delete this event?",
     "cardTitle": "Events",
     "noPast": "No past events found."
+  },
+  "loan": {
+    "paidOff": "Paid Off",
+    "remaining": "Remaining",
+    "active": "Active",
+    "add": {
+      "title": "Add a loan",
+      "name": "Loan Name",
+      "originalAmount": "Original amount",
+      "originalAmountHint": "Original amount borrowed, before any repayments.",
+      "remainingBalance": "Remaining balance",
+      "interestRate": "Interest rate (%)",
+      "interestRateHint": "Annual rate, e.g. 4.5 for 4.5%.",
+      "dueDateHint": "Date the loan is scheduled to be fully repaid.",
+      "currencyHint": "Currency this loan is denominated in.",
+      "paidOffLabel": "Paid off",
+      "paidOffHint": "Check if this loan has already been fully repaid.",
+      "submit": "Add loan"
+    },
+    "list": {
+      "title": "All Loans",
+      "empty": "No loans yet."
+    },
+    "status": {
+      "title": "Loan Status",
+      "empty": "No data available."
+    },
+    "summary": {
+      "label": "Loans",
+      "activePaidOff": "{active} Active | {paidOff} Paid Off"
+    },
+    "nextDue": {
+      "title": "Next Due Repayments",
+      "empty": "No upcoming repayments."
+    },
+    "top": {
+      "title": "Top Loans",
+      "empty": "No loans available."
+    },
+    "total": {
+      "label": "Total Loan Amount"
+    }
   }
 }

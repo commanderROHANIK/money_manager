@@ -77,7 +77,30 @@
       "en": "English",
       "de": "Deutsch",
       "fr": "Français"
-    }
+    },
+    "currencyTitle": "Devise de reporting",
+    "currencyIntro": "La devise dans laquelle les totaux consolidés sont exprimés. Chaque bien et chaque compte conserve sa propre devise ; ceci détermine seulement l'unité dans laquelle les totaux de portefeuille et de solde s'additionnent.",
+    "baseCurrency": "Devise de référence",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "saveFailed": "Enregistrement impossible. Veuillez réessayer.",
+    "alwaysConvert": "Toujours convertir en {currency}",
+    "alwaysConvertHint": "Désactivé par défaut : tant que tout partage une devise, les totaux restent dans la leur et aucun taux n'est nécessaire. Activez pour voir chaque total en {currency} — un taux sera alors requis pour chaque autre devise détenue.",
+    "ratesTitle": "Taux de change",
+    "oneUnitOf": "Une unité de",
+    "isWorthIn": "Vaut, en",
+    "amount": "Montant",
+    "asOf": "Au",
+    "saveRate": "Enregistrer le taux",
+    "remove": "Supprimer",
+    "recorded": "saisi le {date}",
+    "noRates": "Aucun taux",
+    "noRatesHint": "Ajoutez-en un ci-dessus et les portefeuilles multidevises afficheront leurs totaux.",
+    "rateTooSmall": "Saisissez un taux supérieur à zéro.",
+    "rateSaveFailed": "Impossible d'enregistrer ce taux. Veuillez réessayer.",
+    "rateRemoveFailed": "Impossible de supprimer ce taux. Veuillez réessayer.",
+    "ratesIntro": "Les taux sont saisis par vous — rien n'est récupéré automatiquement, un total converti ne vaut donc jamais mieux que cette liste, et chaque taux est affiché avec sa date de saisie. Saisir un seul sens suffit ; l'autre se lit sur la même ligne.",
+    "sameCurrency": "Une devise vaut toujours une unité d'elle-même ; choisissez deux devises différentes."
   },
   "auth": {
     "welcomeBack": "Bon retour",
@@ -249,6 +272,9 @@
       "markReceived": "Marquer comme encaissé",
       "showRecent": "Voir les mois récents",
       "showAll": "Voir les {count} mois"
+    },
+    "detail": {
+      "loadFailed": "Impossible de charger ce bien."
     }
   },
   "event": {
@@ -273,5 +299,47 @@
     "confirmDelete": "Supprimer cet événement ?",
     "cardTitle": "Événements",
     "noPast": "Aucun événement passé."
+  },
+  "loan": {
+    "paidOff": "Remboursé",
+    "remaining": "Restant",
+    "active": "En cours",
+    "add": {
+      "title": "Ajouter un prêt",
+      "name": "Intitulé du prêt",
+      "originalAmount": "Montant initial",
+      "originalAmountHint": "Montant emprunté à l'origine, avant remboursements.",
+      "remainingBalance": "Capital restant dû",
+      "interestRate": "Taux d'intérêt (%)",
+      "interestRateHint": "Taux annuel, par exemple 4,5 pour 4,5 %.",
+      "dueDateHint": "Date prévue du remboursement intégral.",
+      "currencyHint": "Devise dans laquelle ce prêt est libellé.",
+      "paidOffLabel": "Remboursé",
+      "paidOffHint": "Cochez si ce prêt est déjà intégralement remboursé.",
+      "submit": "Ajouter le prêt"
+    },
+    "list": {
+      "title": "Tous les prêts",
+      "empty": "Aucun prêt pour l'instant."
+    },
+    "status": {
+      "title": "État des prêts",
+      "empty": "Aucune donnée disponible."
+    },
+    "summary": {
+      "label": "Prêts",
+      "activePaidOff": "{active} en cours | {paidOff} remboursé(s)"
+    },
+    "nextDue": {
+      "title": "Prochaines échéances",
+      "empty": "Aucune échéance à venir."
+    },
+    "top": {
+      "title": "Principaux prêts",
+      "empty": "Aucun prêt disponible."
+    },
+    "total": {
+      "label": "Encours total"
+    }
   }
 }

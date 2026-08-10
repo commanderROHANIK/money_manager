@@ -1,25 +1,23 @@
 <template>
-  <BaseCard title="Exchange rates">
+  <BaseCard :title="t('settings.ratesTitle')">
     <p class="mb-4 text-sm text-text-muted">
-      Rates you enter yourself — nothing is fetched, so a converted total is only ever as good as
-      what is on this list, and every one is shown with the date you recorded it. Entering one
-      direction is enough; the other is read off the same row.
+      {{ t('settings.ratesIntro') }}
     </p>
 
     <form class="flex flex-wrap items-end gap-3" @submit.prevent="save">
-      <BaseSelect v-model="from" label="One unit of" class="w-32">
+      <BaseSelect v-model="from" :label="t('settings.oneUnitOf')" class="w-32">
         <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
       </BaseSelect>
 
-      <BaseSelect v-model="to" label="Is worth, in" class="w-32">
+      <BaseSelect v-model="to" :label="t('settings.isWorthIn')" class="w-32">
         <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
       </BaseSelect>
 
-      <BaseInput v-model.number="rate" label="Amount" type="number" step="any" min="0" class="w-40" />
+      <BaseInput v-model.number="rate" :label="t('settings.amount')" type="number" step="any" min="0" class="w-40" />
 
-      <BaseInput v-model="asOf" label="As of" type="date" class="w-44" />
+      <BaseInput v-model="asOf" :label="t('settings.asOf')" type="date" class="w-44" />
 
-      <BaseButton type="submit" :disabled="saving">Save rate</BaseButton>
+      <BaseButton type="submit" :disabled="saving">{{ t('settings.saveRate') }}</BaseButton>
     </form>
 
     <p v-if="error" class="mt-3 text-sm text-danger">{{ error }}</p>
@@ -27,8 +25,8 @@
     <EmptyState
       v-if="rates.length === 0"
       class="mt-4"
-      title="No rates yet"
-      description="Add one above and portfolios spanning currencies will start reporting totals."
+      :title="t('settings.noRates')"
+      :description="t('settings.noRatesHint')"
     />
 
     <ul v-else class="mt-4 divide-y divide-border">
@@ -37,8 +35,10 @@
           1 {{ entry.baseCurrency }} = {{ entry.rate }} {{ entry.quoteCurrency }}
         </span>
         <span class="flex items-center gap-3">
-          <span class="text-xs text-text-muted">recorded {{ formatDate(entry.asOf) }}</span>
-          <BaseButton variant="danger" size="sm" @click="remove(entry)">Remove</BaseButton>
+          <span class="text-xs text-text-muted">{{
+            t('settings.recorded', { date: formatDate(entry.asOf) })
+          }}</span>
+          <BaseButton variant="danger" size="sm" @click="remove(entry)">{{ t('settings.remove') }}</BaseButton>
         </span>
       </li>
     </ul>
@@ -60,6 +60,9 @@ import BaseCard from '../../ui/BaseCard.vue';
 import BaseInput from '../../ui/BaseInput.vue';
 import BaseSelect from '../../ui/BaseSelect.vue';
 import EmptyState from '../../ui/EmptyState.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const emit = defineEmits<{ (e: 'changed'): void }>();
 
@@ -85,12 +88,12 @@ async function save() {
   error.value = '';
 
   if (from.value === to.value) {
-    error.value = 'A currency is always worth one of itself; pick two different currencies.';
+    error.value = t('settings.sameCurrency');
     return;
   }
 
   if (rate.value === null || rate.value <= 0) {
-    error.value = 'Enter a rate greater than zero.';
+    error.value = t('settings.rateTooSmall');
     return;
   }
 
@@ -103,7 +106,7 @@ async function save() {
     emit('changed');
   } catch (err) {
     console.error('Failed to save exchange rate:', err);
-    error.value = 'Could not save that rate. Please try again.';
+    error.value = t('settings.rateSaveFailed');
   } finally {
     saving.value = false;
   }
@@ -116,7 +119,7 @@ async function remove(entry: ExchangeRate) {
     emit('changed');
   } catch (err) {
     console.error('Failed to remove exchange rate:', err);
-    error.value = 'Could not remove that rate. Please try again.';
+    error.value = t('settings.rateRemoveFailed');
   }
 }
 </script>

@@ -77,7 +77,30 @@
       "en": "English",
       "de": "Deutsch",
       "fr": "Français"
-    }
+    },
+    "currencyTitle": "Kimutatás pénzneme",
+    "currencyIntro": "Az összesített értékek ebben a pénznemben jelennek meg. Minden ingatlan és számla megtartja a saját pénznemét; ez csak azt dönti el, milyen egységben adódnak össze a portfólió- és egyenlegösszesítők.",
+    "baseCurrency": "Alap pénznem",
+    "save": "Mentés",
+    "saved": "Elmentve.",
+    "saveFailed": "Nem sikerült elmenteni. Próbáld meg újra.",
+    "alwaysConvert": "Mindig váltsa át erre: {currency}",
+    "alwaysConvertHint": "Alapból kikapcsolva: amíg minden ugyanabban a pénznemben van, az összegek a saját pénznemükben maradnak, így nem kell árfolyam. Kapcsold be, ha minden összeget {currency} pénznemben szeretnél látni — ehhez minden más pénznemhez árfolyam kell.",
+    "ratesTitle": "Árfolyamok",
+    "oneUnitOf": "Egy egység",
+    "isWorthIn": "Ennyit ér, ebben",
+    "amount": "Összeg",
+    "asOf": "Dátum",
+    "saveRate": "Árfolyam mentése",
+    "remove": "Törlés",
+    "recorded": "rögzítve: {date}",
+    "noRates": "Még nincs árfolyam",
+    "noRatesHint": "Vegyél fel egyet fent, és a több pénznemet érintő portfóliók is összesítve jelennek meg.",
+    "rateTooSmall": "Nullánál nagyobb árfolyamot adj meg.",
+    "rateSaveFailed": "Nem sikerült elmenteni az árfolyamot. Próbáld meg újra.",
+    "rateRemoveFailed": "Nem sikerült törölni az árfolyamot. Próbáld meg újra.",
+    "ratesIntro": "Az árfolyamokat te adod meg — a rendszer semmit nem tölt le, így egy átváltott összeg mindig csak annyit ér, amennyit ez a lista. Mindegyik mellett ott a rögzítés dátuma. Elég az egyik irányt megadni; a másik ugyanabból a sorból kiolvasható.",
+    "sameCurrency": "Egy pénznem önmagához mérve mindig egy; válassz két különböző pénznemet."
   },
   "auth": {
     "welcomeBack": "Üdv újra itt",
@@ -249,6 +272,9 @@
       "markReceived": "Beérkezettnek jelöl",
       "showRecent": "Csak az utóbbi hónapok",
       "showAll": "Mind a(z) {count} hónap"
+    },
+    "detail": {
+      "loadFailed": "Nem sikerült betölteni ezt az ingatlant."
     }
   },
   "event": {
@@ -273,5 +299,47 @@
     "confirmDelete": "Törlöd ezt az eseményt?",
     "cardTitle": "Események",
     "noPast": "Nincs korábbi esemény."
+  },
+  "loan": {
+    "paidOff": "Kifizetve",
+    "remaining": "Fennálló",
+    "active": "Aktív",
+    "add": {
+      "title": "Hitel hozzáadása",
+      "name": "Hitel neve",
+      "originalAmount": "Eredeti összeg",
+      "originalAmountHint": "A felvett eredeti összeg, törlesztések előtt.",
+      "remainingBalance": "Fennálló tartozás",
+      "interestRate": "Kamatláb (%)",
+      "interestRateHint": "Éves kamat, például 4,5 a 4,5%-hoz.",
+      "dueDateHint": "A hitel teljes visszafizetésének tervezett dátuma.",
+      "currencyHint": "A hitel pénzneme.",
+      "paidOffLabel": "Kifizetve",
+      "paidOffHint": "Jelöld be, ha a hitelt már teljesen visszafizetted.",
+      "submit": "Hitel hozzáadása"
+    },
+    "list": {
+      "title": "Összes hitel",
+      "empty": "Még nincs rögzített hitel."
+    },
+    "status": {
+      "title": "Hitelek állapota",
+      "empty": "Nincs megjeleníthető adat."
+    },
+    "summary": {
+      "label": "Hitelek",
+      "activePaidOff": "{active} aktív | {paidOff} kifizetve"
+    },
+    "nextDue": {
+      "title": "Következő esedékes törlesztők",
+      "empty": "Nincs közelgő törlesztő."
+    },
+    "top": {
+      "title": "Legnagyobb hitelek",
+      "empty": "Nincs megjeleníthető hitel."
+    },
+    "total": {
+      "label": "Hitelek összege"
+    }
   }
 }
