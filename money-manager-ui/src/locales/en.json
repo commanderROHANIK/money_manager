@@ -121,6 +121,34 @@
     },
     "rentedVsVacant": {
       "title": "Rented vs Vacant"
+    },
+    "underpriced": {
+      "title": "Money left on the table",
+      "subtitle": "Properties let below their estimated market rent.",
+      "empty": "Nothing below market — or no market estimates recorded yet. Add one on a property's page to see the comparison.",
+      "perYear": "/ year"
+    },
+    "upcomingRent": {
+      "title": "Upcoming Rent Due",
+      "noTenancy": "No tenancy"
+    },
+    "valuations": {
+      "title": "Valuations",
+      "subtitle": "Equity and appreciation are measured against the most recent figure here.",
+      "valuePlaceholder": "Value",
+      "add": "Add",
+      "empty": "None recorded — the purchase price is being used as the current value."
+    },
+    "rentVsMarket": {
+      "title": "Rent vs market",
+      "noEstimate": "No market estimate on record for this property.",
+      "estimatePlaceholder": "Market rent / month",
+      "save": "Save",
+      "belowMarket": "{gap} below market",
+      "aboveMarket": "{gap} above market",
+      "atMarket": "At market",
+      "belowExplainer": "You charge {rent} against an estimated {market}. Closing the gap is worth {uplift} a year.",
+      "atOrAboveExplainer": "You charge {rent} against an estimated {market} — at or above market."
     }
   }
 }

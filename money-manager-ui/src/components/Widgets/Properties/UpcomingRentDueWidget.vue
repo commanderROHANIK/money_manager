@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">Upcoming Rent Due</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.upcomingRent.title') }}</h2>
     <ul v-if="upcomingRents.length > 0">
       <ListRow v-for="property in upcomingRents" :key="property.id">
         <template #title>
@@ -27,6 +27,9 @@ import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import ListRow from '../../ui/ListRow.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   properties: RentalProperty[];
@@ -35,7 +38,7 @@ const props = defineProps<{
 // A vacant property has no next rent date at all, so this has to cope with null rather
 // than turning it into an Invalid Date.
 function formatDueDate(iso: string | null | undefined): string {
-  if (!iso) return 'No tenancy';
+  if (!iso) return t('property.upcomingRent.noTenancy');
   return new Date(iso).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',

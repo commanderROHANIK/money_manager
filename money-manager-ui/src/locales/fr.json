@@ -121,6 +121,34 @@
     },
     "rentedVsVacant": {
       "title": "Loués et vacants"
+    },
+    "underpriced": {
+      "title": "Manque à gagner",
+      "subtitle": "Biens loués en dessous de leur loyer de marché estimé.",
+      "empty": "Rien en dessous du marché — ou aucune estimation enregistrée. Ajoutez-en une sur la page d'un bien pour voir la comparaison.",
+      "perYear": "/ an"
+    },
+    "upcomingRent": {
+      "title": "Loyers à venir",
+      "noTenancy": "Aucun bail"
+    },
+    "valuations": {
+      "title": "Estimations",
+      "subtitle": "Les fonds propres et la valorisation sont mesurés par rapport au chiffre le plus récent.",
+      "valuePlaceholder": "Valeur",
+      "add": "Ajouter",
+      "empty": "Rien d'enregistré — le prix d'achat sert de valeur actuelle."
+    },
+    "rentVsMarket": {
+      "title": "Loyer et marché",
+      "noEstimate": "Aucune estimation de marché pour ce bien.",
+      "estimatePlaceholder": "Loyer de marché / mois",
+      "save": "Enregistrer",
+      "belowMarket": "{gap} sous le marché",
+      "aboveMarket": "{gap} au-dessus du marché",
+      "atMarket": "Au niveau du marché",
+      "belowExplainer": "Vous demandez {rent} pour une estimation de {market}. Combler l'écart représenterait {uplift} par an.",
+      "atOrAboveExplainer": "Vous demandez {rent} pour une estimation de {market} — au niveau du marché ou au-dessus."
     }
   }
 }

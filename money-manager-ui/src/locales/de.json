@@ -121,6 +121,34 @@
     },
     "rentedVsVacant": {
       "title": "Vermietet und Leerstand"
+    },
+    "underpriced": {
+      "title": "Verschenkte Miete",
+      "subtitle": "Immobilien, die unter der geschätzten Marktmiete vermietet sind.",
+      "empty": "Nichts unter Marktniveau — oder noch keine Marktschätzung erfasst. Legen Sie eine auf der Seite einer Immobilie an, um den Vergleich zu sehen.",
+      "perYear": "/ Jahr"
+    },
+    "upcomingRent": {
+      "title": "Anstehende Mietzahlungen",
+      "noTenancy": "Kein Mietverhältnis"
+    },
+    "valuations": {
+      "title": "Bewertungen",
+      "subtitle": "Eigenkapital und Wertzuwachs werden am jüngsten Wert hier gemessen.",
+      "valuePlaceholder": "Wert",
+      "add": "Hinzufügen",
+      "empty": "Nichts erfasst — als aktueller Wert dient der Kaufpreis."
+    },
+    "rentVsMarket": {
+      "title": "Miete im Marktvergleich",
+      "noEstimate": "Für diese Immobilie ist keine Marktschätzung erfasst.",
+      "estimatePlaceholder": "Marktmiete / Monat",
+      "save": "Speichern",
+      "belowMarket": "{gap} unter Marktniveau",
+      "aboveMarket": "{gap} über Marktniveau",
+      "atMarket": "Auf Marktniveau",
+      "belowExplainer": "Sie verlangen {rent} bei geschätzten {market}. Die Lücke zu schließen wäre {uplift} im Jahr wert.",
+      "atOrAboveExplainer": "Sie verlangen {rent} bei geschätzten {market} — auf oder über Marktniveau."
     }
   }
 }

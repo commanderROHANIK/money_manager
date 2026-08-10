@@ -121,6 +121,34 @@
     },
     "rentedVsVacant": {
       "title": "Kiadva és üresen"
+    },
+    "underpriced": {
+      "title": "Kihagyott bevétel",
+      "subtitle": "A piaci becslés alatt kiadott ingatlanok.",
+      "empty": "Nincs piac alatt kiadott ingatlan — vagy még nincs rögzített piaci becslés. Vegyél fel egyet az ingatlan oldalán az összehasonlításhoz.",
+      "perYear": "/ év"
+    },
+    "upcomingRent": {
+      "title": "Közelgő bérletidíj-fizetés",
+      "noTenancy": "Nincs bérlet"
+    },
+    "valuations": {
+      "title": "Értékbecslések",
+      "subtitle": "A saját tőke és az értéknövekedés a legutóbbi itt szereplő értékhez mérve számolódik.",
+      "valuePlaceholder": "Érték",
+      "add": "Hozzáadás",
+      "empty": "Nincs rögzítve — jelenlegi értékként a vételár szerepel."
+    },
+    "rentVsMarket": {
+      "title": "Bérleti díj a piachoz mérve",
+      "noEstimate": "Ehhez az ingatlanhoz nincs rögzített piaci becslés.",
+      "estimatePlaceholder": "Piaci bérleti díj / hó",
+      "save": "Mentés",
+      "belowMarket": "{gap} a piaci alatt",
+      "aboveMarket": "{gap} a piaci fölött",
+      "atMarket": "Piaci szinten",
+      "belowExplainer": "{rent} díjat kérsz a becsült {market} helyett. A különbség évi {uplift} bevételt jelentene.",
+      "atOrAboveExplainer": "{rent} díjat kérsz a becsült {market} mellett — piaci szinten vagy afölött."
     }
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-1">Valuations</h2>
+    <h2 class="font-heading text-lg font-bold mb-1">{{ t('property.valuations.title') }}</h2>
     <p class="text-xs text-text-muted mb-3">
-      Equity and appreciation are measured against the most recent figure here.
+      {{ t('property.valuations.subtitle') }}
     </p>
 
     <form class="flex flex-wrap gap-2 mb-4" @submit.prevent="submit">
@@ -11,15 +11,15 @@
         v-model.number="form.value"
         type="number"
         min="1"
-        placeholder="Value"
+        :placeholder="t('property.valuations.valuePlaceholder')"
         class="w-32"
         required
       />
-      <BaseButton type="submit">Add</BaseButton>
+      <BaseButton type="submit">{{ t('property.valuations.add') }}</BaseButton>
     </form>
 
     <p v-if="valuations.length === 0" class="text-sm text-text-muted">
-      None recorded — the purchase price is being used as the current value.
+      {{ t('property.valuations.empty') }}
     </p>
 
     <ul v-else class="text-sm max-h-[200px] overflow-y-auto">
@@ -43,6 +43,9 @@ import { formatDate } from '../../../utils/labels';
 import BaseInput from '../../ui/BaseInput.vue';
 import BaseButton from '../../ui/BaseButton.vue';
 import ListRow from '../../ui/ListRow.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{ valuations: PropertyValuation[]; currencyCode: string }>();
 const emit = defineEmits<{ (e: 'create', payload: { valuedOn: string; value: number }): void }>();
