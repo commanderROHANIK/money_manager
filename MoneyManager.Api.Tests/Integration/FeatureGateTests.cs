@@ -88,14 +88,20 @@ public sealed class FeatureGateTests
         var neverExisted = await client.GetAsync("/api/no-such-controller");
 
         // This is the property worth having, and the reason the gate answers with a bare 404
-        // rather than the ProblemDetails envelope the rest of the API uses. A body saying "this
-        // feature is disabled" would tell a customer the product has a section they were not
-        // shown — which is exactly what switching it off was meant to avoid. Same status, same
-        // empty body, no inference available.
+        // rather than the ProblemDetails envelope the rest of the API uses. A described 404 for a
+        // gated path and an empty one for a path that does not exist tells a caller which routes
+        // are real, which is exactly what switching a section off was meant to avoid. Same
+        // status, same empty body, no inference available.
         Assert.Equal(neverExisted.StatusCode, disabled.StatusCode);
-        Assert.Equal(
-            await neverExisted.Content.ReadAsStringAsync(),
-            await disabled.Content.ReadAsStringAsync());
+
+        var disabledBody = await disabled.Content.ReadAsStringAsync();
+        var neverExistedBody = await neverExisted.Content.ReadAsStringAsync();
+
+        // Asserted separately first, because the two ways this has been got wrong both produced a
+        // ProblemDetails body on the gated path — and a bare Assert.Equal of the two reports that
+        // as "strings differ" without saying which side grew a body it should not have.
+        Assert.Empty(disabledBody);
+        Assert.Equal(neverExistedBody, disabledBody);
     }
 
     [Fact]

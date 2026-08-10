@@ -27,14 +27,22 @@ namespace MoneyManager.Api.Infrastructure
     /// </para>
     ///
     /// <para>
-    /// <c>StatusCodeResult</c> rather than the more obvious <c>NotFoundResult</c>, and the
-    /// difference is the whole point. <c>NotFoundResult</c> implements
-    /// <c>IClientErrorActionResult</c>, so <c>[ApiController]</c>'s client-error mapping fills it
-    /// in with a <c>ProblemDetails</c> body — which is exactly the tell this gate exists to
-    /// remove: an empty 404 for a path that does not exist and a described 404 for one that does
-    /// says which routes are real. <c>StatusCodeResult</c> carries no such interface and is
-    /// written out untouched. This was not a guess; it is what
-    /// <c>A_disabled_section_is_indistinguishable_from_one_that_was_never_built</c> failed on.
+    /// <c>ContentResult</c> rather than the obvious <c>NotFoundResult</c>, and the difference is
+    /// the whole point. <c>[ApiController]</c> installs an always-run result filter that fills in
+    /// any <c>IClientErrorActionResult</c> with a <c>ProblemDetails</c> body — and it runs even
+    /// when a resource filter has short-circuited the pipeline. <c>NotFoundResult</c> inherits
+    /// that interface from <c>StatusCodeResult</c>, which declares it, so neither of them can
+    /// produce an empty body here however plainly they read. <c>ContentResult</c> is outside that
+    /// hierarchy and is written out untouched.
+    /// </para>
+    ///
+    /// <para>
+    /// The described-404-versus-empty-404 difference is not cosmetic: it is precisely the tell
+    /// this gate exists to remove, because it says which paths are real routes. Both wrong
+    /// versions of this were caught by
+    /// <c>A_disabled_section_is_indistinguishable_from_one_that_was_never_built</c> comparing the
+    /// two response bodies rather than only their status codes — which is the reason to write the
+    /// assertion that way.
     /// </para>
     ///
     /// <para>
@@ -62,7 +70,7 @@ namespace MoneyManager.Api.Infrastructure
                 .GetRequiredService<IOptions<FeatureOptions>>().Value;
 
             if (!options.IsEnabled(_feature))
-                context.Result = new StatusCodeResult(StatusCodes.Status404NotFound);
+                context.Result = new ContentResult { StatusCode = StatusCodes.Status404NotFound };
         }
 
         public void OnResourceExecuted(ResourceExecutedContext context)
