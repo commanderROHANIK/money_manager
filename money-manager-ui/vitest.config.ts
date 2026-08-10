@@ -28,7 +28,21 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 71.6 / 72.18 / 70.32 / 71.36, after the validation work brought the API
+      // Last measured 72.81 / 73.13 / 71.23 / 72.7, after the feature flags brought the feature
+      // service, the navigation and the section guard under test.
+      //
+      // Statements and lines move 70 -> 71. That is a one-point ratchet on a 1.2-point gain, and
+      // it is deliberately the smaller of the two moves available: 72 was measured first, on a
+      // run where the router test imported the page components for real instead of stubbing
+      // them, and it evaporated the moment that test went back to stubs. A floor set from the
+      // higher number would have been a floor set from a mistake.
+      //
+      // Branches and functions stay where they are. Both gained under a point, and the next rung
+      // up would leave 1.13 and 1.23 of headroom — the margin this file has already declined
+      // once, because a floor that close fails an honest pull request on rounding rather than on
+      // a regression.
+      //
+      // Before that: 71.6 / 72.18 / 70.32 / 71.36, after the validation work brought the API
       // error extractor and the add-property form under test.
       //
       // The floors move with it, which they did not last time: the vite 8 basis now has several
@@ -68,10 +82,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 70,
+        statements: 71,
         branches: 71,
         functions: 69,
-        lines: 70,
+        lines: 71,
       },
     },
   },

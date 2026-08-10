@@ -64,6 +64,11 @@ builder.Services.AddDbContext<MoneyManagerDbContext>(options => options.UseSqlit
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.SectionName));
 
+// Which sections of the product this deployment presents at all. The defaults in FeatureOptions
+// are the MVP shape — rental only — so a deployment gets it without configuring anything;
+// appsettings.Development.json turns the rest back on so a checkout still shows the whole app.
+builder.Services.Configure<FeatureOptions>(builder.Configuration.GetSection(FeatureOptions.SectionName));
+
 var seed = builder.Configuration.GetSection(SeedOptions.SectionName).Get<SeedOptions>() ?? new SeedOptions();
 
 // Refusing to start beats seeding a default. With registration disabled the seeded account is

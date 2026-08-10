@@ -38,6 +38,10 @@ path, and `numReplicas: 1`. Everything else is set in the Railway dashboard.
 | `Seed__Username` | e.g. `demo` | |
 | `Seed__Password` | set explicitly | **No default exists and startup fails without one.** |
 | `Seed__IncludeDemoData` | `true` for previews | Consider `false` on a long-lived environment holding real records. |
+| `Features__Banking` | `false` | Not in the MVP. Default already `false` — listed so the shape is visible. |
+| `Features__Stocks` | `false` | Not in the MVP. Default already `false`. |
+| `Features__Loans` | `true` | Financing is part of a property's return. Default. |
+| `Features__Events` | `true` | Rent due dates. Default. |
 
 ### Bind a literal address, never `${{PORT}}`
 
@@ -122,6 +126,22 @@ Moving to PostgreSQL is deferred. It is not a provider swap: the three existing 
 SQLite-generated and would need regenerating for Npgsql, and `MigrationSchemaTests` is built on an
 in-memory SQLite connection, so it would either need a real PostgreSQL in CI or stop testing what
 is deployed.
+
+## Feature flags
+
+`Features__*` decides which sections a deployment presents. The defaults are the MVP shape —
+rental properties, loans and events, with bank accounts and stocks off — so a deployment gets that
+without setting any of them. `appsettings.Development.json` turns everything on, so a checkout
+still shows the whole application to whoever is working on it.
+
+Off means gone rather than hidden. The navigation drops the link, the router refuses the route,
+and the section's endpoints answer 404 — the same empty 404 as a route that was never registered,
+so a switched-off section is indistinguishable from one that was never built. Hiding only the
+navigation would have left the half-built sections one typed URL away.
+
+The flags do not touch the seeder: `Seed__IncludeDemoData=true` still writes demo bank accounts
+and stocks. They simply become unreachable, which is the intended outcome — turning a flag back on
+finds the data where it was.
 
 ## Accounts
 
