@@ -97,5 +97,30 @@
     "registrationClosed": "L'inscription est fermée sur ce déploiement. Demandez la création d'un compte.",
     "registerFailed": "Erreur lors de l'inscription : {reason}",
     "registerFailedFallback": "veuillez réessayer"
+  },
+  "property": {
+    "rented": "Loué",
+    "vacant": "Vacant",
+    "timeline": {
+      "title": "Chronologie",
+      "empty": "Rien d'enregistré pour l'instant."
+    },
+    "totalRent": {
+      "label": "Loyer mensuel total",
+      "mixedCurrency": "Les biens sont libellés en plusieurs devises — somme non convertie."
+    },
+    "summary": {
+      "label": "Biens locatifs",
+      "rentedVacant": "{rented} loué(s) | {vacant} vacant(s)",
+      "behindOnRent": "{count} bien en retard de loyer | {count} biens en retard de loyer"
+    },
+    "highestRent": {
+      "title": "Loyer le plus élevé",
+      "monthlyRent": "Loyer mensuel :",
+      "empty": "Aucun bien enregistré."
+    },
+    "rentedVsVacant": {
+      "title": "Loués et vacants"
+    }
   }
 }

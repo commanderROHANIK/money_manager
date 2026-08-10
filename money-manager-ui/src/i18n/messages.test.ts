@@ -16,6 +16,7 @@ import de from '../locales/de.json';
 import en from '../locales/en.json';
 import fr from '../locales/fr.json';
 import hu from '../locales/hu.json';
+import { i18n } from './index';
 import { SUPPORTED_LOCALES } from './locale';
 
 type Messages = { [key: string]: string | Messages };
@@ -115,11 +116,38 @@ describe('locale files', () => {
     }
   );
 
+  it.each(Object.keys(FILES))('%s resolves a pluralised message for every count', (locale) => {
+    // Pluralisation is where an i18n layer usually goes wrong quietly. Hungarian needs one form
+    // where English needs two, so the count has to select a form per language rather than per
+    // message — and if the named value does not arrive, the sentence renders with a literal
+    // {count} in it, which no other check would notice.
+    const { t } = i18n.global;
+    const previous = i18n.global.locale.value;
+
+    i18n.global.locale.value = locale as typeof previous;
+
+    for (const count of [0, 1, 2, 5]) {
+      const rendered = t('property.summary.behindOnRent', count);
+
+      expect(rendered, `${locale} @ ${count}`).toContain(String(count));
+      expect(rendered, `${locale} @ ${count}`).not.toContain('{');
+      expect(rendered, `${locale} @ ${count}`).not.toContain('|');
+    }
+
+    i18n.global.locale.value = previous;
+  });
+
   it.each(Object.keys(FILES))('%s keeps every interpolation placeholder', (locale) => {
     // A translator dropping {reason} loses the server's actual error text and leaves a sentence
     // that promises a detail it no longer shows. Renaming it is worse: vue-i18n renders the
     // literal {raison} rather than failing.
-    const placeholders = (value: string) => (value.match(/\{[^}]+\}/g) ?? []).sort();
+    //
+    // Which placeholders appear, not how many times. A pluralised message holds its forms in one
+    // string separated by |, and languages disagree about how many forms they need — Hungarian
+    // does not pluralise a noun after a number, so its single form carries {count} once where
+    // English carries it twice across two. Counting occurrences would fail that, correctly
+    // written, every time.
+    const placeholders = (value: string) => [...new Set(value.match(/\{[^}]+\}/g) ?? [])].sort();
 
     for (const key of reference) {
       const expected = read(FILES.en, key);

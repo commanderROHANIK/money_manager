@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">Highest Rent</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.highestRent.title') }}</h2>
 
     <div v-if="mostExpensive" class="space-y-2">
       <router-link
@@ -13,18 +13,18 @@
         {{ mostExpensive.address }}
       </div>
       <div class="text-sm text-text-muted">
-        Monthly Rent:
+        {{ t('property.highestRent.monthlyRent') }}
         <span class="font-semibold text-primary-strong tabular-nums">
           {{ formatMoney(mostExpensive.rentAmount, mostExpensive.currencyCode) }}
         </span>
       </div>
       <Badge :variant="mostExpensive.isRented ? 'primary' : 'neutral'">
-        {{ mostExpensive.isRented ? 'Rented' : 'Vacant' }}
+        {{ mostExpensive.isRented ? t('property.rented') : t('property.vacant') }}
       </Badge>
     </div>
 
     <div v-else class="text-sm text-text-muted">
-      No properties available.
+      {{ t('property.highestRent.empty') }}
     </div>
   </div>
 </template>
@@ -34,6 +34,9 @@ import type { RentalProperty } from '../../../models/models';
 import { computed } from 'vue';
 import { formatMoney } from '../../../utils/money';
 import Badge from '../../ui/Badge.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   properties: RentalProperty[];

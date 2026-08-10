@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">Timeline</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.timeline.title') }}</h2>
 
     <p v-if="events.length === 0" class="text-sm text-text-muted">
-      Nothing recorded yet.
+      {{ t('property.timeline.empty') }}
     </p>
 
     <ol v-else class="relative border-l border-border ml-2 space-y-4">
@@ -28,6 +28,9 @@
 <script setup lang="ts">
 import type { PropertyEvent } from '../../../models/models';
 import { PROPERTY_EVENT_LABELS, formatDate } from '../../../utils/labels';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps<{ events: PropertyEvent[] }>();
 </script>

@@ -97,5 +97,30 @@
     "registrationClosed": "Ezen a példányon nincs regisztráció. Kérj fiókot az üzemeltetőtől.",
     "registerFailed": "Hiba a regisztráció során: {reason}",
     "registerFailedFallback": "próbáld meg újra"
+  },
+  "property": {
+    "rented": "Kiadva",
+    "vacant": "Üres",
+    "timeline": {
+      "title": "Idővonal",
+      "empty": "Még nincs rögzített esemény."
+    },
+    "totalRent": {
+      "label": "Havi bérleti díj összesen",
+      "mixedCurrency": "Az ingatlanok több pénznemben vannak — az összeg átváltás nélkül szerepel."
+    },
+    "summary": {
+      "label": "Bérbe adott ingatlanok",
+      "rentedVacant": "{rented} kiadva | {vacant} üres",
+      "behindOnRent": "{count} ingatlannál elmaradás van a bérleti díjban"
+    },
+    "highestRent": {
+      "title": "Legmagasabb bérleti díj",
+      "monthlyRent": "Havi bérleti díj:",
+      "empty": "Nincs rögzített ingatlan."
+    },
+    "rentedVsVacant": {
+      "title": "Kiadva és üresen"
+    }
   }
 }

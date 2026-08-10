@@ -97,5 +97,30 @@
     "registrationClosed": "Auf dieser Instanz ist keine Registrierung möglich. Bitten Sie um ein Konto.",
     "registerFailed": "Fehler bei der Registrierung: {reason}",
     "registerFailedFallback": "bitte erneut versuchen"
+  },
+  "property": {
+    "rented": "Vermietet",
+    "vacant": "Leerstand",
+    "timeline": {
+      "title": "Verlauf",
+      "empty": "Noch nichts erfasst."
+    },
+    "totalRent": {
+      "label": "Monatsmiete gesamt",
+      "mixedCurrency": "Die Immobilien haben verschiedene Währungen — die Summe ist nicht umgerechnet."
+    },
+    "summary": {
+      "label": "Mietobjekte",
+      "rentedVacant": "{rented} vermietet | {vacant} leer",
+      "behindOnRent": "{count} Immobilie mit Mietrückstand | {count} Immobilien mit Mietrückstand"
+    },
+    "highestRent": {
+      "title": "Höchste Miete",
+      "monthlyRent": "Monatsmiete:",
+      "empty": "Keine Immobilien vorhanden."
+    },
+    "rentedVsVacant": {
+      "title": "Vermietet und Leerstand"
+    }
   }
 }

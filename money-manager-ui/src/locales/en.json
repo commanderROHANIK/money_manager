@@ -97,5 +97,30 @@
     "registrationClosed": "Registration is closed on this deployment. Ask for an account to be set up for you.",
     "registerFailed": "Error registering: {reason}",
     "registerFailedFallback": "please try again"
+  },
+  "property": {
+    "rented": "Rented",
+    "vacant": "Vacant",
+    "timeline": {
+      "title": "Timeline",
+      "empty": "Nothing recorded yet."
+    },
+    "totalRent": {
+      "label": "Total Monthly Rent",
+      "mixedCurrency": "Properties span multiple currencies — showing the unconverted sum."
+    },
+    "summary": {
+      "label": "Rental Properties",
+      "rentedVacant": "{rented} Rented | {vacant} Vacant",
+      "behindOnRent": "{count} property behind on rent | {count} properties behind on rent"
+    },
+    "highestRent": {
+      "title": "Highest Rent",
+      "monthlyRent": "Monthly Rent:",
+      "empty": "No properties available."
+    },
+    "rentedVsVacant": {
+      "title": "Rented vs Vacant"
+    }
   }
 }
