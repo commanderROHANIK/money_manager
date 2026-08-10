@@ -130,7 +130,8 @@
     },
     "upcomingRent": {
       "title": "Közelgő bérletidíj-fizetés",
-      "noTenancy": "Nincs bérlet"
+      "noTenancy": "Nincs bérlet",
+      "none": "A következő 30 napban nincs esedékes bérleti díj."
     },
     "valuations": {
       "title": "Értékbecslések",
@@ -149,6 +150,35 @@
       "atMarket": "Piaci szinten",
       "belowExplainer": "{rent} díjat kérsz a becsült {market} helyett. A különbség évi {uplift} bevételt jelentene.",
       "atOrAboveExplainer": "{rent} díjat kérsz a becsült {market} mellett — piaci szinten vagy afölött."
+    },
+    "list": {
+      "title": "Összes ingatlan",
+      "empty": "Még nincs rögzített ingatlan."
+    },
+    "portfolio": {
+      "title": "Portfólió",
+      "empty": "Még nincs ingatlan. Vegyél fel egyet alább, hogy lásd, mit hoz.",
+      "missingRate": "Nincs rögzített árfolyam ehhez: {pairs}, ezért az alábbi összegek nem mind számolhatók ki.",
+      "addRateLink": "Vedd fel az árfolyamot a Beállításokban",
+      "addRateSuffix": "és az összegek megjelennek.",
+      "convertedNote": "Átváltva {currency} pénznemre az általad megadott árfolyamokkal ({rates}).",
+      "rateOn": "{date} napon",
+      "tileProperties": "Ingatlan",
+      "tileInvested": "Befektetett tőke",
+      "tileEquity": "Saját tőke",
+      "tileCashFlow": "Havi cash flow",
+      "tileRoi": "Portfólió megtérülés"
+    },
+    "rentByMonth": {
+      "title": "Befolyt bérleti díj havonta",
+      "empty": "Ehhez a(z) {count} ingatlanhoz még nincs rögzített bérletidíj-befizetés.",
+      "series": "Befolyt bérleti díj"
+    },
+    "rentOverTime": {
+      "title": "Bérleti díj alakulása",
+      "empty": "Még nincs bérletidíj-előzmény. Automatikusan feltöltődik, ahogy bérletek indulnak és a díjak változnak.",
+      "charged": "Kért bérleti díj",
+      "marketEstimate": "Piaci becslés"
     }
   }
 }

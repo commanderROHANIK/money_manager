@@ -130,7 +130,8 @@
     },
     "upcomingRent": {
       "title": "Anstehende Mietzahlungen",
-      "noTenancy": "Kein Mietverhältnis"
+      "noTenancy": "Kein Mietverhältnis",
+      "none": "In den nächsten 30 Tagen ist keine Miete fällig."
     },
     "valuations": {
       "title": "Bewertungen",
@@ -149,6 +150,35 @@
       "atMarket": "Auf Marktniveau",
       "belowExplainer": "Sie verlangen {rent} bei geschätzten {market}. Die Lücke zu schließen wäre {uplift} im Jahr wert.",
       "atOrAboveExplainer": "Sie verlangen {rent} bei geschätzten {market} — auf oder über Marktniveau."
+    },
+    "list": {
+      "title": "Alle Immobilien",
+      "empty": "Noch keine Immobilien."
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "empty": "Noch keine Immobilien. Legen Sie unten eine an, um ihre Rendite zu verfolgen.",
+      "missingRate": "Für {pairs} ist kein Wechselkurs erfasst, daher lassen sich nicht alle Summen unten berechnen.",
+      "addRateLink": "Kurs in den Einstellungen hinterlegen",
+      "addRateSuffix": "und diese Summen erscheinen.",
+      "convertedNote": "Umgerechnet in {currency} mit den von Ihnen erfassten Kursen ({rates}).",
+      "rateOn": "am {date}",
+      "tileProperties": "Immobilien",
+      "tileInvested": "Eingesetztes Kapital",
+      "tileEquity": "Eigenkapital",
+      "tileCashFlow": "Monatlicher Cashflow",
+      "tileRoi": "Portfolio-Rendite"
+    },
+    "rentByMonth": {
+      "title": "Mieteinnahmen nach Monat",
+      "empty": "Für diese {count} Immobilien sind noch keine Mietzahlungen erfasst.",
+      "series": "Mieteinnahmen"
+    },
+    "rentOverTime": {
+      "title": "Mietentwicklung",
+      "empty": "Noch kein Mietverlauf. Er füllt sich automatisch, sobald Mietverhältnisse beginnen und Mieten sich ändern.",
+      "charged": "Verlangte Miete",
+      "marketEstimate": "Marktschätzung"
     }
   }
 }

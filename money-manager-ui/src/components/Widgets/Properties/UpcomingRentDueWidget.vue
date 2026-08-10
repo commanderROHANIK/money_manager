@@ -18,7 +18,7 @@
         </template>
       </ListRow>
     </ul>
-    <p v-else class="text-text-muted">No rent due in the next 30 days.</p>
+    <p v-else class="text-text-muted">{{ t('property.upcomingRent.none') }}</p>
   </div>
 </template>
 

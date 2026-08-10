@@ -1,16 +1,18 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-3">Portfolio</h2>
+    <h2 class="font-heading text-lg font-bold mb-3">{{ t('property.portfolio.title') }}</h2>
 
     <p v-if="!portfolio || portfolio.propertyCount === 0" class="text-sm text-text-muted">
-      No properties yet. Add one below to start tracking what it returns.
+      {{ t('property.portfolio.empty') }}
     </p>
 
     <template v-else>
       <p v-if="missingRateMessage" class="text-sm text-accent-strong mb-3">
         {{ missingRateMessage }}
-        <router-link to="/settings" class="font-semibold underline">Add the rate in Settings</router-link>
-        and these totals will appear.
+        <router-link to="/settings" class="font-semibold underline">{{
+          t('property.portfolio.addRateLink')
+        }}</router-link>
+        {{ t('property.portfolio.addRateSuffix') }}
       </p>
 
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -30,6 +32,9 @@ import { computed } from 'vue';
 import type { PortfolioAnalytics } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatPercent, formatDate } from '../../../utils/labels';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{ portfolio: PortfolioAnalytics | null }>();
 
@@ -50,10 +55,14 @@ const conversionNote = computed(() => {
   if (!p || !p.converted || p.appliedRates.length === 0) return '';
 
   const rates = p.appliedRates
-    .map((r) => `1 ${r.from} = ${r.rate} ${r.to}${r.asOf ? ` on ${formatDate(r.asOf)}` : ''}`)
+    .map(
+      (r) =>
+        `1 ${r.from} = ${r.rate} ${r.to}` +
+        (r.asOf ? ` ${t('property.portfolio.rateOn', { date: formatDate(r.asOf) })}` : '')
+    )
     .join('; ');
 
-  return `Converted to ${p.currency} using the rates you entered (${rates}).`;
+  return t('property.portfolio.convertedNote', { currency: p.currency, rates });
 });
 
 const missingRateMessage = computed(() => {
@@ -61,7 +70,7 @@ const missingRateMessage = computed(() => {
   if (missing.length === 0) return '';
 
   const pairs = missing.map((pair) => `${pair.from} → ${pair.to}`).join(', ');
-  return `No exchange rate on record for ${pairs}, so the totals below cannot all be worked out.`;
+  return t('property.portfolio.missingRate', { pairs });
 });
 
 const tiles = computed(() => {
@@ -69,16 +78,16 @@ const tiles = computed(() => {
   if (!p) return [];
 
   return [
-    { label: 'Properties', value: String(p.propertyCount), tone: '' },
-    { label: 'Cash invested', value: money(p.totalInvested), tone: '' },
-    { label: 'Equity', value: money(p.totalEquity), tone: '' },
+    { label: t('property.portfolio.tileProperties'), value: String(p.propertyCount), tone: '' },
+    { label: t('property.portfolio.tileInvested'), value: money(p.totalInvested), tone: '' },
+    { label: t('property.portfolio.tileEquity'), value: money(p.totalEquity), tone: '' },
     {
-      label: 'Monthly cash flow',
+      label: t('property.portfolio.tileCashFlow'),
       value: money(p.totalMonthlyCashFlow),
       tone: (p.totalMonthlyCashFlow ?? 0) >= 0 ? 'text-primary-strong' : 'text-danger',
     },
     {
-      label: 'Portfolio ROI',
+      label: t('property.portfolio.tileRoi'),
       value: formatPercent(p.portfolioRoi),
       tone: (p.portfolioRoi ?? 0) >= 0 ? 'text-primary-strong' : 'text-danger',
     },

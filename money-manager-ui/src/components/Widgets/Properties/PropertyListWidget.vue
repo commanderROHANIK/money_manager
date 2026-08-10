@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">All Properties</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.list.title') }}</h2>
 
     <p v-if="properties.length === 0" class="text-sm text-text-muted">
-      No properties yet.
+      {{ t('property.list.empty') }}
     </p>
 
     <ul v-else class="max-h-[360px] overflow-y-auto">
@@ -58,6 +58,9 @@ import type { PropertyArrears, RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import ListRow from '../../ui/ListRow.vue';
 import Badge from '../../ui/Badge.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{

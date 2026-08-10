@@ -130,7 +130,8 @@
     },
     "upcomingRent": {
       "title": "Upcoming Rent Due",
-      "noTenancy": "No tenancy"
+      "noTenancy": "No tenancy",
+      "none": "No rent due in the next 30 days."
     },
     "valuations": {
       "title": "Valuations",
@@ -149,6 +150,35 @@
       "atMarket": "At market",
       "belowExplainer": "You charge {rent} against an estimated {market}. Closing the gap is worth {uplift} a year.",
       "atOrAboveExplainer": "You charge {rent} against an estimated {market} — at or above market."
+    },
+    "list": {
+      "title": "All Properties",
+      "empty": "No properties yet."
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "empty": "No properties yet. Add one below to start tracking what it returns.",
+      "missingRate": "No exchange rate on record for {pairs}, so the totals below cannot all be worked out.",
+      "addRateLink": "Add the rate in Settings",
+      "addRateSuffix": "and these totals will appear.",
+      "convertedNote": "Converted to {currency} using the rates you entered ({rates}).",
+      "rateOn": "on {date}",
+      "tileProperties": "Properties",
+      "tileInvested": "Cash invested",
+      "tileEquity": "Equity",
+      "tileCashFlow": "Monthly cash flow",
+      "tileRoi": "Portfolio ROI"
+    },
+    "rentByMonth": {
+      "title": "Rent Collected by Month",
+      "empty": "No rent payments recorded yet for these {count} properties.",
+      "series": "Rent Collected"
+    },
+    "rentOverTime": {
+      "title": "Rent over time",
+      "empty": "No rent history yet. It fills in automatically as tenancies start and rents change.",
+      "charged": "Rent charged",
+      "marketEstimate": "Market estimate"
     }
   }
 }

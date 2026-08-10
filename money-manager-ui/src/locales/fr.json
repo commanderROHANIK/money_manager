@@ -130,7 +130,8 @@
     },
     "upcomingRent": {
       "title": "Loyers à venir",
-      "noTenancy": "Aucun bail"
+      "noTenancy": "Aucun bail",
+      "none": "Aucun loyer à échéance dans les 30 prochains jours."
     },
     "valuations": {
       "title": "Estimations",
@@ -149,6 +150,35 @@
       "atMarket": "Au niveau du marché",
       "belowExplainer": "Vous demandez {rent} pour une estimation de {market}. Combler l'écart représenterait {uplift} par an.",
       "atOrAboveExplainer": "Vous demandez {rent} pour une estimation de {market} — au niveau du marché ou au-dessus."
+    },
+    "list": {
+      "title": "Tous les biens",
+      "empty": "Aucun bien pour l'instant."
+    },
+    "portfolio": {
+      "title": "Portefeuille",
+      "empty": "Aucun bien pour l'instant. Ajoutez-en un ci-dessous pour suivre ce qu'il rapporte.",
+      "missingRate": "Aucun taux de change enregistré pour {pairs}, les totaux ci-dessous ne peuvent donc pas tous être calculés.",
+      "addRateLink": "Ajoutez le taux dans les Paramètres",
+      "addRateSuffix": "et ces totaux apparaîtront.",
+      "convertedNote": "Converti en {currency} avec les taux que vous avez saisis ({rates}).",
+      "rateOn": "au {date}",
+      "tileProperties": "Biens",
+      "tileInvested": "Capital investi",
+      "tileEquity": "Fonds propres",
+      "tileCashFlow": "Flux de trésorerie mensuel",
+      "tileRoi": "Rendement du portefeuille"
+    },
+    "rentByMonth": {
+      "title": "Loyers encaissés par mois",
+      "empty": "Aucun loyer encaissé pour ces {count} biens.",
+      "series": "Loyers encaissés"
+    },
+    "rentOverTime": {
+      "title": "Évolution des loyers",
+      "empty": "Pas encore d'historique. Il se remplit automatiquement à mesure que les baux démarrent et que les loyers changent.",
+      "charged": "Loyer demandé",
+      "marketEstimate": "Estimation du marché"
     }
   }
 }
