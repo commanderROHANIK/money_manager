@@ -1,15 +1,14 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-1">Add a property</h2>
+    <h2 class="font-heading text-lg font-bold mb-1">{{ t('property.add.title') }}</h2>
     <p class="text-xs text-text-muted mb-4">
-      The purchase price and date are what every return figure is measured against — worth
-      entering even if they are approximate.
+      {{ t('property.add.subtitle') }}
     </p>
 
     <form class="grid grid-cols-1 md:grid-cols-3 gap-3" @submit.prevent="submit">
       <BaseInput
         v-model="form.propertyName"
-        placeholder="Name"
+        :placeholder="t('property.add.name')"
         class="md:col-span-2"
         :error="errors.propertyName"
         required
@@ -22,18 +21,18 @@
 
       <BaseInput
         v-model="form.address"
-        placeholder="Address"
+        :placeholder="t('property.add.address')"
         class="md:col-span-2"
         :error="errors.address"
         required
       />
-      <BaseInput v-model="form.city" placeholder="City" :error="errors.city" />
+      <BaseInput v-model="form.city" :placeholder="t('property.add.city')" :error="errors.city" />
 
       <BaseInput
         v-model.number="form.purchasePrice"
         type="number"
         min="0"
-        placeholder="Purchase price"
+        :placeholder="t('property.add.purchasePrice')"
         :error="errors.purchasePrice"
       />
       <BaseInput v-model="form.purchaseDate" type="date" :error="errors.purchaseDate" />
@@ -45,18 +44,18 @@
         v-model.number="form.sizeSqm"
         type="number"
         min="0"
-        placeholder="Size (m²)"
+        :placeholder="t('property.add.size')"
         :error="errors.sizeSqm"
       />
       <BaseInput
         v-model.number="form.bedrooms"
         type="number"
         min="0"
-        placeholder="Bedrooms"
+        :placeholder="t('property.add.bedrooms')"
         :error="errors.bedrooms"
       />
 
-      <BaseButton type="submit" class="md:col-span-3">Add property</BaseButton>
+      <BaseButton type="submit" class="md:col-span-3">{{ t('property.add.submit') }}</BaseButton>
     </form>
 
     <p v-if="error" class="mt-3 text-sm text-danger">{{ error }}</p>
@@ -71,6 +70,9 @@ import type { RentalPropertyRequest } from '../../../services/propertyApi';
 import BaseInput from '../../ui/BaseInput.vue';
 import BaseSelect from '../../ui/BaseSelect.vue';
 import BaseButton from '../../ui/BaseButton.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const emit = defineEmits<{ (e: 'create', payload: RentalPropertyRequest): void }>();
 

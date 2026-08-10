@@ -211,6 +211,44 @@
       "monthlyRent": "Monthly rent",
       "dueDay": "Due day",
       "add": "Add tenancy"
+    },
+    "add": {
+      "title": "Add a property",
+      "subtitle": "The purchase price and date are what every return figure is measured against — worth entering even if they are approximate.",
+      "name": "Name",
+      "address": "Address",
+      "city": "City",
+      "purchasePrice": "Purchase price",
+      "size": "Size (m²)",
+      "bedrooms": "Bedrooms",
+      "submit": "Add property"
+    },
+    "ledger": {
+      "title": "Ledger",
+      "amount": "Amount",
+      "note": "Note",
+      "record": "Record",
+      "positiveHint": "Enter every amount as a positive number — the category decides whether it is money in or out.",
+      "empty": "No entries yet. Recording rent received and costs paid is what makes the return figures real rather than projected.",
+      "deleteAria": "Delete {category}"
+    },
+    "rentCollection": {
+      "title": "Rent collection",
+      "subtitle": "Expected from the tenancy running each month, against what the ledger has actually received.",
+      "empty": "No tenancy on record yet. Add one and every month it covers appears here.",
+      "upToDate": "Up to date",
+      "behind": "{amount} behind · {count} month | {amount} behind · {count} months",
+      "month": "Month",
+      "due": "Due",
+      "expected": "Expected",
+      "received": "Received",
+      "status": "Status",
+      "actions": "Actions",
+      "short": "{amount} short",
+      "recording": "Recording…",
+      "markReceived": "Mark received",
+      "showRecent": "Show recent months",
+      "showAll": "Show all {count} months"
     }
   }
 }

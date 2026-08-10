@@ -2,10 +2,9 @@
   <div>
     <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
       <div>
-        <h2 class="font-heading text-lg font-bold">Rent collection</h2>
+        <h2 class="font-heading text-lg font-bold">{{ t('property.rentCollection.title') }}</h2>
         <p class="text-xs text-text-muted mt-1">
-          Expected from the tenancy running each month, against what the ledger has actually
-          received.
+          {{ t('property.rentCollection.subtitle') }}
         </p>
       </div>
 
@@ -15,7 +14,7 @@
     </div>
 
     <p v-if="!schedule || schedule.periods.length === 0" class="text-sm text-text-muted">
-      No tenancy on record yet. Add one and every month it covers appears here.
+      {{ t('property.rentCollection.empty') }}
     </p>
 
     <template v-else>
@@ -25,12 +24,12 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-xs text-text-muted border-b border-border">
-              <th scope="col" class="py-2 pr-3 font-semibold">Month</th>
-              <th scope="col" class="py-2 pr-3 font-semibold">Due</th>
-              <th scope="col" class="py-2 pr-3 font-semibold text-right">Expected</th>
-              <th scope="col" class="py-2 pr-3 font-semibold text-right">Received</th>
-              <th scope="col" class="py-2 pr-3 font-semibold">Status</th>
-              <th scope="col" class="py-2 font-semibold"><span class="sr-only">Actions</span></th>
+              <th scope="col" class="py-2 pr-3 font-semibold">{{ t('property.rentCollection.month') }}</th>
+              <th scope="col" class="py-2 pr-3 font-semibold">{{ t('property.rentCollection.due') }}</th>
+              <th scope="col" class="py-2 pr-3 font-semibold text-right">{{ t('property.rentCollection.expected') }}</th>
+              <th scope="col" class="py-2 pr-3 font-semibold text-right">{{ t('property.rentCollection.received') }}</th>
+              <th scope="col" class="py-2 pr-3 font-semibold">{{ t('property.rentCollection.status') }}</th>
+              <th scope="col" class="py-2 font-semibold"><span class="sr-only">{{ t('property.rentCollection.actions') }}</span></th>
             </tr>
           </thead>
           <tbody>
@@ -52,7 +51,11 @@
                   {{ RENT_STATUS_LABELS[period.status] }}
                 </Badge>
                 <span v-if="period.isOverdue" class="ml-2 text-xs text-danger-strong whitespace-nowrap">
-                  {{ formatMoney(period.shortfall, currencyCode) }} short
+                  {{
+                    t('property.rentCollection.short', {
+                      amount: formatMoney(period.shortfall, currencyCode),
+                    })
+                  }}
                 </span>
               </td>
 
@@ -64,7 +67,11 @@
                   :disabled="props.recording === period.period"
                   @click="record(period)"
                 >
-                  {{ props.recording === period.period ? 'Recording…' : 'Mark received' }}
+                  {{
+                    props.recording === period.period
+                      ? t('property.rentCollection.recording')
+                      : t('property.rentCollection.markReceived')
+                  }}
                 </BaseButton>
               </td>
             </tr>
@@ -77,7 +84,11 @@
         class="mt-3 text-sm text-primary-strong hover:underline"
         @click="showAll = !showAll"
       >
-        {{ showAll ? 'Show recent months' : `Show all ${schedule.periods.length} months` }}
+        {{
+          showAll
+            ? t('property.rentCollection.showRecent')
+            : t('property.rentCollection.showAll', { count: schedule.periods.length })
+        }}
       </button>
     </template>
   </div>
@@ -90,6 +101,9 @@ import { formatMoney } from '../../../utils/money';
 import { RENT_STATUS_LABELS, formatDate } from '../../../utils/labels';
 import Badge from '../../ui/Badge.vue';
 import BaseButton from '../../ui/BaseButton.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 /** Most recent months first is what a landlord actually looks at; the rest are one click away. */
 const COLLAPSED_ROWS = 12;
@@ -127,12 +141,17 @@ const visiblePeriods = computed(() =>
 );
 
 const arrearsLabel = computed(() => {
-  if (!props.schedule || props.schedule.overduePeriodCount === 0) return 'Up to date';
+  if (!props.schedule || props.schedule.overduePeriodCount === 0)
+    return t('property.rentCollection.upToDate');
 
-  const months = props.schedule.overduePeriodCount === 1 ? 'month' : 'months';
-  return `${formatMoney(props.schedule.arrears, props.currencyCode)} behind · ${
+  return t(
+    'property.rentCollection.behind',
+    {
+      amount: formatMoney(props.schedule.arrears, props.currencyCode),
+      count: props.schedule.overduePeriodCount,
+    },
     props.schedule.overduePeriodCount
-  } ${months}`;
+  );
 });
 
 // Nothing was owed for a vacant month, and a settled one needs no button. Recording against a

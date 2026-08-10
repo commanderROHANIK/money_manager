@@ -211,6 +211,44 @@
       "monthlyRent": "Loyer mensuel",
       "dueDay": "Jour d'échéance",
       "add": "Ajouter un bail"
+    },
+    "add": {
+      "title": "Ajouter un bien",
+      "subtitle": "Le prix et la date d'achat servent de référence à tous les indicateurs de rendement — mieux vaut les saisir, même approximatifs.",
+      "name": "Nom",
+      "address": "Adresse",
+      "city": "Ville",
+      "purchasePrice": "Prix d'achat",
+      "size": "Surface (m²)",
+      "bedrooms": "Chambres",
+      "submit": "Ajouter le bien"
+    },
+    "ledger": {
+      "title": "Écritures",
+      "amount": "Montant",
+      "note": "Note",
+      "record": "Enregistrer",
+      "positiveHint": "Saisissez chaque montant en positif — la catégorie détermine s'il s'agit d'une entrée ou d'une sortie.",
+      "empty": "Aucune écriture. Ce sont les loyers encaissés et les frais payés qui rendent les rendements réels plutôt que projetés.",
+      "deleteAria": "Supprimer {category}"
+    },
+    "rentCollection": {
+      "title": "Encaissement des loyers",
+      "subtitle": "Attendu d'après le bail en cours chaque mois, comparé à ce que les écritures ont réellement encaissé.",
+      "empty": "Aucun bail enregistré. Ajoutez-en un et chaque mois couvert apparaîtra ici.",
+      "upToDate": "À jour",
+      "behind": "{amount} de retard · {count} mois | {amount} de retard · {count} mois",
+      "month": "Mois",
+      "due": "Échéance",
+      "expected": "Attendu",
+      "received": "Encaissé",
+      "status": "Statut",
+      "actions": "Actions",
+      "short": "{amount} manquants",
+      "recording": "Enregistrement…",
+      "markReceived": "Marquer comme encaissé",
+      "showRecent": "Voir les mois récents",
+      "showAll": "Voir les {count} mois"
     }
   }
 }

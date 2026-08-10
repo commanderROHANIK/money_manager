@@ -211,6 +211,44 @@
       "monthlyRent": "Havi bérleti díj",
       "dueDay": "Esedékesség napja",
       "add": "Bérlet hozzáadása"
+    },
+    "add": {
+      "title": "Ingatlan hozzáadása",
+      "subtitle": "Minden hozamszámítás a vételárhoz és a vásárlás dátumához mérten készül — érdemes megadni akkor is, ha csak hozzávetőleges.",
+      "name": "Név",
+      "address": "Cím",
+      "city": "Város",
+      "purchasePrice": "Vételár",
+      "size": "Alapterület (m²)",
+      "bedrooms": "Hálószobák",
+      "submit": "Ingatlan hozzáadása"
+    },
+    "ledger": {
+      "title": "Könyvelés",
+      "amount": "Összeg",
+      "note": "Megjegyzés",
+      "record": "Rögzítés",
+      "positiveHint": "Minden összeget pozitív számként adj meg — a kategória dönti el, hogy bevétel vagy kiadás.",
+      "empty": "Még nincs tétel. A befolyt bérleti díjak és a kifizetett költségek rögzítése teszi a hozamszámokat valóssá a becslés helyett.",
+      "deleteAria": "{category} törlése"
+    },
+    "rentCollection": {
+      "title": "Bérleti díj beszedése",
+      "subtitle": "A havonta futó bérlet szerint várt összeg, szemben azzal, ami a könyvelés szerint be is folyt.",
+      "empty": "Még nincs rögzített bérlet. Vegyél fel egyet, és minden hónap megjelenik itt, amire kiterjed.",
+      "upToDate": "Nincs elmaradás",
+      "behind": "{amount} elmaradás · {count} hónap",
+      "month": "Hónap",
+      "due": "Esedékes",
+      "expected": "Várt",
+      "received": "Befolyt",
+      "status": "Állapot",
+      "actions": "Műveletek",
+      "short": "{amount} hiányzik",
+      "recording": "Rögzítés…",
+      "markReceived": "Beérkezettnek jelöl",
+      "showRecent": "Csak az utóbbi hónapok",
+      "showAll": "Mind a(z) {count} hónap"
     }
   }
 }

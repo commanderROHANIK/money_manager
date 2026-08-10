@@ -211,6 +211,44 @@
       "monthlyRent": "Monatsmiete",
       "dueDay": "Fälligkeitstag",
       "add": "Mietverhältnis anlegen"
+    },
+    "add": {
+      "title": "Immobilie anlegen",
+      "subtitle": "Kaufpreis und Kaufdatum sind die Bezugsgrößen jeder Renditezahl — auch ein ungefährer Wert ist besser als keiner.",
+      "name": "Name",
+      "address": "Adresse",
+      "city": "Stadt",
+      "purchasePrice": "Kaufpreis",
+      "size": "Fläche (m²)",
+      "bedrooms": "Schlafzimmer",
+      "submit": "Immobilie anlegen"
+    },
+    "ledger": {
+      "title": "Buchungen",
+      "amount": "Betrag",
+      "note": "Notiz",
+      "record": "Erfassen",
+      "positiveHint": "Erfassen Sie jeden Betrag als positive Zahl — die Kategorie entscheidet über Einnahme oder Ausgabe.",
+      "empty": "Noch keine Buchungen. Erfasste Mieteinnahmen und Kosten sind es, die die Renditezahlen belastbar statt geschätzt machen.",
+      "deleteAria": "{category} löschen"
+    },
+    "rentCollection": {
+      "title": "Mieteingang",
+      "subtitle": "Erwartet aus dem jeweils laufenden Mietverhältnis, verglichen mit dem tatsächlich Erfassten.",
+      "empty": "Noch kein Mietverhältnis erfasst. Legen Sie eines an, und jeder abgedeckte Monat erscheint hier.",
+      "upToDate": "Kein Rückstand",
+      "behind": "{amount} Rückstand · {count} Monat | {amount} Rückstand · {count} Monate",
+      "month": "Monat",
+      "due": "Fällig",
+      "expected": "Erwartet",
+      "received": "Eingegangen",
+      "status": "Status",
+      "actions": "Aktionen",
+      "short": "{amount} offen",
+      "recording": "Wird erfasst…",
+      "markReceived": "Als eingegangen markieren",
+      "showRecent": "Nur letzte Monate",
+      "showAll": "Alle {count} Monate anzeigen"
     }
   }
 }
