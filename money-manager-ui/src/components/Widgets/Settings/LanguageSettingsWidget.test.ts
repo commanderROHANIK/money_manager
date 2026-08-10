@@ -8,7 +8,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { setLocale } from '../../../i18n';
-import { currentLocale, DEFAULT_LOCALE, LOCALE_STORAGE_KEY } from '../../../i18n/locale';
+import {
+  currentLocale,
+  DEFAULT_LOCALE,
+  LOCALE_STORAGE_KEY,
+  SUPPORTED_LOCALES,
+} from '../../../i18n/locale';
 import { formatMoney } from '../../../utils/money';
 import LanguageSettingsWidget from './LanguageSettingsWidget.vue';
 
@@ -23,12 +28,23 @@ afterEach(() => {
 });
 
 describe('LanguageSettingsWidget', () => {
-  it('offers both languages, each written in its own language', () => {
+  it('offers every supported language, each written in its own language', () => {
     const options = mount(LanguageSettingsWidget).findAll('option');
 
     // Someone who switched to a language they cannot read has to be able to find their way back,
     // which they cannot do if the list is written in the language they are trying to leave.
-    expect(options.map((o) => o.text())).toEqual(['Magyar', 'English']);
+    expect(options.map((o) => o.text())).toEqual(['Magyar', 'English', 'Deutsch', 'Français']);
+  });
+
+  it('offers exactly the locales the application ships', () => {
+    const values = mount(LanguageSettingsWidget)
+      .findAll('option')
+      .map((o) => o.element.value);
+
+    // Pinned against SUPPORTED_LOCALES rather than a literal list, so adding a language is one
+    // edit rather than two — and a language added to the picker without messages behind it fails
+    // in messages.test.ts instead of rendering the whole app as raw keys.
+    expect(values).toEqual([...SUPPORTED_LOCALES]);
   });
 
   it('starts on the language currently in use', () => {

@@ -74,7 +74,9 @@
     "languageHint": "A feliratokra, a dátumokra és a számformátumra vonatkozik.",
     "languageName": {
       "hu": "Magyar",
-      "en": "English"
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
     }
   },
   "auth": {

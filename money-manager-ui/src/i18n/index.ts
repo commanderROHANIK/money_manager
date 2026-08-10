@@ -1,6 +1,8 @@
 import { watch } from 'vue';
 import { createI18n } from 'vue-i18n';
+import de from '../locales/de.json';
 import en from '../locales/en.json';
+import fr from '../locales/fr.json';
 import hu from '../locales/hu.json';
 import { currentLocale, DEFAULT_LOCALE, readStoredLocale, storeLocale } from './locale';
 import type { Locale } from './locale';
@@ -20,7 +22,7 @@ export const i18n = createI18n({
   legacy: false,
   locale: DEFAULT_LOCALE,
   fallbackLocale: 'en',
-  messages: { hu, en },
+  messages: { hu, en, de, fr },
   // Vue I18n warns for every fallback it performs. The parity test is what catches a missing key,
   // and in a browser the warning would only fire on a defect that test already fails on.
   missingWarn: false,

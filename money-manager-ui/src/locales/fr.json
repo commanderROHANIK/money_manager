@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "accounts": "Comptes bancaires",
+    "loans": "Prêts",
+    "properties": "Biens",
+    "stocks": "Actions",
+    "events": "Événements",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter"
+  },
+  "transactionCategory": {
+    "rentIncome": "Loyer perçu",
+    "depositReceived": "Caution reçue",
+    "otherIncome": "Autres revenus",
+    "insurance": "Assurance",
+    "propertyTax": "Taxe foncière",
+    "maintenance": "Entretien",
+    "repairs": "Réparations",
+    "managementFee": "Frais de gestion",
+    "utilities": "Charges",
+    "serviceCharge": "Charges de copropriété",
+    "otherExpense": "Autres dépenses",
+    "mortgagePayment": "Mensualité de prêt",
+    "acquisitionCost": "Frais d'acquisition",
+    "capitalImprovement": "Travaux d'amélioration"
+  },
+  "transactionGroup": {
+    "income": "Revenus",
+    "runningCosts": "Charges courantes",
+    "financing": "Financement",
+    "capital": "Investissement"
+  },
+  "rentStatus": {
+    "vacant": "Vacant",
+    "unpaid": "Impayé",
+    "partial": "Partiel",
+    "paid": "Payé"
+  },
+  "propertyType": {
+    "apartment": "Appartement",
+    "house": "Maison",
+    "room": "Chambre",
+    "commercial": "Local commercial",
+    "land": "Terrain"
+  },
+  "propertyStatus": {
+    "active": "Actif",
+    "renovating": "En rénovation",
+    "sold": "Vendu"
+  },
+  "propertyEvent": {
+    "purchase": "Achat",
+    "tenantMovedIn": "Entrée du locataire",
+    "tenantMovedOut": "Départ du locataire",
+    "rentChanged": "Loyer modifié",
+    "maintenance": "Entretien",
+    "inspection": "Inspection",
+    "renovation": "Rénovation",
+    "valuation": "Estimation",
+    "mortgageLinked": "Prêt associé",
+    "sale": "Vente",
+    "note": "Note"
+  },
+  "rentSource": {
+    "contracted": "Loyer contractuel",
+    "marketEstimate": "Estimation du marché"
+  },
+  "settings": {
+    "language": "Langue",
+    "languageHint": "S'applique aux libellés, aux dates et au format des nombres.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    }
+  },
+  "auth": {
+    "welcomeBack": "Bon retour",
+    "welcomeBackHint": "Content de vous revoir — voyons où en est votre argent.",
+    "createAccount": "Créer un compte",
+    "createAccountHint": "Commençons à suivre votre argent.",
+    "username": "Nom d'utilisateur",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "logIn": "Se connecter",
+    "register": "S'inscrire",
+    "registering": "Inscription en cours…",
+    "invalidLogin": "Identifiants incorrects",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "registeredSuccessfully": "Inscription réussie",
+    "registrationClosed": "L'inscription est fermée sur ce déploiement. Demandez la création d'un compte.",
+    "registerFailed": "Erreur lors de l'inscription : {reason}",
+    "registerFailedFallback": "veuillez réessayer"
+  }
+}

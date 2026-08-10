@@ -1,10 +1,10 @@
 import { ref } from 'vue';
 
 /**
- * The locales this application ships. Hungarian is first because it is the default, not because
- * the list is alphabetical.
+ * The locales this application ships, in the order the picker offers them. Hungarian is first
+ * because it is the default, not because the list is alphabetical.
  */
-export const SUPPORTED_LOCALES = ['hu', 'en'] as const;
+export const SUPPORTED_LOCALES = ['hu', 'en', 'de', 'fr'] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -24,11 +24,14 @@ export const LOCALE_STORAGE_KEY = 'locale';
  *
  * <p>`en-GB` rather than `en-US`: this is a European product, and `en-US` would render
  * 2026. 08. 05. as 8/5/2026 — a date the rest of the interface disagrees with, in the one place
- * a reader is least likely to notice the difference.</p>
+ * a reader is least likely to notice the difference. The other three are the only regional
+ * variants that make sense for the languages they belong to here.</p>
  */
 const INTL_LOCALES: Record<Locale, string> = {
   hu: 'hu-HU',
   en: 'en-GB',
+  de: 'de-DE',
+  fr: 'fr-FR',
 };
 
 /**

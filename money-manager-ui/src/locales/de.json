@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Übersicht",
+    "accounts": "Bankkonten",
+    "loans": "Kredite",
+    "properties": "Immobilien",
+    "stocks": "Aktien",
+    "events": "Termine",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "transactionCategory": {
+    "rentIncome": "Miete erhalten",
+    "depositReceived": "Kaution erhalten",
+    "otherIncome": "Sonstige Einnahmen",
+    "insurance": "Versicherung",
+    "propertyTax": "Grundsteuer",
+    "maintenance": "Instandhaltung",
+    "repairs": "Reparaturen",
+    "managementFee": "Verwaltungsgebühr",
+    "utilities": "Nebenkosten",
+    "serviceCharge": "Hausgeld",
+    "otherExpense": "Sonstige Ausgaben",
+    "mortgagePayment": "Kreditrate",
+    "acquisitionCost": "Anschaffungskosten",
+    "capitalImprovement": "Wertsteigernde Maßnahme"
+  },
+  "transactionGroup": {
+    "income": "Einnahmen",
+    "runningCosts": "Laufende Kosten",
+    "financing": "Finanzierung",
+    "capital": "Investition"
+  },
+  "rentStatus": {
+    "vacant": "Leerstand",
+    "unpaid": "Offen",
+    "partial": "Teilweise bezahlt",
+    "paid": "Bezahlt"
+  },
+  "propertyType": {
+    "apartment": "Wohnung",
+    "house": "Haus",
+    "room": "Zimmer",
+    "commercial": "Gewerbefläche",
+    "land": "Grundstück"
+  },
+  "propertyStatus": {
+    "active": "Aktiv",
+    "renovating": "In Renovierung",
+    "sold": "Verkauft"
+  },
+  "propertyEvent": {
+    "purchase": "Kauf",
+    "tenantMovedIn": "Mieter eingezogen",
+    "tenantMovedOut": "Mieter ausgezogen",
+    "rentChanged": "Miete geändert",
+    "maintenance": "Instandhaltung",
+    "inspection": "Besichtigung",
+    "renovation": "Renovierung",
+    "valuation": "Bewertung",
+    "mortgageLinked": "Kredit zugeordnet",
+    "sale": "Verkauf",
+    "note": "Notiz"
+  },
+  "rentSource": {
+    "contracted": "Vertraglich vereinbart",
+    "marketEstimate": "Marktschätzung"
+  },
+  "settings": {
+    "language": "Sprache",
+    "languageHint": "Gilt für Beschriftungen, Datumsangaben und Zahlenformate.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    }
+  },
+  "auth": {
+    "welcomeBack": "Willkommen zurück",
+    "welcomeBackHint": "Schön, dass Sie da sind — sehen wir uns Ihre Finanzen an.",
+    "createAccount": "Konto erstellen",
+    "createAccountHint": "Behalten wir Ihr Geld im Blick.",
+    "username": "Benutzername",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "logIn": "Anmelden",
+    "register": "Registrieren",
+    "registering": "Registrierung läuft…",
+    "invalidLogin": "Benutzername oder Passwort falsch",
+    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+    "registeredSuccessfully": "Registrierung erfolgreich",
+    "registrationClosed": "Auf dieser Instanz ist keine Registrierung möglich. Bitten Sie um ein Konto.",
+    "registerFailed": "Fehler bei der Registrierung: {reason}",
+    "registerFailedFallback": "bitte erneut versuchen"
+  }
+}
