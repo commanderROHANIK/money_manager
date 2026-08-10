@@ -10,7 +10,12 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { AxiosAdapter } from 'axios';
+import { api } from '../services/api';
+import { clearFeatures, ensureFeaturesLoaded } from '../services/features';
 import type { Features } from '../services/features';
+import { setLocale } from '../i18n';
+import { DEFAULT_LOCALE } from '../i18n/locale';
+import Menu from './Menu.vue';
 
 // Menu calls useRoute() to mark the active section. Providing a route is all it needs; building a
 // real router here would pull in every page component for a highlight rule.
@@ -28,14 +33,19 @@ const mvp: Features = { banking: false, stocks: false, loans: true, events: true
 const everything: Features = { banking: true, stocks: true, loans: true, events: true };
 
 /**
- * Loads a fresh module graph with the flags already resolved, the way the router guard leaves
- * them before the first authenticated view renders.
+ * Mounts the sidebar with the flags already resolved, the way the router guard leaves them before
+ * the first authenticated view renders.
+ *
+ * Deliberately does *not* call vi.resetModules(). Doing so used to look tidier — a clean module
+ * graph per case — but it quietly created a second copy of the i18n module: the setup file
+ * installs one instance for every mount, and a reset graph hands the component a different one.
+ * The two disagreed about the current locale, and the `plugins: [i18n]` that papered over it was
+ * also what made Vue warn about i18n-t and friends being registered twice.
+ *
+ * Clearing the feature cache is all this actually needed, and there is already a function for it
+ * because logging out needs the same thing.
  */
 async function mountMenuWith(flags: Features) {
-  vi.resetModules();
-
-  const { api } = await import('../services/api');
-
   const adapter: AxiosAdapter = async (config) => ({
     data: flags,
     status: 200,
@@ -46,25 +56,23 @@ async function mountMenuWith(flags: Features) {
 
   api.defaults.adapter = adapter;
 
-  const { ensureFeaturesLoaded } = await import('../services/features');
+  clearFeatures();
   await ensureFeaturesLoaded();
-
-  const { i18n, setLocale } = await import('../i18n');
 
   // English, so the expectations below read as the labels themselves rather than as a second
   // copy of hu.json. Which language each link is written in is the locale files' business and is
   // covered by the parity test; this file is about which links exist at all.
   setLocale('en');
 
-  const Menu = (await import('./Menu.vue')).default;
-
   return mount(Menu, {
-    global: { plugins: [i18n], stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
   });
 }
 
 afterEach(() => {
   vi.restoreAllMocks();
+  clearFeatures();
+  setLocale(DEFAULT_LOCALE);
 });
 
 const labels = (wrapper: Awaited<ReturnType<typeof mountMenuWith>>) =>
