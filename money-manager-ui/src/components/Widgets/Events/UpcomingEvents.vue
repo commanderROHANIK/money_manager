@@ -1,5 +1,5 @@
 <template>
-  <BaseCard title="Upcoming Events">
+  <BaseCard :title="t('event.upcomingTitle')">
     <ul v-if="events.length > 0">
       <ListRow v-for="event in events" :key="event.id">
         <template #title>
@@ -7,12 +7,12 @@
         </template>
         <template #trailing>
           <span class="font-mono text-xs text-text-muted tabular-nums">{{ formatDate(event.eventDate) }}</span>
-          <Badge v-if="event.isRecurring" variant="neutral">Recurring</Badge>
+          <Badge v-if="event.isRecurring" variant="neutral">{{ t('event.recurring') }}</Badge>
         </template>
       </ListRow>
     </ul>
 
-    <EmptyState v-else title="No upcoming events." />
+    <EmptyState v-else :title="t('event.empty')" />
   </BaseCard>
 </template>
 
@@ -24,6 +24,9 @@ import BaseCard from '../../ui/BaseCard.vue';
 import ListRow from '../../ui/ListRow.vue';
 import Badge from '../../ui/Badge.vue';
 import EmptyState from '../../ui/EmptyState.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const events = ref<UpcomingEvent[]>([]);
 

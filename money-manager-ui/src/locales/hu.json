@@ -250,5 +250,28 @@
       "showRecent": "Csak az utóbbi hónapok",
       "showAll": "Mind a(z) {count} hónap"
     }
+  },
+  "event": {
+    "upcoming": "Közelgő",
+    "past": "Korábbi",
+    "upcomingTitle": "Közelgő események",
+    "pastTitle": "Korábbi események",
+    "title": "Megnevezés",
+    "description": "Leírás",
+    "date": "Dátum",
+    "recurring": "Ismétlődő",
+    "notified": "Értesítve",
+    "actions": "Műveletek",
+    "yes": "Igen",
+    "no": "Nem",
+    "notifiedBadge": "Értesítve",
+    "pendingBadge": "Függőben",
+    "notify": "Értesítés",
+    "delete": "Törlés",
+    "empty": "Nincs közelgő esemény.",
+    "loadFailed": "Az események betöltése nem sikerült.",
+    "confirmDelete": "Törlöd ezt az eseményt?",
+    "cardTitle": "Események",
+    "noPast": "Nincs korábbi esemény."
   }
 }

@@ -250,5 +250,28 @@
       "showRecent": "Show recent months",
       "showAll": "Show all {count} months"
     }
+  },
+  "event": {
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "upcomingTitle": "Upcoming Events",
+    "pastTitle": "Past Events",
+    "title": "Title",
+    "description": "Description",
+    "date": "Date",
+    "recurring": "Recurring",
+    "notified": "Notified",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "notifiedBadge": "Notified",
+    "pendingBadge": "Pending",
+    "notify": "Notify",
+    "delete": "Delete",
+    "empty": "No upcoming events.",
+    "loadFailed": "Failed to load events.",
+    "confirmDelete": "Delete this event?",
+    "cardTitle": "Events",
+    "noPast": "No past events found."
   }
 }

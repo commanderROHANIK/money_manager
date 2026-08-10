@@ -250,5 +250,28 @@
       "showRecent": "Nur letzte Monate",
       "showAll": "Alle {count} Monate anzeigen"
     }
+  },
+  "event": {
+    "upcoming": "Anstehend",
+    "past": "Vergangen",
+    "upcomingTitle": "Anstehende Termine",
+    "pastTitle": "Vergangene Termine",
+    "title": "Bezeichnung",
+    "description": "Beschreibung",
+    "date": "Datum",
+    "recurring": "Wiederkehrend",
+    "notified": "Benachrichtigt",
+    "actions": "Aktionen",
+    "yes": "Ja",
+    "no": "Nein",
+    "notifiedBadge": "Benachrichtigt",
+    "pendingBadge": "Ausstehend",
+    "notify": "Benachrichtigen",
+    "delete": "Löschen",
+    "empty": "Keine anstehenden Termine.",
+    "loadFailed": "Termine konnten nicht geladen werden.",
+    "confirmDelete": "Diesen Termin löschen?",
+    "cardTitle": "Termine",
+    "noPast": "Keine vergangenen Termine gefunden."
   }
 }

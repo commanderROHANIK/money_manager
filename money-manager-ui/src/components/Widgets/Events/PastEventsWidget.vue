@@ -1,5 +1,5 @@
 <template>
-  <BaseCard title="Past Events">
+  <BaseCard :title="t('event.pastTitle')">
     <ul v-if="pastEvents?.length > 0">
       <ListRow v-for="event in pastEvents" :key="event.id">
         <template #title>
@@ -14,7 +14,7 @@
       </ListRow>
     </ul>
 
-    <EmptyState v-else title="No past events found." />
+    <EmptyState v-else :title="t('event.noPast')" />
   </BaseCard>
 </template>
 
@@ -23,6 +23,9 @@ import { computed } from 'vue'
 import BaseCard from '../../ui/BaseCard.vue'
 import ListRow from '../../ui/ListRow.vue'
 import EmptyState from '../../ui/EmptyState.vue'
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 export interface UpcomingEvent {
   id: number

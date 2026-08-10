@@ -1,8 +1,8 @@
 <template>
-  <BaseCard title="Events">
+  <BaseCard :title="t('event.cardTitle')">
     <div class="grid grid-cols-2 gap-4">
-      <StatCard label="Upcoming" :value="upcomingCount" />
-      <StatCard label="Past" :value="pastCount" />
+      <StatCard :label="t('event.upcoming')" :value="upcomingCount" />
+      <StatCard :label="t('event.past')" :value="pastCount" />
     </div>
   </BaseCard>
 </template>
@@ -13,6 +13,9 @@ import { fetchUpcomingEvents } from '../../../services/api';
 import type { UpcomingEvent } from '../../../models/models';
 import BaseCard from '../../ui/BaseCard.vue';
 import StatCard from '../../ui/StatCard.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const events = ref<UpcomingEvent[]>([]);
 
