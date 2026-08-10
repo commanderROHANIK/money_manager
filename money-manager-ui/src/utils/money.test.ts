@@ -6,18 +6,24 @@
  * A refactor that starts quietly adding unlike amounts together should fail here.
  */
 import { describe, it, expect } from 'vitest';
+import { currentLocale, intlLocale } from '../i18n/locale';
 import { formatMoney, sumSameCurrency } from './money';
 
 /**
- * The expected digits, grouped the way the ambient locale groups them.
+ * The expected digits, grouped the way the *application's* locale groups them.
  *
- * formatMoney deliberately passes `undefined` as the locale so it follows the user's, which
- * means a hardcoded '240,000' only holds where the separator happens to be a comma. Asserting
- * a computed expectation keeps the test about the function instead of about the machine it
- * runs on — under de-DE the same call produces '240.000'.
+ * This used to read `toLocaleString(undefined, …)`, mirroring formatMoney, and the docblock said
+ * that was deliberate so the output followed the user's own locale. That turned out to be the
+ * defect rather than the design: `undefined` means "whatever this machine is set to", so one
+ * deployment rendered `1 234 Ft` for one visitor and `1,234 Ft` for the next with nothing to
+ * explain the difference — and the test could not see it, because it was reading the same
+ * ambient setting the function was.
+ *
+ * Computed rather than hardcoded for the original reason, which still holds: a literal '240,000'
+ * would only pass where the separator happens to be a comma, and Hungarian groups with a space.
  */
 const localised = (value: number, options: Intl.NumberFormatOptions = {}) =>
-  value.toLocaleString(undefined, { maximumFractionDigits: 0, ...options });
+  value.toLocaleString(intlLocale(), { maximumFractionDigits: 0, ...options });
 
 describe('formatMoney', () => {
   it('renders an amount in its own currency', () => {
@@ -61,9 +67,29 @@ describe('formatMoney', () => {
     // exercising the catch block if it used one of those.
     const formatted = formatMoney(1500, 'ABCD');
 
-    // The fallback calls toLocaleString() with no options, so match that exactly.
-    expect(formatted).toContain((1500).toLocaleString());
+    // The fallback calls toLocaleString(locale) with no options, so match that exactly.
+    expect(formatted).toContain((1500).toLocaleString(intlLocale()));
     expect(formatted).toContain('ABCD');
+  });
+
+  it('formats in the application locale, not the reader\'s browser', () => {
+    // The guarantee the previous version of this file could not make. Two visitors on the same
+    // deployment must see the same figure whatever their machines are set to, and switching the
+    // app's language is the only thing that changes it.
+    //
+    // Hungarian groups thousands with a space and writes decimals with a comma; en-GB does
+    // neither. Asserting they differ pins that the locale is actually reaching Intl — a
+    // formatter that ignored it would return identical strings and pass a weaker test.
+    currentLocale.value = 'hu';
+    const hungarian = formatMoney(1234567.5, 'HUF', { maximumFractionDigits: 2 });
+
+    currentLocale.value = 'en';
+    const english = formatMoney(1234567.5, 'HUF', { maximumFractionDigits: 2 });
+
+    currentLocale.value = 'hu';
+
+    expect(hungarian).not.toEqual(english);
+    expect(english).toContain('1,234,567');
   });
 });
 

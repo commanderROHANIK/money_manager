@@ -1,0 +1,80 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Áttekintés",
+    "accounts": "Bankszámlák",
+    "loans": "Hitelek",
+    "properties": "Ingatlanok",
+    "stocks": "Részvények",
+    "events": "Események",
+    "settings": "Beállítások",
+    "logout": "Kijelentkezés"
+  },
+  "transactionCategory": {
+    "rentIncome": "Befolyt bérleti díj",
+    "depositReceived": "Kaució befizetve",
+    "otherIncome": "Egyéb bevétel",
+    "insurance": "Biztosítás",
+    "propertyTax": "Építményadó",
+    "maintenance": "Karbantartás",
+    "repairs": "Javítás",
+    "managementFee": "Kezelési díj",
+    "utilities": "Rezsi",
+    "serviceCharge": "Közös költség",
+    "otherExpense": "Egyéb kiadás",
+    "mortgagePayment": "Hiteltörlesztés",
+    "acquisitionCost": "Szerzési költség",
+    "capitalImprovement": "Értéknövelő beruházás"
+  },
+  "transactionGroup": {
+    "income": "Bevétel",
+    "runningCosts": "Működési költségek",
+    "financing": "Finanszírozás",
+    "capital": "Beruházás"
+  },
+  "rentStatus": {
+    "vacant": "Üres",
+    "unpaid": "Kifizetetlen",
+    "partial": "Részben fizetve",
+    "paid": "Kifizetve"
+  },
+  "propertyType": {
+    "apartment": "Lakás",
+    "house": "Ház",
+    "room": "Szoba",
+    "commercial": "Üzlethelyiség",
+    "land": "Telek"
+  },
+  "propertyStatus": {
+    "active": "Aktív",
+    "renovating": "Felújítás alatt",
+    "sold": "Eladva"
+  },
+  "propertyEvent": {
+    "purchase": "Vásárlás",
+    "tenantMovedIn": "Bérlő beköltözött",
+    "tenantMovedOut": "Bérlő kiköltözött",
+    "rentChanged": "Bérleti díj változott",
+    "maintenance": "Karbantartás",
+    "inspection": "Ellenőrzés",
+    "renovation": "Felújítás",
+    "valuation": "Értékbecslés",
+    "mortgageLinked": "Hitel hozzárendelve",
+    "sale": "Eladás",
+    "note": "Megjegyzés"
+  },
+  "rentSource": {
+    "contracted": "Szerződés szerinti",
+    "marketEstimate": "Piaci becslés"
+  },
+  "settings": {
+    "language": "Nyelv",
+    "languageHint": "A feliratokra, a dátumokra és a számformátumra vonatkozik.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English"
+    }
+  }
+}

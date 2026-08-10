@@ -1,0 +1,80 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "loans": "Loans",
+    "properties": "Properties",
+    "stocks": "Stocks",
+    "events": "Events",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "transactionCategory": {
+    "rentIncome": "Rent received",
+    "depositReceived": "Deposit received",
+    "otherIncome": "Other income",
+    "insurance": "Insurance",
+    "propertyTax": "Property tax",
+    "maintenance": "Maintenance",
+    "repairs": "Repairs",
+    "managementFee": "Management fee",
+    "utilities": "Utilities",
+    "serviceCharge": "Service charge",
+    "otherExpense": "Other expense",
+    "mortgagePayment": "Mortgage payment",
+    "acquisitionCost": "Acquisition cost",
+    "capitalImprovement": "Capital improvement"
+  },
+  "transactionGroup": {
+    "income": "Income",
+    "runningCosts": "Running costs",
+    "financing": "Financing",
+    "capital": "Capital"
+  },
+  "rentStatus": {
+    "vacant": "Vacant",
+    "unpaid": "Unpaid",
+    "partial": "Partial",
+    "paid": "Paid"
+  },
+  "propertyType": {
+    "apartment": "Apartment",
+    "house": "House",
+    "room": "Room",
+    "commercial": "Commercial",
+    "land": "Land"
+  },
+  "propertyStatus": {
+    "active": "Active",
+    "renovating": "Renovating",
+    "sold": "Sold"
+  },
+  "propertyEvent": {
+    "purchase": "Purchase",
+    "tenantMovedIn": "Tenant moved in",
+    "tenantMovedOut": "Tenant moved out",
+    "rentChanged": "Rent changed",
+    "maintenance": "Maintenance",
+    "inspection": "Inspection",
+    "renovation": "Renovation",
+    "valuation": "Valuation",
+    "mortgageLinked": "Mortgage linked",
+    "sale": "Sale",
+    "note": "Note"
+  },
+  "rentSource": {
+    "contracted": "Charged",
+    "marketEstimate": "Market estimate"
+  },
+  "settings": {
+    "language": "Language",
+    "languageHint": "Applies to labels, dates and number formatting.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English"
+    }
+  }
+}
