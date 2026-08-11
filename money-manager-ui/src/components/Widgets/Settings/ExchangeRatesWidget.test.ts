@@ -16,6 +16,7 @@ const calls = vi.hoisted(() => ({
   refresh: 0,
   deleted: [] as string[],
   upserted: 0,
+  deleteRejectsWith: null as unknown,
 }));
 
 // The list the widget reloads from. Mutable so a test can say what the server would answer once
@@ -38,7 +39,9 @@ vi.mock('../../../services/exchangeRateApi', async () => {
     },
     deleteExchangeRate: (base: string, quote: string) => {
       calls.deleted.push(`${base}>${quote}`);
-      return Promise.resolve();
+      return calls.deleteRejectsWith
+        ? Promise.reject(calls.deleteRejectsWith)
+        : Promise.resolve();
     },
   };
 });
@@ -63,6 +66,7 @@ beforeEach(() => {
   calls.refresh = 0;
   calls.deleted = [];
   calls.upserted = 0;
+  calls.deleteRejectsWith = null;
   served.rates = [...f.exchangeRates];
   clearFeatures();
 });
@@ -179,6 +183,42 @@ describe('ExchangeRatesWidget', () => {
     await settle();
 
     expect(wrapper.text()).toContain('No rate has arrived for that pair yet');
+  });
+
+  it('treats a pair that was never entered as already automatic', async () => {
+    // The obvious way to use the checkbox: pick a pair you have never typed a rate for and ask
+    // for the live one. There is no row to delete, so the API answers 404 — which is not a
+    // failure, it is the caller already having got their wish. Reported as an error, the most
+    // natural use of the control would say "it doesn't work", which is where this began.
+    const wrapper = await mountWith(true);
+
+    calls.deleteRejectsWith = Object.assign(new Error('Request failed with status code 404'), {
+      isAxiosError: true,
+      response: { status: 404 },
+    });
+
+    await wrapper.find('input[type="checkbox"]').setValue(true);
+    await settle();
+    await wrapper.find('form').trigger('submit');
+    await settle();
+
+    expect(wrapper.text()).not.toContain('Could not switch');
+  });
+
+  it('still reports a delete that failed for any other reason', async () => {
+    const wrapper = await mountWith(true);
+
+    // Only "there was no such row" is benign. A 500 swallowed the same way would leave the user
+    // believing a pair is on the live rate when it is still on theirs.
+    calls.deleteRejectsWith = Object.assign(new Error('Request failed with status code 500'), {
+      isAxiosError: true,
+      response: { status: 500 },
+    });
+
+    await wrapper.findAll('button').find((b) => b.text() === 'Use live rate')!.trigger('click');
+    await settle();
+
+    expect(wrapper.text()).toContain('Could not switch');
   });
 
   it('takes no amount when the checkbox is ticked', async () => {

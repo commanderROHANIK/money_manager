@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
 import { computed, ref, onMounted } from 'vue';
 import type { ExchangeRate } from '../../../models/models';
 import { ExchangeRateSource } from '../../../models/models';
@@ -209,6 +210,11 @@ async function refresh() {
   }
 }
 
+/** "There was no such row" — the one delete failure that means the caller already got its wish. */
+function isNotFound(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 404;
+}
+
 /** The row-level version of the checkbox: stop using this hand-entered rate, use the live one. */
 async function useLiveFor(entry: ExchangeRate) {
   switching.value = entry.id;
@@ -237,7 +243,15 @@ async function switchToLive(baseCurrency: string, quoteCurrency: string) {
   saving.value = true;
 
   try {
-    await deleteExchangeRate(baseCurrency, quoteCurrency);
+    // A 404 means there was no row to remove, which is not a failure: a pair nobody has entered
+    // is already automatic, and saying "could not switch that pair" to someone who just asked for
+    // the live rate on a pair they never typed in would be the same "it doesn't work" this
+    // control exists to answer. The desired end state is what matters, not whether a delete
+    // happened to have work to do.
+    await deleteExchangeRate(baseCurrency, quoteCurrency).catch((err: unknown) => {
+      if (!isNotFound(err)) throw err;
+    });
+
     await load();
     emit('changed');
 

@@ -111,10 +111,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 75,
-        branches: 73,
-        functions: 70,
-        lines: 75,
+        statements: 76,
+        branches: 74,
+        functions: 73,
+        lines: 76,
       },
     },
   },
