@@ -40,31 +40,64 @@ let pending: Promise<Features> | null = null;
  */
 export const featureFlags: DeepReadonly<Ref<Features>> = readonly(features);
 
+/** How many times a single navigation asks before it gives up and holds the closed default. */
+const ATTEMPTS = 2;
+
+/** Long enough for a dropped connection to re-establish, short enough not to stall a navigation. */
+const RETRY_DELAY_MS = 400;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
- * Resolves once the flags are known, fetching them at most once.
+ * Resolves once the flags are known, fetching them at most once per navigation.
  *
  * <p>A failed request is deliberately not cached: the flags decide what the whole application
  * shows, so a blip during the first navigation would otherwise leave the session stuck in the
  * closed state until a reload. Clearing `pending` on failure means the next navigation tries
  * again, and the closed default holds in the meantime.</p>
  *
- * <p>A 401 needs no handling here — the api interceptor already sends an expired session back to
- * the login screen, and the closed default is the right thing to be holding when it does.</p>
+ * <p>Not caching the failure was not enough on its own, though, and a review said so: the router
+ * guard consumes the *same* navigation's answer, so a single dropped request bounced someone off
+ * `/loans` to the dashboard with the sidebar collapsed to two links, and the retry only happened
+ * if they navigated again — which, having just been thrown somewhere they did not ask for, they
+ * have no reason to do. One immediate retry covers the blip, which is the failure that actually
+ * happens; two failures in a row is an outage, and holding the closed default is the right answer
+ * to that.</p>
+ *
+ * <p>A 401 is not retried. The api interceptor is already redirecting to the login screen, and a
+ * second request would only race that redirect with a second guaranteed failure.</p>
  */
 export function ensureFeaturesLoaded(): Promise<Features> {
-  pending ??= api
-    .get<Features>('/Features')
-    .then((response) => {
-      features.value = response.data;
-      return features.value;
-    })
-    .catch((error: unknown) => {
-      pending = null;
-      console.error('Failed to load feature flags; sections stay hidden until this succeeds.', error);
-      return features.value;
-    });
+  pending ??= load();
 
   return pending;
+}
+
+async function load(): Promise<Features> {
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
+    try {
+      const response = await api.get<Features>('/Features');
+      features.value = response.data;
+      return features.value;
+    } catch (error: unknown) {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      const worthRetrying = attempt < ATTEMPTS && status !== 401;
+
+      if (!worthRetrying) {
+        // Not cached, so the next navigation starts again from a clean slate.
+        pending = null;
+        console.error(
+          'Failed to load feature flags; sections stay hidden until this succeeds.',
+          error
+        );
+        return features.value;
+      }
+
+      await wait(RETRY_DELAY_MS);
+    }
+  }
+
+  return features.value;
 }
 
 /**

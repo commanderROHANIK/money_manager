@@ -97,11 +97,19 @@ public sealed class FeatureGateTests
         var disabledBody = await disabled.Content.ReadAsStringAsync();
         var neverExistedBody = await neverExisted.Content.ReadAsStringAsync();
 
-        // Asserted separately first, because the two ways this has been got wrong both produced a
+        // Asserted separately first, because two of the three wrong versions produced a
         // ProblemDetails body on the gated path — and a bare Assert.Equal of the two reports that
         // as "strings differ" without saying which side grew a body it should not have.
         Assert.Empty(disabledBody);
         Assert.Equal(neverExistedBody, disabledBody);
+
+        // And the headers, which is where the third wrong version hid. Comparing only the status
+        // and the body passed a gate that answered with ContentResult, whose executor resolves a
+        // default "text/plain; charset=utf-8" even for a null Content — so the two answers stayed
+        // distinguishable to anyone reading headers rather than bodies, which is exactly the
+        // audience this gate is meant to tell nothing.
+        Assert.Equal(neverExisted.Content.Headers.ContentType, disabled.Content.Headers.ContentType);
+        Assert.Equal(neverExisted.Content.Headers.ContentLength, disabled.Content.Headers.ContentLength);
     }
 
     [Fact]

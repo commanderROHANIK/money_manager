@@ -6,6 +6,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.ts'],
+    // Installs vue-i18n for every mount. Without it, the first component to call useI18n()
+    // fails its test for a reason that has nothing to do with what the test asserts.
+    setupFiles: ['src/__tests__/setup.ts'],
     coverage: {
       // Must track the vitest major: a v3 provider fails silently against vitest 4.
       provider: 'v8',
@@ -28,7 +31,21 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 72.81 / 73.13 / 71.23 / 72.7, after the feature flags brought the feature
+      // Last measured 75.26 / 72.62 / 72.34 / 75.2, after the localization work.
+      //
+      // Statements, lines and functions move up — 71 -> 73, 71 -> 73 and 69 -> 70 — keeping the
+      // roughly two-point margin the floors below were set with. Branches stays at 71: it
+      // measures 72.62, and 72 would leave 0.62 of headroom.
+      //
+      // Branches is worth a note, because the floor did its job here rather than merely passing.
+      // Translation *added* branches — every `condition ? t(a) : t(b)`, every message chosen per
+      // case — and the run that finished the sweep came in at 69.69%, below the floor and failing
+      // the build. That was correct: the branches were real and nothing exercised them, because
+      // the widget content suites are pinned to English and assert one case each. The answer was
+      // localizedWidgets.test.ts, which mounts the conditional widgets in Hungarian on both sides
+      // of each condition — not a lower floor.
+      //
+      // Before that: 72.81 / 73.13 / 71.23 / 72.7, after the feature flags brought the feature
       // service, the navigation and the section guard under test.
       //
       // Statements and lines move 70 -> 71. That is a one-point ratchet on a 1.2-point gain, and
@@ -82,10 +99,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 71,
+        statements: 73,
         branches: 71,
-        functions: 69,
-        lines: 71,
+        functions: 70,
+        lines: 73,
       },
     },
   },

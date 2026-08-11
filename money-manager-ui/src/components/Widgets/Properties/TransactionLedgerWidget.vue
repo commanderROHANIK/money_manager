@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">Ledger</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.ledger.title') }}</h2>
 
     <form class="flex flex-wrap gap-2 mb-4" @submit.prevent="submit">
       <BaseInput v-model="form.date" type="date" required />
@@ -16,22 +16,20 @@
         type="number"
         step="0.01"
         min="0.01"
-        placeholder="Amount"
+        :placeholder="t('property.ledger.amount')"
         class="w-32"
         required
       />
-      <BaseInput v-model="form.description" placeholder="Note" class="flex-1 min-w-[120px]" />
-      <BaseButton type="submit">Record</BaseButton>
+      <BaseInput v-model="form.description" :placeholder="t('property.ledger.note')" class="flex-1 min-w-[120px]" />
+      <BaseButton type="submit">{{ t('property.ledger.record') }}</BaseButton>
     </form>
 
     <p class="text-xs text-text-muted mb-3">
-      Enter every amount as a positive number — the category decides whether it is money in
-      or out.
+      {{ t('property.ledger.positiveHint') }}
     </p>
 
     <p v-if="transactions.length === 0" class="text-sm text-text-muted">
-      No entries yet. Recording rent received and costs paid is what makes the return figures
-      real rather than projected.
+      {{ t('property.ledger.empty') }}
     </p>
 
     <ul v-else class="max-h-[320px] overflow-y-auto">
@@ -52,7 +50,11 @@
           </span>
           <button
             class="text-text-muted hover:text-danger text-sm"
-            :aria-label="`Delete ${TRANSACTION_CATEGORY_LABELS[entry.category]}`"
+            :aria-label="
+              t('property.ledger.deleteAria', {
+                category: TRANSACTION_CATEGORY_LABELS[entry.category],
+              })
+            "
             @click="emit('delete', entry.id)"
           >
             ✕
@@ -77,6 +79,9 @@ import BaseInput from '../../ui/BaseInput.vue';
 import BaseSelect from '../../ui/BaseSelect.vue';
 import BaseButton from '../../ui/BaseButton.vue';
 import ListRow from '../../ui/ListRow.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps<{ transactions: PropertyTransaction[] }>();
 

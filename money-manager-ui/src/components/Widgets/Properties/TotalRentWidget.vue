@@ -1,9 +1,9 @@
 <template>
-  <StatCard label="Total Monthly Rent" :value="formattedTotal">
+  <StatCard :label="t('property.totalRent.label')" :value="formattedTotal">
     <template v-if="mixed" #value>
       {{ formattedTotal }}
       <span class="block text-xs font-normal text-text-muted mt-1">
-        Properties span multiple currencies — showing the unconverted sum.
+        {{ t('property.totalRent.mixedCurrency') }}
       </span>
     </template>
   </StatCard>
@@ -14,6 +14,9 @@ import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney, sumSameCurrency } from '../../../utils/money';
 import StatCard from '../../ui/StatCard.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   properties: RentalProperty[];

@@ -1,16 +1,15 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-1">Money left on the table</h2>
-    <p class="text-xs text-text-muted mb-3">Properties let below their estimated market rent.</p>
+    <h2 class="font-heading text-lg font-bold mb-1">{{ t('property.underpriced.title') }}</h2>
+    <p class="text-xs text-text-muted mb-3">{{ t('property.underpriced.subtitle') }}</p>
 
     <p v-if="underpriced.length === 0" class="text-sm text-text-muted">
-      Nothing below market — or no market estimates recorded yet. Add one on a property's page
-      to see the comparison.
+      {{ t('property.underpriced.empty') }}
     </p>
 
     <div v-else>
       <p class="font-heading text-3xl font-extrabold tabular-nums text-accent-strong mb-3">
-        {{ totalUpliftLabel }}<span class="text-base font-normal text-text-muted"> / year</span>
+        {{ totalUpliftLabel }}<span class="text-base font-normal text-text-muted"> {{ t('property.underpriced.perYear') }}</span>
       </p>
 
       <ul>
@@ -43,6 +42,9 @@ import type { PropertyMetrics } from '../../../models/models';
 import { formatMoney, sumSameCurrency } from '../../../utils/money';
 import { formatPercent } from '../../../utils/labels';
 import ListRow from '../../ui/ListRow.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{ metrics: PropertyMetrics[] }>();
 

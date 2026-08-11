@@ -12,6 +12,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { PortfolioAnalytics, PropertyMetrics, RentSchedule } from '../models/models';
+import { currentLocale, DEFAULT_LOCALE, intlLocale } from '../i18n/locale';
+import { formatDate } from '../utils/labels';
 import * as f from './fixtures';
 import { FROZEN_NOW } from './fixtures';
 
@@ -20,6 +22,18 @@ import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSu
 import RentCollectionWidget from '../components/Widgets/Properties/RentCollectionWidget.vue';
 import TransactionLedgerWidget from '../components/Widgets/Properties/TransactionLedgerWidget.vue';
 import UnderpricedPropertiesWidget from '../components/Widgets/Properties/UnderpricedPropertiesWidget.vue';
+
+// These assert what a widget *shows* — the figures and the labels — not how a locale formats
+// them. Pinned to English so the expectations below stay readable and stable; the formatting
+// itself is covered in both languages by the colocated tests on formatMoney, formatPercent and
+// formatDate, which is where a locale bug would actually live.
+beforeEach(() => {
+  currentLocale.value = 'en';
+});
+
+afterEach(() => {
+  currentLocale.value = DEFAULT_LOCALE;
+});
 
 beforeEach(() => {
   // Date only — faking timers wholesale would stall the async settling these widgets do.
@@ -64,9 +78,11 @@ describe('PropertyMetricsWidget', () => {
     // formatPercent uses toFixed, which is locale-independent, so a literal is safe here.
     expect(text).toContain('22.3%'); // totalRoi 0.223
 
-    // Money is not: formatMoney follows the ambient locale, so this is '43,333' under en-US
-    // and '43.333' under de-DE. Compute the expectation rather than hardcoding the separator.
-    expect(text).toContain((43333).toLocaleString(undefined, { maximumFractionDigits: 0 }));
+    // Money is not: formatMoney follows the *application's* locale, which these tests pin to
+    // English. Computed rather than hardcoded for the original reason — the separator differs by
+    // language — but computed against the same locale the widget uses, not the machine's, which
+    // is what the two siblings above were already updated to and this one was missed.
+    expect(text).toContain((43333).toLocaleString(intlLocale(), { maximumFractionDigits: 0 }));
   });
 });
 
@@ -100,7 +116,7 @@ describe('PortfolioSummaryWidget', () => {
 
     expect(text).toContain('Converted to EUR');
     expect(text).toContain('1 HUF = 0.0025 EUR');
-    expect(text).toContain('2026-07-01');
+    expect(text).toContain(formatDate('2026-07-01'));
     expect(text).not.toContain('No exchange rate on record');
   });
 
@@ -187,8 +203,8 @@ describe('RentCollectionWidget', () => {
     expect(text).toContain('behind');
 
     // 280,000 = March's 40,000 shortfall + May's 240,000. August's 240,000 is excluded.
-    expect(text).toContain((280000).toLocaleString(undefined, { maximumFractionDigits: 0 }));
-    expect(text).not.toContain((520000).toLocaleString(undefined, { maximumFractionDigits: 0 }));
+    expect(text).toContain((280000).toLocaleString(intlLocale(), { maximumFractionDigits: 0 }));
+    expect(text).not.toContain((520000).toLocaleString(intlLocale(), { maximumFractionDigits: 0 }));
   });
 
   it('says it is up to date when nothing is overdue', () => {

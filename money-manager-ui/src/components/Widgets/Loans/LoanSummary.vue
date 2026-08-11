@@ -1,6 +1,8 @@
 <template>
-  <StatCard label="Loans">
-    <template #value>{{ activeCount }} Active | {{ paidOffCount }} Paid Off</template>
+  <StatCard :label="t('loan.summary.label')">
+    <template #value>
+      {{ t('loan.summary.activePaidOff', { active: activeCount, paidOff: paidOffCount }) }}
+    </template>
   </StatCard>
 </template>
 
@@ -9,6 +11,9 @@ import { ref, onMounted, computed } from 'vue';
 import { fetchLoans } from '../../../services/api';
 import type { Loan } from '../../../models/models';
 import StatCard from '../../ui/StatCard.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const loans = ref<Loan[]>([]);
 

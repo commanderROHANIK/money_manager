@@ -1,12 +1,12 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">Rent over time</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentOverTime.title') }}</h2>
 
     <div v-if="hasData" class="chart-box">
       <Line :data="chartData" :options="chartOptions" />
     </div>
     <p v-else class="text-sm text-text-muted">
-      No rent history yet. It fills in automatically as tenancies start and rents change.
+      {{ t('property.rentOverTime.empty') }}
     </p>
   </div>
 </template>
@@ -27,6 +27,9 @@ import type { ChartOptions } from 'chart.js';
 import { RentPriceSource, type RentPricePoint } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { chartColors } from '../../../utils/chartTheme';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -67,7 +70,7 @@ const chartData = computed(() => ({
   labels: labels.value,
   datasets: [
     {
-      label: 'Rent charged',
+      label: t('property.rentOverTime.charged'),
       data: stepSeries(RentPriceSource.Contracted),
       borderColor: chartColors.primary,
       backgroundColor: chartColors.primary,
@@ -75,7 +78,7 @@ const chartData = computed(() => ({
       tension: 0,
     },
     {
-      label: 'Market estimate',
+      label: t('property.rentOverTime.marketEstimate'),
       data: stepSeries(RentPriceSource.MarketEstimate),
       borderColor: chartColors.accent,
       backgroundColor: chartColors.accent,

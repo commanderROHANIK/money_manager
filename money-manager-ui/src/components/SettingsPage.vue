@@ -1,5 +1,6 @@
 <template>
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4">
+    <LanguageSettingsWidget />
     <CurrencySettingsWidget @saved="bump" />
     <ExchangeRatesWidget :key="version" @changed="bump" />
   </div>
@@ -8,6 +9,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import CurrencySettingsWidget from './Widgets/Settings/CurrencySettingsWidget.vue';
+import LanguageSettingsWidget from './Widgets/Settings/LanguageSettingsWidget.vue';
 import ExchangeRatesWidget from './Widgets/Settings/ExchangeRatesWidget.vue';
 
 // Changing the base currency changes which pairs matter, so the rate list is remounted rather

@@ -1,0 +1,354 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Áttekintés",
+    "accounts": "Bankszámlák",
+    "loans": "Hitelek",
+    "properties": "Ingatlanok",
+    "stocks": "Részvények",
+    "events": "Események",
+    "settings": "Beállítások",
+    "logout": "Kijelentkezés"
+  },
+  "transactionCategory": {
+    "rentIncome": "Befolyt bérleti díj",
+    "depositReceived": "Kaució befizetve",
+    "otherIncome": "Egyéb bevétel",
+    "insurance": "Biztosítás",
+    "propertyTax": "Építményadó",
+    "maintenance": "Karbantartás",
+    "repairs": "Javítás",
+    "managementFee": "Kezelési díj",
+    "utilities": "Rezsi",
+    "serviceCharge": "Közös költség",
+    "otherExpense": "Egyéb kiadás",
+    "mortgagePayment": "Hiteltörlesztés",
+    "acquisitionCost": "Szerzési költség",
+    "capitalImprovement": "Értéknövelő beruházás"
+  },
+  "transactionGroup": {
+    "income": "Bevétel",
+    "runningCosts": "Működési költségek",
+    "financing": "Finanszírozás",
+    "capital": "Beruházás"
+  },
+  "rentStatus": {
+    "vacant": "Üres",
+    "unpaid": "Kifizetetlen",
+    "partial": "Részben fizetve",
+    "paid": "Kifizetve"
+  },
+  "propertyType": {
+    "apartment": "Lakás",
+    "house": "Ház",
+    "room": "Szoba",
+    "commercial": "Üzlethelyiség",
+    "land": "Telek"
+  },
+  "propertyStatus": {
+    "active": "Aktív",
+    "renovating": "Felújítás alatt",
+    "sold": "Eladva"
+  },
+  "propertyEvent": {
+    "purchase": "Vásárlás",
+    "tenantMovedIn": "Bérlő beköltözött",
+    "tenantMovedOut": "Bérlő kiköltözött",
+    "rentChanged": "Bérleti díj változott",
+    "maintenance": "Karbantartás",
+    "inspection": "Ellenőrzés",
+    "renovation": "Felújítás",
+    "valuation": "Értékbecslés",
+    "mortgageLinked": "Hitel hozzárendelve",
+    "sale": "Eladás",
+    "note": "Megjegyzés"
+  },
+  "rentSource": {
+    "contracted": "Szerződés szerinti",
+    "marketEstimate": "Piaci becslés"
+  },
+  "settings": {
+    "language": "Nyelv",
+    "languageHint": "A feliratokra, a dátumokra és a számformátumra vonatkozik.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    },
+    "currencyTitle": "Kimutatás pénzneme",
+    "currencyIntro": "Az összesített értékek ebben a pénznemben jelennek meg. Minden ingatlan és számla megtartja a saját pénznemét; ez csak azt dönti el, milyen egységben adódnak össze a portfólió- és egyenlegösszesítők.",
+    "baseCurrency": "Alap pénznem",
+    "save": "Mentés",
+    "saved": "Elmentve.",
+    "saveFailed": "Nem sikerült elmenteni. Próbáld meg újra.",
+    "alwaysConvert": "Mindig váltsa át erre: {currency}",
+    "alwaysConvertHint": "Alapból kikapcsolva: amíg minden ugyanabban a pénznemben van, az összegek a saját pénznemükben maradnak, így nem kell árfolyam. Kapcsold be, ha minden összeget {currency} pénznemben szeretnél látni — ehhez minden más pénznemhez árfolyam kell.",
+    "ratesTitle": "Árfolyamok",
+    "oneUnitOf": "Egy egység",
+    "isWorthIn": "Ennyit ér, ebben",
+    "amount": "Összeg",
+    "asOf": "Dátum",
+    "saveRate": "Árfolyam mentése",
+    "remove": "Törlés",
+    "recorded": "rögzítve: {date}",
+    "noRates": "Még nincs árfolyam",
+    "noRatesHint": "Vegyél fel egyet fent, és a több pénznemet érintő portfóliók is összesítve jelennek meg.",
+    "rateTooSmall": "Nullánál nagyobb árfolyamot adj meg.",
+    "rateSaveFailed": "Nem sikerült elmenteni az árfolyamot. Próbáld meg újra.",
+    "rateRemoveFailed": "Nem sikerült törölni az árfolyamot. Próbáld meg újra.",
+    "ratesIntro": "Az árfolyamokat te adod meg — a rendszer semmit nem tölt le, így egy átváltott összeg mindig csak annyit ér, amennyit ez a lista. Mindegyik mellett ott a rögzítés dátuma. Elég az egyik irányt megadni; a másik ugyanabból a sorból kiolvasható.",
+    "sameCurrency": "Egy pénznem önmagához mérve mindig egy; válassz két különböző pénznemet."
+  },
+  "auth": {
+    "welcomeBack": "Üdv újra itt",
+    "welcomeBackHint": "Nézzük meg, hogy áll a pénzed.",
+    "createAccount": "Fiók létrehozása",
+    "createAccountHint": "Kezdjük el követni a pénzed.",
+    "username": "Felhasználónév",
+    "email": "E-mail cím",
+    "password": "Jelszó",
+    "confirmPassword": "Jelszó megerősítése",
+    "logIn": "Bejelentkezés",
+    "register": "Regisztráció",
+    "registering": "Regisztráció folyamatban…",
+    "invalidLogin": "Hibás felhasználónév vagy jelszó",
+    "passwordsDoNotMatch": "A két jelszó nem egyezik",
+    "registeredSuccessfully": "Sikeres regisztráció",
+    "registrationClosed": "Ezen a példányon nincs regisztráció. Kérj fiókot az üzemeltetőtől.",
+    "registerFailed": "Hiba a regisztráció során: {reason}",
+    "registerFailedFallback": "próbáld meg újra"
+  },
+  "property": {
+    "rented": "Kiadva",
+    "vacant": "Üres",
+    "timeline": {
+      "title": "Idővonal",
+      "empty": "Még nincs rögzített esemény."
+    },
+    "totalRent": {
+      "label": "Havi bérleti díj összesen",
+      "mixedCurrency": "Az ingatlanok több pénznemben vannak — az összeg átváltás nélkül szerepel."
+    },
+    "summary": {
+      "label": "Bérbe adott ingatlanok",
+      "rentedVacant": "{rented} kiadva · {vacant} üres",
+      "behindOnRent": "{count} ingatlannál elmaradás van a bérleti díjban"
+    },
+    "highestRent": {
+      "title": "Legmagasabb bérleti díj",
+      "monthlyRent": "Havi bérleti díj:",
+      "empty": "Nincs rögzített ingatlan."
+    },
+    "rentedVsVacant": {
+      "title": "Kiadva és üresen"
+    },
+    "underpriced": {
+      "title": "Kihagyott bevétel",
+      "subtitle": "A piaci becslés alatt kiadott ingatlanok.",
+      "empty": "Nincs piac alatt kiadott ingatlan — vagy még nincs rögzített piaci becslés. Vegyél fel egyet az ingatlan oldalán az összehasonlításhoz.",
+      "perYear": "/ év"
+    },
+    "upcomingRent": {
+      "title": "Közelgő bérletidíj-fizetés",
+      "noTenancy": "Nincs bérlet",
+      "none": "A következő 30 napban nincs esedékes bérleti díj."
+    },
+    "valuations": {
+      "title": "Értékbecslések",
+      "subtitle": "A saját tőke és az értéknövekedés a legutóbbi itt szereplő értékhez mérve számolódik.",
+      "valuePlaceholder": "Érték",
+      "add": "Hozzáadás",
+      "empty": "Nincs rögzítve — jelenlegi értékként a vételár szerepel."
+    },
+    "rentVsMarket": {
+      "title": "Bérleti díj a piachoz mérve",
+      "noEstimate": "Ehhez az ingatlanhoz nincs rögzített piaci becslés.",
+      "estimatePlaceholder": "Piaci bérleti díj / hó",
+      "save": "Mentés",
+      "belowMarket": "{gap} a piaci alatt",
+      "aboveMarket": "{gap} a piaci fölött",
+      "atMarket": "Piaci szinten",
+      "belowExplainer": "{rent} díjat kérsz a becsült {market} helyett. A különbség évi {uplift} bevételt jelentene.",
+      "atOrAboveExplainer": "{rent} díjat kérsz a becsült {market} mellett — piaci szinten vagy afölött."
+    },
+    "list": {
+      "title": "Összes ingatlan",
+      "empty": "Még nincs rögzített ingatlan."
+    },
+    "portfolio": {
+      "title": "Portfólió",
+      "empty": "Még nincs ingatlan. Vegyél fel egyet alább, hogy lásd, mit hoz.",
+      "missingRate": "Nincs rögzített árfolyam ehhez: {pairs}, ezért az alábbi összegek nem mind számolhatók ki.",
+      "addRateLink": "Vedd fel az árfolyamot a Beállításokban",
+      "addRateSuffix": "és az összegek megjelennek.",
+      "convertedNote": "Átváltva {currency} pénznemre az általad megadott árfolyamokkal ({rates}).",
+      "rateOn": "{date} napon",
+      "tileProperties": "Ingatlan",
+      "tileInvested": "Befektetett tőke",
+      "tileEquity": "Saját tőke",
+      "tileCashFlow": "Havi cash flow",
+      "tileRoi": "Portfólió megtérülés"
+    },
+    "rentByMonth": {
+      "title": "Befolyt bérleti díj havonta",
+      "empty": "Ehhez a(z) {count} ingatlanhoz még nincs rögzített bérletidíj-befizetés.",
+      "series": "Befolyt bérleti díj"
+    },
+    "rentOverTime": {
+      "title": "Bérleti díj alakulása",
+      "empty": "Még nincs bérletidíj-előzmény. Automatikusan feltöltődik, ahogy bérletek indulnak és a díjak változnak.",
+      "charged": "Kért bérleti díj",
+      "marketEstimate": "Piaci becslés"
+    },
+    "metrics": {
+      "title": "Befektetés teljesítménye",
+      "asOf": "{date} állapot szerint",
+      "roi": "Teljes megtérülés",
+      "roiHint": "évi {rate}",
+      "cashFlow": "Havi cash flow",
+      "cashFlowHint": "működési költségek és hiteltörlesztés után",
+      "invested": "Befektetett tőke",
+      "investedHint": "{amount} teljes költség",
+      "equity": "Saját tőke",
+      "equityHint": "{amount} érték",
+      "grossYield": "Bruttó hozam",
+      "grossYieldHint": "bérleti díj ÷ teljes befektetés",
+      "capRate": "Tőkésítési ráta",
+      "capRateHint": "nettó bevétel ÷ érték",
+      "cashOnCash": "Készpénzhozam",
+      "cashOnCashHint": "a ténylegesen befektetett pénz hozama",
+      "occupancy": "Kihasználtság",
+      "occupancyHint": "{years} éve tulajdonban"
+    },
+    "tenancy": {
+      "title": "Bérletek",
+      "rentLine": "{rent} / hó, a hónap {day}. napján esedékes",
+      "since": "{start} óta",
+      "sinceUntil": "{start} — {end}",
+      "vacant": "Üres — jelenleg nincs futó bérlet.",
+      "tenantName": "Bérlő neve",
+      "endOptional": "Vége (nem kötelező)",
+      "monthlyRent": "Havi bérleti díj",
+      "dueDay": "Esedékesség napja",
+      "add": "Bérlet hozzáadása"
+    },
+    "add": {
+      "title": "Ingatlan hozzáadása",
+      "subtitle": "Minden hozamszámítás a vételárhoz és a vásárlás dátumához mérten készül — érdemes megadni akkor is, ha csak hozzávetőleges.",
+      "name": "Név",
+      "address": "Cím",
+      "city": "Város",
+      "purchasePrice": "Vételár",
+      "size": "Alapterület (m²)",
+      "bedrooms": "Hálószobák",
+      "submit": "Ingatlan hozzáadása"
+    },
+    "ledger": {
+      "title": "Könyvelés",
+      "amount": "Összeg",
+      "note": "Megjegyzés",
+      "record": "Rögzítés",
+      "positiveHint": "Minden összeget pozitív számként adj meg — a kategória dönti el, hogy bevétel vagy kiadás.",
+      "empty": "Még nincs tétel. A befolyt bérleti díjak és a kifizetett költségek rögzítése teszi a hozamszámokat valóssá a becslés helyett.",
+      "deleteAria": "{category} törlése"
+    },
+    "rentCollection": {
+      "title": "Bérleti díj beszedése",
+      "subtitle": "A havonta futó bérlet szerint várt összeg, szemben azzal, ami a könyvelés szerint be is folyt.",
+      "empty": "Még nincs rögzített bérlet. Vegyél fel egyet, és minden hónap megjelenik itt, amire kiterjed.",
+      "upToDate": "Nincs elmaradás",
+      "behind": "{amount} elmaradás · {count} hónap",
+      "month": "Hónap",
+      "due": "Esedékes",
+      "expected": "Várt",
+      "received": "Befolyt",
+      "status": "Állapot",
+      "actions": "Műveletek",
+      "short": "{amount} hiányzik",
+      "recording": "Rögzítés…",
+      "markReceived": "Beérkezettnek jelöl",
+      "showRecent": "Csak az utóbbi hónapok",
+      "showAll": "Mind a(z) {count} hónap"
+    },
+    "detail": {
+      "loadFailed": "Nem sikerült betölteni ezt az ingatlant."
+    },
+    "perMonth": "/ hó",
+    "manageRent": "Bérleti díj kezelése",
+    "setRent": "Bérleti díj megadása",
+    "delete": "Törlés",
+    "deleteAria": "{name} törlése",
+    "confirmDelete": "Törlöd a(z) „{name}” ingatlant? Ezzel a bérletei, tételei, értékbecslései és bérletidíj-előzményei is törlődnek.",
+    "letTo": "Bérlő: {tenant}",
+    "recordRentFailed": "Nem sikerült rögzíteni a(z) {period} havi bérleti díjat."
+  },
+  "event": {
+    "upcoming": "Közelgő",
+    "past": "Korábbi",
+    "upcomingTitle": "Közelgő események",
+    "pastTitle": "Korábbi események",
+    "title": "Megnevezés",
+    "description": "Leírás",
+    "date": "Dátum",
+    "recurring": "Ismétlődő",
+    "notified": "Értesítve",
+    "actions": "Műveletek",
+    "yes": "Igen",
+    "no": "Nem",
+    "notifiedBadge": "Értesítve",
+    "pendingBadge": "Függőben",
+    "notify": "Értesítés",
+    "delete": "Törlés",
+    "empty": "Nincs közelgő esemény.",
+    "loadFailed": "Az események betöltése nem sikerült.",
+    "confirmDelete": "Törlöd ezt az eseményt?",
+    "cardTitle": "Események",
+    "noPast": "Nincs korábbi esemény."
+  },
+  "loan": {
+    "paidOff": "Kifizetve",
+    "remaining": "Fennálló",
+    "active": "Aktív",
+    "add": {
+      "title": "Hitel hozzáadása",
+      "name": "Hitel neve",
+      "originalAmount": "Eredeti összeg",
+      "originalAmountHint": "A felvett eredeti összeg, törlesztések előtt.",
+      "remainingBalance": "Fennálló tartozás",
+      "interestRate": "Kamatláb (%)",
+      "interestRateHint": "Éves kamat, például 4,5 a 4,5%-hoz.",
+      "dueDateHint": "A hitel teljes visszafizetésének tervezett dátuma.",
+      "currencyHint": "A hitel pénzneme.",
+      "paidOffLabel": "Kifizetve",
+      "paidOffHint": "Jelöld be, ha a hitelt már teljesen visszafizetted.",
+      "submit": "Hitel hozzáadása"
+    },
+    "list": {
+      "title": "Összes hitel",
+      "empty": "Még nincs rögzített hitel."
+    },
+    "status": {
+      "title": "Hitelek állapota",
+      "empty": "Nincs megjeleníthető adat."
+    },
+    "summary": {
+      "label": "Hitelek",
+      "activePaidOff": "{active} aktív · {paidOff} kifizetve"
+    },
+    "nextDue": {
+      "title": "Következő esedékes törlesztők",
+      "empty": "Nincs közelgő törlesztő."
+    },
+    "top": {
+      "title": "Legnagyobb hitelek",
+      "empty": "Nincs megjeleníthető hitel."
+    },
+    "total": {
+      "label": "Hitelek összege"
+    },
+    "confirmDelete": "Törlöd a(z) „{name}” hitelt?"
+  }
+}

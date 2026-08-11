@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">Rented vs Vacant</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentedVsVacant.title') }}</h2>
     <div class="chart-box">
       <Doughnut :data="chartData" :options="chartOptions" />
     </div>
@@ -18,6 +18,9 @@ import {
 } from 'chart.js';
 import type { RentalProperty } from '../../../models/models';
 import { chartColors } from '../../../utils/chartTheme';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -29,7 +32,7 @@ const rentedCount = computed(() => props.properties.filter(p => p.isRented).leng
 const vacantCount = computed(() => props.properties.length - rentedCount.value);
 
 const chartData = computed(() => ({
-  labels: ['Rented', 'Vacant'],
+  labels: [t('property.rented'), t('property.vacant')],
   datasets: [
     {
       data: [rentedCount.value, vacantCount.value],

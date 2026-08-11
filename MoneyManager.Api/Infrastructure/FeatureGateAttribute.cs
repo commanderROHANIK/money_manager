@@ -27,13 +27,14 @@ namespace MoneyManager.Api.Infrastructure
     /// </para>
     ///
     /// <para>
-    /// <c>ContentResult</c> rather than the obvious <c>NotFoundResult</c>, and the difference is
-    /// the whole point. <c>[ApiController]</c> installs an always-run result filter that fills in
-    /// any <c>IClientErrorActionResult</c> with a <c>ProblemDetails</c> body — and it runs even
-    /// when a resource filter has short-circuited the pipeline. <c>NotFoundResult</c> inherits
-    /// that interface from <c>StatusCodeResult</c>, which declares it, so neither of them can
-    /// produce an empty body here however plainly they read. <c>ContentResult</c> is outside that
-    /// hierarchy and is written out untouched.
+    /// Getting that byte-for-byte took three attempts, and each wrong one is worth knowing about.
+    /// <c>[ApiController]</c> installs an always-run result filter that fills any
+    /// <c>IClientErrorActionResult</c> with a <c>ProblemDetails</c> body, and it runs even when a
+    /// resource filter has short-circuited the pipeline — so <c>NotFoundResult</c> produced a
+    /// described 404, and <c>StatusCodeResult</c> did too, because it is the class that
+    /// <em>declares</em> that interface rather than a plainer sibling of it. <c>ContentResult</c>
+    /// escaped the body but resolves a default <c>text/plain; charset=utf-8</c> even with a null
+    /// <c>Content</c>, which left the two answers still distinguishable by header.
     /// </para>
     ///
     /// <para>
@@ -70,7 +71,18 @@ namespace MoneyManager.Api.Infrastructure
                 .GetRequiredService<IOptions<FeatureOptions>>().Value;
 
             if (!options.IsEnabled(_feature))
-                context.Result = new ContentResult { StatusCode = StatusCodes.Status404NotFound };
+            {
+                // Status set on the response and an EmptyResult to close the pipeline, rather than
+                // any of the results that carry a status themselves. Every one of those adds
+                // something the unmatched-route fallback does not: NotFoundResult and
+                // StatusCodeResult are IClientErrorActionResult, so [ApiController] fills them in
+                // with a ProblemDetails body, and ContentResult resolves a default
+                // "text/plain; charset=utf-8" even when its Content is null. EmptyResult's
+                // executor does nothing at all, which is the only way to answer with exactly what
+                // Results.NotFound() answers — a status and no headers of its own.
+                context.HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                context.Result = new EmptyResult();
+            }
         }
 
         public void OnResourceExecuted(ResourceExecutedContext context)

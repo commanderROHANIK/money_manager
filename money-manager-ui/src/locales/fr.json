@@ -1,0 +1,354 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "accounts": "Comptes bancaires",
+    "loans": "Prêts",
+    "properties": "Biens",
+    "stocks": "Actions",
+    "events": "Événements",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter"
+  },
+  "transactionCategory": {
+    "rentIncome": "Loyer perçu",
+    "depositReceived": "Caution reçue",
+    "otherIncome": "Autres revenus",
+    "insurance": "Assurance",
+    "propertyTax": "Taxe foncière",
+    "maintenance": "Entretien",
+    "repairs": "Réparations",
+    "managementFee": "Frais de gestion",
+    "utilities": "Charges",
+    "serviceCharge": "Charges de copropriété",
+    "otherExpense": "Autres dépenses",
+    "mortgagePayment": "Mensualité de prêt",
+    "acquisitionCost": "Frais d'acquisition",
+    "capitalImprovement": "Travaux d'amélioration"
+  },
+  "transactionGroup": {
+    "income": "Revenus",
+    "runningCosts": "Charges courantes",
+    "financing": "Financement",
+    "capital": "Investissement"
+  },
+  "rentStatus": {
+    "vacant": "Vacant",
+    "unpaid": "Impayé",
+    "partial": "Partiel",
+    "paid": "Payé"
+  },
+  "propertyType": {
+    "apartment": "Appartement",
+    "house": "Maison",
+    "room": "Chambre",
+    "commercial": "Local commercial",
+    "land": "Terrain"
+  },
+  "propertyStatus": {
+    "active": "Actif",
+    "renovating": "En rénovation",
+    "sold": "Vendu"
+  },
+  "propertyEvent": {
+    "purchase": "Achat",
+    "tenantMovedIn": "Entrée du locataire",
+    "tenantMovedOut": "Départ du locataire",
+    "rentChanged": "Loyer modifié",
+    "maintenance": "Entretien",
+    "inspection": "Inspection",
+    "renovation": "Rénovation",
+    "valuation": "Estimation",
+    "mortgageLinked": "Prêt associé",
+    "sale": "Vente",
+    "note": "Note"
+  },
+  "rentSource": {
+    "contracted": "Loyer contractuel",
+    "marketEstimate": "Estimation du marché"
+  },
+  "settings": {
+    "language": "Langue",
+    "languageHint": "S'applique aux libellés, aux dates et au format des nombres.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    },
+    "currencyTitle": "Devise de reporting",
+    "currencyIntro": "La devise dans laquelle les totaux consolidés sont exprimés. Chaque bien et chaque compte conserve sa propre devise ; ceci détermine seulement l'unité dans laquelle les totaux de portefeuille et de solde s'additionnent.",
+    "baseCurrency": "Devise de référence",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "saveFailed": "Enregistrement impossible. Veuillez réessayer.",
+    "alwaysConvert": "Toujours convertir en {currency}",
+    "alwaysConvertHint": "Désactivé par défaut : tant que tout partage une devise, les totaux restent dans la leur et aucun taux n'est nécessaire. Activez pour voir chaque total en {currency} — un taux sera alors requis pour chaque autre devise détenue.",
+    "ratesTitle": "Taux de change",
+    "oneUnitOf": "Une unité de",
+    "isWorthIn": "Vaut, en",
+    "amount": "Montant",
+    "asOf": "Au",
+    "saveRate": "Enregistrer le taux",
+    "remove": "Supprimer",
+    "recorded": "saisi le {date}",
+    "noRates": "Aucun taux",
+    "noRatesHint": "Ajoutez-en un ci-dessus et les portefeuilles multidevises afficheront leurs totaux.",
+    "rateTooSmall": "Saisissez un taux supérieur à zéro.",
+    "rateSaveFailed": "Impossible d'enregistrer ce taux. Veuillez réessayer.",
+    "rateRemoveFailed": "Impossible de supprimer ce taux. Veuillez réessayer.",
+    "ratesIntro": "Les taux sont saisis par vous — rien n'est récupéré automatiquement, un total converti ne vaut donc jamais mieux que cette liste, et chaque taux est affiché avec sa date de saisie. Saisir un seul sens suffit ; l'autre se lit sur la même ligne.",
+    "sameCurrency": "Une devise vaut toujours une unité d'elle-même ; choisissez deux devises différentes."
+  },
+  "auth": {
+    "welcomeBack": "Bon retour",
+    "welcomeBackHint": "Content de vous revoir — voyons où en est votre argent.",
+    "createAccount": "Créer un compte",
+    "createAccountHint": "Commençons à suivre votre argent.",
+    "username": "Nom d'utilisateur",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "logIn": "Se connecter",
+    "register": "S'inscrire",
+    "registering": "Inscription en cours…",
+    "invalidLogin": "Identifiants incorrects",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "registeredSuccessfully": "Inscription réussie",
+    "registrationClosed": "L'inscription est fermée sur ce déploiement. Demandez la création d'un compte.",
+    "registerFailed": "Erreur lors de l'inscription : {reason}",
+    "registerFailedFallback": "veuillez réessayer"
+  },
+  "property": {
+    "rented": "Loué",
+    "vacant": "Vacant",
+    "timeline": {
+      "title": "Chronologie",
+      "empty": "Rien d'enregistré pour l'instant."
+    },
+    "totalRent": {
+      "label": "Loyer mensuel total",
+      "mixedCurrency": "Les biens sont libellés en plusieurs devises — somme non convertie."
+    },
+    "summary": {
+      "label": "Biens locatifs",
+      "rentedVacant": "{rented} loué(s) · {vacant} vacant(s)",
+      "behindOnRent": "{count} bien en retard de loyer | {count} biens en retard de loyer"
+    },
+    "highestRent": {
+      "title": "Loyer le plus élevé",
+      "monthlyRent": "Loyer mensuel :",
+      "empty": "Aucun bien enregistré."
+    },
+    "rentedVsVacant": {
+      "title": "Loués et vacants"
+    },
+    "underpriced": {
+      "title": "Manque à gagner",
+      "subtitle": "Biens loués en dessous de leur loyer de marché estimé.",
+      "empty": "Rien en dessous du marché — ou aucune estimation enregistrée. Ajoutez-en une sur la page d'un bien pour voir la comparaison.",
+      "perYear": "/ an"
+    },
+    "upcomingRent": {
+      "title": "Loyers à venir",
+      "noTenancy": "Aucun bail",
+      "none": "Aucun loyer à échéance dans les 30 prochains jours."
+    },
+    "valuations": {
+      "title": "Estimations",
+      "subtitle": "Les fonds propres et la valorisation sont mesurés par rapport au chiffre le plus récent.",
+      "valuePlaceholder": "Valeur",
+      "add": "Ajouter",
+      "empty": "Rien d'enregistré — le prix d'achat sert de valeur actuelle."
+    },
+    "rentVsMarket": {
+      "title": "Loyer et marché",
+      "noEstimate": "Aucune estimation de marché pour ce bien.",
+      "estimatePlaceholder": "Loyer de marché / mois",
+      "save": "Enregistrer",
+      "belowMarket": "{gap} sous le marché",
+      "aboveMarket": "{gap} au-dessus du marché",
+      "atMarket": "Au niveau du marché",
+      "belowExplainer": "Vous demandez {rent} pour une estimation de {market}. Combler l'écart représenterait {uplift} par an.",
+      "atOrAboveExplainer": "Vous demandez {rent} pour une estimation de {market} — au niveau du marché ou au-dessus."
+    },
+    "list": {
+      "title": "Tous les biens",
+      "empty": "Aucun bien pour l'instant."
+    },
+    "portfolio": {
+      "title": "Portefeuille",
+      "empty": "Aucun bien pour l'instant. Ajoutez-en un ci-dessous pour suivre ce qu'il rapporte.",
+      "missingRate": "Aucun taux de change enregistré pour {pairs}, les totaux ci-dessous ne peuvent donc pas tous être calculés.",
+      "addRateLink": "Ajoutez le taux dans les Paramètres",
+      "addRateSuffix": "et ces totaux apparaîtront.",
+      "convertedNote": "Converti en {currency} avec les taux que vous avez saisis ({rates}).",
+      "rateOn": "au {date}",
+      "tileProperties": "Biens",
+      "tileInvested": "Capital investi",
+      "tileEquity": "Fonds propres",
+      "tileCashFlow": "Flux de trésorerie mensuel",
+      "tileRoi": "Rendement du portefeuille"
+    },
+    "rentByMonth": {
+      "title": "Loyers encaissés par mois",
+      "empty": "Aucun loyer encaissé pour ces {count} biens.",
+      "series": "Loyers encaissés"
+    },
+    "rentOverTime": {
+      "title": "Évolution des loyers",
+      "empty": "Pas encore d'historique. Il se remplit automatiquement à mesure que les baux démarrent et que les loyers changent.",
+      "charged": "Loyer demandé",
+      "marketEstimate": "Estimation du marché"
+    },
+    "metrics": {
+      "title": "Performance de l'investissement",
+      "asOf": "au {date}",
+      "roi": "Rendement total",
+      "roiHint": "{rate} par an",
+      "cashFlow": "Flux de trésorerie mensuel",
+      "cashFlowHint": "après charges courantes et mensualité",
+      "invested": "Capital investi",
+      "investedHint": "{amount} de coût total",
+      "equity": "Fonds propres",
+      "equityHint": "{amount} de valeur",
+      "grossYield": "Rendement brut",
+      "grossYieldHint": "loyer ÷ investissement total",
+      "capRate": "Taux de capitalisation",
+      "capRateHint": "revenu net ÷ valeur",
+      "cashOnCash": "Rendement sur fonds propres",
+      "cashOnCashHint": "rendement de l'argent réellement engagé",
+      "occupancy": "Taux d'occupation",
+      "occupancyHint": "détenu depuis {years} ans"
+    },
+    "tenancy": {
+      "title": "Baux",
+      "rentLine": "{rent} / mois, dû le {day}",
+      "since": "Depuis le {start}",
+      "sinceUntil": "Du {start} au {end}",
+      "vacant": "Vacant — aucun bail en cours aujourd'hui.",
+      "tenantName": "Nom du locataire",
+      "endOptional": "Fin (facultatif)",
+      "monthlyRent": "Loyer mensuel",
+      "dueDay": "Jour d'échéance",
+      "add": "Ajouter un bail"
+    },
+    "add": {
+      "title": "Ajouter un bien",
+      "subtitle": "Le prix et la date d'achat servent de référence à tous les indicateurs de rendement — mieux vaut les saisir, même approximatifs.",
+      "name": "Nom",
+      "address": "Adresse",
+      "city": "Ville",
+      "purchasePrice": "Prix d'achat",
+      "size": "Surface (m²)",
+      "bedrooms": "Chambres",
+      "submit": "Ajouter le bien"
+    },
+    "ledger": {
+      "title": "Écritures",
+      "amount": "Montant",
+      "note": "Note",
+      "record": "Enregistrer",
+      "positiveHint": "Saisissez chaque montant en positif — la catégorie détermine s'il s'agit d'une entrée ou d'une sortie.",
+      "empty": "Aucune écriture. Ce sont les loyers encaissés et les frais payés qui rendent les rendements réels plutôt que projetés.",
+      "deleteAria": "Supprimer {category}"
+    },
+    "rentCollection": {
+      "title": "Encaissement des loyers",
+      "subtitle": "Attendu d'après le bail en cours chaque mois, comparé à ce que les écritures ont réellement encaissé.",
+      "empty": "Aucun bail enregistré. Ajoutez-en un et chaque mois couvert apparaîtra ici.",
+      "upToDate": "À jour",
+      "behind": "{amount} de retard · {count} mois | {amount} de retard · {count} mois",
+      "month": "Mois",
+      "due": "Échéance",
+      "expected": "Attendu",
+      "received": "Encaissé",
+      "status": "Statut",
+      "actions": "Actions",
+      "short": "{amount} manquants",
+      "recording": "Enregistrement…",
+      "markReceived": "Marquer comme encaissé",
+      "showRecent": "Voir les mois récents",
+      "showAll": "Voir les {count} mois"
+    },
+    "detail": {
+      "loadFailed": "Impossible de charger ce bien."
+    },
+    "perMonth": "/ mois",
+    "manageRent": "Gérer le loyer",
+    "setRent": "Définir le loyer",
+    "delete": "Supprimer",
+    "deleteAria": "Supprimer {name}",
+    "confirmDelete": "Supprimer « {name} » ? Cela supprime aussi ses baux, ses écritures, ses estimations et l'historique des loyers.",
+    "letTo": "Loué à {tenant}",
+    "recordRentFailed": "Impossible d'enregistrer le loyer de {period}."
+  },
+  "event": {
+    "upcoming": "À venir",
+    "past": "Passés",
+    "upcomingTitle": "Événements à venir",
+    "pastTitle": "Événements passés",
+    "title": "Intitulé",
+    "description": "Description",
+    "date": "Date",
+    "recurring": "Récurrent",
+    "notified": "Notifié",
+    "actions": "Actions",
+    "yes": "Oui",
+    "no": "Non",
+    "notifiedBadge": "Notifié",
+    "pendingBadge": "En attente",
+    "notify": "Notifier",
+    "delete": "Supprimer",
+    "empty": "Aucun événement à venir.",
+    "loadFailed": "Impossible de charger les événements.",
+    "confirmDelete": "Supprimer cet événement ?",
+    "cardTitle": "Événements",
+    "noPast": "Aucun événement passé."
+  },
+  "loan": {
+    "paidOff": "Remboursé",
+    "remaining": "Restant",
+    "active": "En cours",
+    "add": {
+      "title": "Ajouter un prêt",
+      "name": "Intitulé du prêt",
+      "originalAmount": "Montant initial",
+      "originalAmountHint": "Montant emprunté à l'origine, avant remboursements.",
+      "remainingBalance": "Capital restant dû",
+      "interestRate": "Taux d'intérêt (%)",
+      "interestRateHint": "Taux annuel, par exemple 4,5 pour 4,5 %.",
+      "dueDateHint": "Date prévue du remboursement intégral.",
+      "currencyHint": "Devise dans laquelle ce prêt est libellé.",
+      "paidOffLabel": "Remboursé",
+      "paidOffHint": "Cochez si ce prêt est déjà intégralement remboursé.",
+      "submit": "Ajouter le prêt"
+    },
+    "list": {
+      "title": "Tous les prêts",
+      "empty": "Aucun prêt pour l'instant."
+    },
+    "status": {
+      "title": "État des prêts",
+      "empty": "Aucune donnée disponible."
+    },
+    "summary": {
+      "label": "Prêts",
+      "activePaidOff": "{active} en cours · {paidOff} remboursé(s)"
+    },
+    "nextDue": {
+      "title": "Prochaines échéances",
+      "empty": "Aucune échéance à venir."
+    },
+    "top": {
+      "title": "Principaux prêts",
+      "empty": "Aucun prêt disponible."
+    },
+    "total": {
+      "label": "Encours total"
+    },
+    "confirmDelete": "Supprimer « {name} » ?"
+  }
+}

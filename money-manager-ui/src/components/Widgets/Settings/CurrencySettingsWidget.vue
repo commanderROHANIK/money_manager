@@ -1,26 +1,23 @@
 <template>
-  <BaseCard title="Reporting currency">
+  <BaseCard :title="t('settings.currencyTitle')">
     <p class="mb-4 text-sm text-text-muted">
-      The currency consolidated totals are reported in. Each property and account keeps its own
-      currency; this only decides the unit the portfolio and balance rollups add up to.
+      {{ t('settings.currencyIntro') }}
     </p>
 
     <div class="flex flex-wrap items-end gap-3">
-      <BaseSelect v-model="baseCurrency" label="Base currency" class="w-40">
+      <BaseSelect v-model="baseCurrency" :label="t('settings.baseCurrency')" class="w-40">
         <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
       </BaseSelect>
 
-      <BaseButton :disabled="saving" @click="save">Save</BaseButton>
+      <BaseButton :disabled="saving" @click="save">{{ t('settings.save') }}</BaseButton>
     </div>
 
     <label class="mt-4 flex items-start gap-2.5 text-sm">
       <input v-model="alwaysConvert" type="checkbox" class="mt-0.5" />
       <span>
-        <span class="font-semibold">Always convert to {{ baseCurrency }}</span>
+        <span class="font-semibold">{{ t('settings.alwaysConvert', { currency: baseCurrency }) }}</span>
         <span class="block text-text-muted">
-          Off by default: totals stay in their own currency while everything shares one, so no
-          exchange rate is needed. Turn this on to see every total in {{ baseCurrency }} — which
-          means a rate is required for each other currency you hold.
+          {{ t('settings.alwaysConvertHint', { currency: baseCurrency }) }}
         </span>
       </span>
     </label>
@@ -38,6 +35,9 @@ import { CURRENCIES } from '../../../utils/currencies';
 import BaseButton from '../../ui/BaseButton.vue';
 import BaseCard from '../../ui/BaseCard.vue';
 import BaseSelect from '../../ui/BaseSelect.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const emit = defineEmits<{ (e: 'saved'): void }>();
 
@@ -70,12 +70,12 @@ async function save() {
     baseCurrency.value = saved.baseCurrency;
     alwaysConvert.value = saved.alwaysConvertToBaseCurrency;
     failed.value = false;
-    message.value = 'Saved.';
+    message.value = t('settings.saved');
     emit('saved');
   } catch (error) {
     console.error('Failed to save settings:', error);
     failed.value = true;
-    message.value = 'Could not save that. Please try again.';
+    message.value = t('settings.saveFailed');
   } finally {
     saving.value = false;
   }

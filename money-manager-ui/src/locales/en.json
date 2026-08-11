@@ -1,0 +1,354 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "loans": "Loans",
+    "properties": "Properties",
+    "stocks": "Stocks",
+    "events": "Events",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "transactionCategory": {
+    "rentIncome": "Rent received",
+    "depositReceived": "Deposit received",
+    "otherIncome": "Other income",
+    "insurance": "Insurance",
+    "propertyTax": "Property tax",
+    "maintenance": "Maintenance",
+    "repairs": "Repairs",
+    "managementFee": "Management fee",
+    "utilities": "Utilities",
+    "serviceCharge": "Service charge",
+    "otherExpense": "Other expense",
+    "mortgagePayment": "Mortgage payment",
+    "acquisitionCost": "Acquisition cost",
+    "capitalImprovement": "Capital improvement"
+  },
+  "transactionGroup": {
+    "income": "Income",
+    "runningCosts": "Running costs",
+    "financing": "Financing",
+    "capital": "Capital"
+  },
+  "rentStatus": {
+    "vacant": "Vacant",
+    "unpaid": "Unpaid",
+    "partial": "Partial",
+    "paid": "Paid"
+  },
+  "propertyType": {
+    "apartment": "Apartment",
+    "house": "House",
+    "room": "Room",
+    "commercial": "Commercial",
+    "land": "Land"
+  },
+  "propertyStatus": {
+    "active": "Active",
+    "renovating": "Renovating",
+    "sold": "Sold"
+  },
+  "propertyEvent": {
+    "purchase": "Purchase",
+    "tenantMovedIn": "Tenant moved in",
+    "tenantMovedOut": "Tenant moved out",
+    "rentChanged": "Rent changed",
+    "maintenance": "Maintenance",
+    "inspection": "Inspection",
+    "renovation": "Renovation",
+    "valuation": "Valuation",
+    "mortgageLinked": "Mortgage linked",
+    "sale": "Sale",
+    "note": "Note"
+  },
+  "rentSource": {
+    "contracted": "Charged",
+    "marketEstimate": "Market estimate"
+  },
+  "settings": {
+    "language": "Language",
+    "languageHint": "Applies to labels, dates and number formatting.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    },
+    "currencyTitle": "Reporting currency",
+    "currencyIntro": "The currency consolidated totals are reported in. Each property and account keeps its own currency; this only decides the unit the portfolio and balance rollups add up to.",
+    "baseCurrency": "Base currency",
+    "save": "Save",
+    "saved": "Saved.",
+    "saveFailed": "Could not save that. Please try again.",
+    "alwaysConvert": "Always convert to {currency}",
+    "alwaysConvertHint": "Off by default: totals stay in their own currency while everything shares one, so no exchange rate is needed. Turn this on to see every total in {currency} — which means a rate is required for each other currency you hold.",
+    "ratesTitle": "Exchange rates",
+    "oneUnitOf": "One unit of",
+    "isWorthIn": "Is worth, in",
+    "amount": "Amount",
+    "asOf": "As of",
+    "saveRate": "Save rate",
+    "remove": "Remove",
+    "recorded": "recorded {date}",
+    "noRates": "No rates yet",
+    "noRatesHint": "Add one above and portfolios spanning currencies will start reporting totals.",
+    "rateTooSmall": "Enter a rate greater than zero.",
+    "rateSaveFailed": "Could not save that rate. Please try again.",
+    "rateRemoveFailed": "Could not remove that rate. Please try again.",
+    "ratesIntro": "Rates you enter yourself — nothing is fetched, so a converted total is only ever as good as what is on this list, and every one is shown with the date you recorded it. Entering one direction is enough; the other is read off the same row.",
+    "sameCurrency": "A currency is always worth one of itself; pick two different currencies."
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "welcomeBackHint": "Good to see you — let's check your money.",
+    "createAccount": "Create an account",
+    "createAccountHint": "Let's get your money tracked.",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "logIn": "Log in",
+    "register": "Register",
+    "registering": "Registering...",
+    "invalidLogin": "Invalid login",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "registeredSuccessfully": "Registered successfully",
+    "registrationClosed": "Registration is closed on this deployment. Ask for an account to be set up for you.",
+    "registerFailed": "Error registering: {reason}",
+    "registerFailedFallback": "please try again"
+  },
+  "property": {
+    "rented": "Rented",
+    "vacant": "Vacant",
+    "timeline": {
+      "title": "Timeline",
+      "empty": "Nothing recorded yet."
+    },
+    "totalRent": {
+      "label": "Total Monthly Rent",
+      "mixedCurrency": "Properties span multiple currencies — showing the unconverted sum."
+    },
+    "summary": {
+      "label": "Rental Properties",
+      "rentedVacant": "{rented} rented · {vacant} vacant",
+      "behindOnRent": "{count} property behind on rent | {count} properties behind on rent"
+    },
+    "highestRent": {
+      "title": "Highest Rent",
+      "monthlyRent": "Monthly Rent:",
+      "empty": "No properties available."
+    },
+    "rentedVsVacant": {
+      "title": "Rented vs Vacant"
+    },
+    "underpriced": {
+      "title": "Money left on the table",
+      "subtitle": "Properties let below their estimated market rent.",
+      "empty": "Nothing below market — or no market estimates recorded yet. Add one on a property's page to see the comparison.",
+      "perYear": "/ year"
+    },
+    "upcomingRent": {
+      "title": "Upcoming Rent Due",
+      "noTenancy": "No tenancy",
+      "none": "No rent due in the next 30 days."
+    },
+    "valuations": {
+      "title": "Valuations",
+      "subtitle": "Equity and appreciation are measured against the most recent figure here.",
+      "valuePlaceholder": "Value",
+      "add": "Add",
+      "empty": "None recorded — the purchase price is being used as the current value."
+    },
+    "rentVsMarket": {
+      "title": "Rent vs market",
+      "noEstimate": "No market estimate on record for this property.",
+      "estimatePlaceholder": "Market rent / month",
+      "save": "Save",
+      "belowMarket": "{gap} below market",
+      "aboveMarket": "{gap} above market",
+      "atMarket": "At market",
+      "belowExplainer": "You charge {rent} against an estimated {market}. Closing the gap is worth {uplift} a year.",
+      "atOrAboveExplainer": "You charge {rent} against an estimated {market} — at or above market."
+    },
+    "list": {
+      "title": "All Properties",
+      "empty": "No properties yet."
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "empty": "No properties yet. Add one below to start tracking what it returns.",
+      "missingRate": "No exchange rate on record for {pairs}, so the totals below cannot all be worked out.",
+      "addRateLink": "Add the rate in Settings",
+      "addRateSuffix": "and these totals will appear.",
+      "convertedNote": "Converted to {currency} using the rates you entered ({rates}).",
+      "rateOn": "on {date}",
+      "tileProperties": "Properties",
+      "tileInvested": "Cash invested",
+      "tileEquity": "Equity",
+      "tileCashFlow": "Monthly cash flow",
+      "tileRoi": "Portfolio ROI"
+    },
+    "rentByMonth": {
+      "title": "Rent Collected by Month",
+      "empty": "No rent payments recorded yet for these {count} properties.",
+      "series": "Rent Collected"
+    },
+    "rentOverTime": {
+      "title": "Rent over time",
+      "empty": "No rent history yet. It fills in automatically as tenancies start and rents change.",
+      "charged": "Rent charged",
+      "marketEstimate": "Market estimate"
+    },
+    "metrics": {
+      "title": "Investment performance",
+      "asOf": "as of {date}",
+      "roi": "Total ROI",
+      "roiHint": "{rate} a year",
+      "cashFlow": "Monthly cash flow",
+      "cashFlowHint": "after running costs and mortgage",
+      "invested": "Cash invested",
+      "investedHint": "{amount} total cost",
+      "equity": "Equity",
+      "equityHint": "{amount} value",
+      "grossYield": "Gross yield",
+      "grossYieldHint": "rent ÷ total invested",
+      "capRate": "Cap rate",
+      "capRateHint": "net income ÷ value",
+      "cashOnCash": "Cash-on-cash",
+      "cashOnCashHint": "return on money actually put in",
+      "occupancy": "Occupancy",
+      "occupancyHint": "held {years} yrs"
+    },
+    "tenancy": {
+      "title": "Tenancies",
+      "rentLine": "{rent} / month, due on day {day}",
+      "since": "Since {start}",
+      "sinceUntil": "Since {start} until {end}",
+      "vacant": "Vacant — no tenancy is running today.",
+      "tenantName": "Tenant name",
+      "endOptional": "End (optional)",
+      "monthlyRent": "Monthly rent",
+      "dueDay": "Due day",
+      "add": "Add tenancy"
+    },
+    "add": {
+      "title": "Add a property",
+      "subtitle": "The purchase price and date are what every return figure is measured against — worth entering even if they are approximate.",
+      "name": "Name",
+      "address": "Address",
+      "city": "City",
+      "purchasePrice": "Purchase price",
+      "size": "Size (m²)",
+      "bedrooms": "Bedrooms",
+      "submit": "Add property"
+    },
+    "ledger": {
+      "title": "Ledger",
+      "amount": "Amount",
+      "note": "Note",
+      "record": "Record",
+      "positiveHint": "Enter every amount as a positive number — the category decides whether it is money in or out.",
+      "empty": "No entries yet. Recording rent received and costs paid is what makes the return figures real rather than projected.",
+      "deleteAria": "Delete {category}"
+    },
+    "rentCollection": {
+      "title": "Rent collection",
+      "subtitle": "Expected from the tenancy running each month, against what the ledger has actually received.",
+      "empty": "No tenancy on record yet. Add one and every month it covers appears here.",
+      "upToDate": "Up to date",
+      "behind": "{amount} behind · {count} month | {amount} behind · {count} months",
+      "month": "Month",
+      "due": "Due",
+      "expected": "Expected",
+      "received": "Received",
+      "status": "Status",
+      "actions": "Actions",
+      "short": "{amount} short",
+      "recording": "Recording…",
+      "markReceived": "Mark received",
+      "showRecent": "Show recent months",
+      "showAll": "Show all {count} months"
+    },
+    "detail": {
+      "loadFailed": "Could not load this property."
+    },
+    "perMonth": "/ month",
+    "manageRent": "Manage rent",
+    "setRent": "Set rent",
+    "delete": "Delete",
+    "deleteAria": "Delete {name}",
+    "confirmDelete": "Delete \"{name}\"? This also removes its tenancies, transactions, valuations and rent history.",
+    "letTo": "Let to {tenant}",
+    "recordRentFailed": "Could not record the rent for {period}."
+  },
+  "event": {
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "upcomingTitle": "Upcoming Events",
+    "pastTitle": "Past Events",
+    "title": "Title",
+    "description": "Description",
+    "date": "Date",
+    "recurring": "Recurring",
+    "notified": "Notified",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "notifiedBadge": "Notified",
+    "pendingBadge": "Pending",
+    "notify": "Notify",
+    "delete": "Delete",
+    "empty": "No upcoming events.",
+    "loadFailed": "Failed to load events.",
+    "confirmDelete": "Delete this event?",
+    "cardTitle": "Events",
+    "noPast": "No past events found."
+  },
+  "loan": {
+    "paidOff": "Paid Off",
+    "remaining": "Remaining",
+    "active": "Active",
+    "add": {
+      "title": "Add a loan",
+      "name": "Loan Name",
+      "originalAmount": "Original amount",
+      "originalAmountHint": "Original amount borrowed, before any repayments.",
+      "remainingBalance": "Remaining balance",
+      "interestRate": "Interest rate (%)",
+      "interestRateHint": "Annual rate, e.g. 4.5 for 4.5%.",
+      "dueDateHint": "Date the loan is scheduled to be fully repaid.",
+      "currencyHint": "Currency this loan is denominated in.",
+      "paidOffLabel": "Paid off",
+      "paidOffHint": "Check if this loan has already been fully repaid.",
+      "submit": "Add loan"
+    },
+    "list": {
+      "title": "All Loans",
+      "empty": "No loans yet."
+    },
+    "status": {
+      "title": "Loan Status",
+      "empty": "No data available."
+    },
+    "summary": {
+      "label": "Loans",
+      "activePaidOff": "{active} active · {paidOff} paid off"
+    },
+    "nextDue": {
+      "title": "Next Due Repayments",
+      "empty": "No upcoming repayments."
+    },
+    "top": {
+      "title": "Top Loans",
+      "empty": "No loans available."
+    },
+    "total": {
+      "label": "Total Loan Amount"
+    },
+    "confirmDelete": "Delete \"{name}\"?"
+  }
+}

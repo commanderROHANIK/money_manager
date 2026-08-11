@@ -1,17 +1,21 @@
 <template>
-  <BaseCard title="Upcoming Events">
+  <BaseCard :title="t('event.upcomingTitle')">
     <LoadingSkeleton v-if="loading" :rows="4" />
-    <ErrorState v-else-if="error" title="Failed to load events" :description="error ?? undefined" />
+    <ErrorState
+        v-else-if="error"
+        :title="t('event.loadFailed')"
+        :description="error ?? undefined"
+      />
     <div v-else>
       <table v-if="upcoming.length" class="w-full text-sm">
         <thead>
           <tr class="border-b border-border text-left font-semibold text-text-muted">
-            <th class="py-2">Title</th>
-            <th class="py-2">Description</th>
-            <th class="py-2">Date</th>
-            <th class="py-2">Recurring</th>
-            <th class="py-2">Notified</th>
-            <th class="py-2">Actions</th>
+            <th class="py-2">{{ t('event.title') }}</th>
+            <th class="py-2">{{ t('event.description') }}</th>
+            <th class="py-2">{{ t('event.date') }}</th>
+            <th class="py-2">{{ t('event.recurring') }}</th>
+            <th class="py-2">{{ t('event.notified') }}</th>
+            <th class="py-2">{{ t('event.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -19,10 +23,10 @@
             <td class="py-2">{{ ev.title }}</td>
             <td class="py-2 text-text-muted">{{ ev.description }}</td>
             <td class="py-2 font-mono text-text-muted tabular-nums">{{ formatDate(ev.eventDate) }}</td>
-            <td class="py-2">{{ ev.isRecurring ? 'Yes' : 'No' }}</td>
+            <td class="py-2">{{ ev.isRecurring ? t('event.yes') : t('event.no') }}</td>
             <td class="py-2">
               <Badge :variant="ev.isNotified ? 'primary' : 'neutral'">
-                {{ ev.isNotified ? 'Notified' : 'Pending' }}
+                {{ ev.isNotified ? t('event.notifiedBadge') : t('event.pendingBadge') }}
               </Badge>
             </td>
             <td class="py-2">
@@ -33,7 +37,7 @@
                 :disabled="ev.isNotified || updatingIds.has(ev.id)"
                 @click="markNotified(ev)"
               >
-                {{ ev.isNotified ? '✓' : 'Notify' }}
+                {{ ev.isNotified ? '✓' : t('event.notify') }}
               </BaseButton>
 
               <BaseButton
@@ -42,14 +46,14 @@
                 :disabled="updatingIds.has(ev.id)"
                 @click="deleteEvent(ev.id)"
               >
-                Delete
+                {{ t('event.delete') }}
               </BaseButton>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <EmptyState v-else title="No upcoming events." />
+      <EmptyState v-else :title="t('event.empty')" />
     </div>
   </BaseCard>
 </template>
@@ -64,6 +68,10 @@ import Badge from '../../ui/Badge.vue';
 import EmptyState from '../../ui/EmptyState.vue';
 import ErrorState from '../../ui/ErrorState.vue';
 import LoadingSkeleton from '../../ui/LoadingSkeleton.vue';
+import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
+
+const { t } = useI18n();
 
 const events = ref<UpcomingEvent[]>([]);
 const loading = ref(true);
@@ -78,7 +86,7 @@ onMounted(async () => {
     events.value = data;
   } catch (err) {
     console.error(err);
-    error.value = 'Failed to load events.';
+    error.value = t('event.loadFailed');
   } finally {
     loading.value = false;
   }
@@ -97,7 +105,7 @@ const upcoming = computed(() => {
 
 function formatDate(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleString('en-US', {
+  return d.toLocaleString(intlLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -123,7 +131,7 @@ async function markNotified(ev: UpcomingEvent) {
 }
 
 async function deleteEvent(id: number) {
-  if (!confirm('Delete this event?')) return;
+  if (!confirm(t('event.confirmDelete'))) return;
   updatingIds.value.add(id);
   try {
     await deleteUpcomingEvent(id);

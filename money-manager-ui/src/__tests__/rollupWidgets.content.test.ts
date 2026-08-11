@@ -7,10 +7,11 @@
  * the exact failure this product's whole design is arranged to prevent. These tests pin the
  * replacement behaviour so it cannot quietly come back.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import type { Component } from 'vue';
+import { currentLocale, DEFAULT_LOCALE } from '../i18n/locale';
 import * as f from './fixtures';
 
 const state = vi.hoisted(() => ({
@@ -25,6 +26,18 @@ vi.mock('../services/api', () => ({
 
 import TotalBalance from '../components/Widgets/BankAccounts/TotalBalance.vue';
 import CashVsInvestedWidget from '../components/Widgets/Stocks/CashVsInvestedWidget.vue';
+
+// These assert what a widget *shows* — the figures and the labels — not how a locale formats
+// them. Pinned to English so the expectations below stay readable and stable; the formatting
+// itself is covered in both languages by the colocated tests on formatMoney, formatPercent and
+// formatDate, which is where a locale bug would actually live.
+beforeEach(() => {
+  currentLocale.value = 'en';
+});
+
+afterEach(() => {
+  currentLocale.value = DEFAULT_LOCALE;
+});
 
 async function render(component: Component) {
   const wrapper = mount(component);

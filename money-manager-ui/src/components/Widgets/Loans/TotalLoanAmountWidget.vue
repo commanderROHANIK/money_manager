@@ -1,11 +1,14 @@
 <template>
-  <StatCard label="Total Loan Amount" :value="formattedTotal" />
+  <StatCard :label="t('loan.total.label')" :value="formattedTotal" />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
 import StatCard from '../../ui/StatCard.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   loans: Loan[];

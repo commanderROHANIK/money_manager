@@ -1,10 +1,15 @@
 <template>
-    <StatCard label="Rental Properties" :delta="arrearsDelta" :delta-positive="arrears.length === 0">
-      <template #value>{{ rentedCount }} Rented | {{ vacantCount }} Vacant</template>
+    <StatCard :label="t('property.summary.label')" :delta="arrearsDelta" :delta-positive="arrears.length === 0">
+      <template #value>
+        {{ t('property.summary.rentedVacant', { rented: rentedCount, vacant: vacantCount }) }}
+      </template>
     </StatCard>
   </template>
 
   <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
   import { ref, onMounted, computed } from 'vue';
   import { fetchRentalProperties } from '../../../services/api';
   import { fetchArrears } from '../../../services/propertyApi';
@@ -37,7 +42,6 @@
   const arrearsDelta = computed(() => {
     if (arrears.value.length === 0) return undefined;
 
-    const noun = arrears.value.length === 1 ? 'property' : 'properties';
-    return `${arrears.value.length} ${noun} behind on rent`;
+    return t('property.summary.behindOnRent', arrears.value.length);
   });
   </script>

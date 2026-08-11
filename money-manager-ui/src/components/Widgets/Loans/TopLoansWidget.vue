@@ -1,6 +1,6 @@
 <template>
   <div class="p-6">
-    <h2 class="font-heading text-lg font-bold mb-2">Top Loans</h2>
+    <h2 class="font-heading text-lg font-bold mb-2">{{ t('loan.top.title') }}</h2>
     <ul v-if="topLoans.length">
       <ListRow v-for="loan in topLoans" :key="loan.id">
         <template #title>
@@ -14,7 +14,7 @@
         </template>
       </ListRow>
     </ul>
-    <p v-else class="text-text-muted">No loans available.</p>
+    <p v-else class="text-text-muted">{{ t('loan.top.empty') }}</p>
   </div>
 </template>
 
@@ -22,6 +22,9 @@
 import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
 import ListRow from '../../ui/ListRow.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{ loans: Loan[] }>();
 

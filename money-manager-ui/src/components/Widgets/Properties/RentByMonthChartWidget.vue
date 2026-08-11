@@ -1,12 +1,12 @@
 <template>
   <div class="p-4 rounded-lg shadow-card bg-surface">
-    <h2 class="font-heading text-lg font-bold mb-4">Rent Collected by Month</h2>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentByMonth.title') }}</h2>
 
     <div v-if="hasData" class="chart-box">
       <Bar :data="chartData" :options="chartOptions" />
     </div>
     <p v-else class="text-sm text-text-muted">
-      No rent payments recorded yet for these {{ properties.length }} properties.
+      {{ t('property.rentByMonth.empty', { count: properties.length }) }}
     </p>
   </div>
 </template>
@@ -26,6 +26,10 @@ import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { chartColors } from '../../../utils/chartTheme';
+import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
+
+const { t } = useI18n();
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -55,7 +59,7 @@ const rentByMonth = computed(() => {
   const monthlyTotals: Record<string, number> = {};
 
   for (const payment of props.payments) {
-    const month = new Date(payment.datePaid).toLocaleString('default', {
+    const month = new Date(payment.datePaid).toLocaleString(intlLocale(), {
       year: 'numeric',
       month: 'short'
     });
@@ -76,7 +80,7 @@ const chartData = computed(() => {
     labels,
     datasets: [
       {
-        label: 'Rent Collected',
+        label: t('property.rentByMonth.series'),
         backgroundColor: chartColors.primary,
         borderRadius: 6,
         data: labels.map((label) => rentByMonth.value[label])

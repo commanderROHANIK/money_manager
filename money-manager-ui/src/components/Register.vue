@@ -3,36 +3,36 @@
     <div class="flex w-full max-w-sm flex-col gap-5 rounded-xl bg-surface p-10 shadow-card">
       <div class="flex flex-col items-center gap-1 text-center">
         <div class="mb-2 h-10 w-10 rounded-md bg-primary"></div>
-        <div class="font-heading text-xl font-extrabold">Create an account</div>
-        <div class="text-sm text-text-muted">Let's get your money tracked.</div>
+        <div class="font-heading text-xl font-extrabold">{{ $t('auth.createAccount') }}</div>
+        <div class="text-sm text-text-muted">{{ $t('auth.createAccountHint') }}</div>
       </div>
 
       <form class="flex flex-col gap-4" @submit.prevent="handleRegister">
-        <BaseInput v-model.trim="username" placeholder="Username" autocomplete="username" required />
-        <BaseInput v-model.trim="email" type="email" placeholder="Email" autocomplete="email" required />
-        <BaseInput v-model="password" type="password" placeholder="Password" autocomplete="new-password" required />
+        <BaseInput v-model.trim="username" :placeholder="$t('auth.username')" autocomplete="username" required />
+        <BaseInput v-model.trim="email" type="email" :placeholder="$t('auth.email')" autocomplete="email" required />
+        <BaseInput v-model="password" type="password" :placeholder="$t('auth.password')" autocomplete="new-password" required />
         <BaseInput
           v-model="confirmPassword"
           type="password"
-          placeholder="Confirm Password"
+          :placeholder="$t('auth.confirmPassword')"
           autocomplete="new-password"
           required
         />
 
         <BaseButton type="submit" block :disabled="loading">
-          {{ loading ? "Registering..." : "Register" }}
+          {{ loading ? $t('auth.registering') : $t('auth.register') }}
         </BaseButton>
         <BaseButton type="button" variant="secondary" block @click="$router.push('/login')">
-          Login
+          {{ $t('auth.logIn') }}
         </BaseButton>
       </form>
 
       <p
-        v-if="message"
+        v-if="messageKey"
         class="text-center text-sm"
-        :class="message.includes('success') ? 'text-primary-strong' : 'text-danger'"
+        :class="failed ? 'text-danger' : 'text-primary-strong'"
       >
-        {{ message }}
+        {{ $t(messageKey, messageArgs) }}
       </p>
     </div>
   </div>
@@ -55,33 +55,46 @@ export default defineComponent({
       email: "",
       password: "",
       confirmPassword: "",
-      message: "",
+      messageKey: "",
+      messageArgs: {} as Record<string, string>,
+      failed: false,
       loading: false,
     };
   },
   methods: {
     async handleRegister() {
       if (this.password !== this.confirmPassword) {
-        this.message = "Passwords do not match";
+        this.messageKey = "auth.passwordsDoNotMatch";
+        this.failed = true;
         return;
       }
 
       this.loading = true;
-      this.message = "";
+      this.messageKey = "";
 
       try {
         await register(this.username, this.email, this.password);
-        this.message = "Registered successfully";
+        this.messageKey = "auth.registeredSuccessfully";
+        this.failed = false;
         this.username = this.email = this.password = this.confirmPassword = "";
       } catch (err) {
         // A deployment can close registration, in which case the endpoint is not there at all —
         // 404 rather than 403, so it does not advertise itself. Without this branch the page
         // renders "Error registering: Request failed with status code 404", which reads like the
         // app is broken rather than like a deliberate setting.
-        this.message =
-          axios.isAxiosError(err) && err.response?.status === 404
-            ? "Registration is closed on this deployment. Ask for an account to be set up for you."
-            : "Error registering: " + (err instanceof Error ? err.message : "please try again");
+        this.failed = true;
+
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          this.messageKey = "auth.registrationClosed";
+          this.messageArgs = {};
+        } else {
+          this.messageKey = "auth.registerFailed";
+          // The server's own message is English — the API is not localised — so it is passed
+          // through as data rather than translated. Only the sentence around it changes language.
+          this.messageArgs = {
+            reason: err instanceof Error ? err.message : this.$t("auth.registerFailedFallback"),
+          };
+        }
       } finally {
         this.loading = false;
       }

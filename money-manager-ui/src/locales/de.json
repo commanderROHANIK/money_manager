@@ -1,0 +1,354 @@
+{
+  "app": {
+    "name": "Money Manager"
+  },
+  "nav": {
+    "dashboard": "Übersicht",
+    "accounts": "Bankkonten",
+    "loans": "Kredite",
+    "properties": "Immobilien",
+    "stocks": "Aktien",
+    "events": "Termine",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "transactionCategory": {
+    "rentIncome": "Miete erhalten",
+    "depositReceived": "Kaution erhalten",
+    "otherIncome": "Sonstige Einnahmen",
+    "insurance": "Versicherung",
+    "propertyTax": "Grundsteuer",
+    "maintenance": "Instandhaltung",
+    "repairs": "Reparaturen",
+    "managementFee": "Verwaltungsgebühr",
+    "utilities": "Nebenkosten",
+    "serviceCharge": "Hausgeld",
+    "otherExpense": "Sonstige Ausgaben",
+    "mortgagePayment": "Kreditrate",
+    "acquisitionCost": "Anschaffungskosten",
+    "capitalImprovement": "Wertsteigernde Maßnahme"
+  },
+  "transactionGroup": {
+    "income": "Einnahmen",
+    "runningCosts": "Laufende Kosten",
+    "financing": "Finanzierung",
+    "capital": "Investition"
+  },
+  "rentStatus": {
+    "vacant": "Leerstand",
+    "unpaid": "Offen",
+    "partial": "Teilweise bezahlt",
+    "paid": "Bezahlt"
+  },
+  "propertyType": {
+    "apartment": "Wohnung",
+    "house": "Haus",
+    "room": "Zimmer",
+    "commercial": "Gewerbefläche",
+    "land": "Grundstück"
+  },
+  "propertyStatus": {
+    "active": "Aktiv",
+    "renovating": "In Renovierung",
+    "sold": "Verkauft"
+  },
+  "propertyEvent": {
+    "purchase": "Kauf",
+    "tenantMovedIn": "Mieter eingezogen",
+    "tenantMovedOut": "Mieter ausgezogen",
+    "rentChanged": "Miete geändert",
+    "maintenance": "Instandhaltung",
+    "inspection": "Besichtigung",
+    "renovation": "Renovierung",
+    "valuation": "Bewertung",
+    "mortgageLinked": "Kredit zugeordnet",
+    "sale": "Verkauf",
+    "note": "Notiz"
+  },
+  "rentSource": {
+    "contracted": "Vertraglich vereinbart",
+    "marketEstimate": "Marktschätzung"
+  },
+  "settings": {
+    "language": "Sprache",
+    "languageHint": "Gilt für Beschriftungen, Datumsangaben und Zahlenformate.",
+    "languageName": {
+      "hu": "Magyar",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    },
+    "currencyTitle": "Berichtswährung",
+    "currencyIntro": "Die Währung, in der zusammengefasste Summen ausgewiesen werden. Jede Immobilie und jedes Konto behält seine eigene Währung; dies bestimmt nur die Einheit, in der Portfolio- und Saldensummen addiert werden.",
+    "baseCurrency": "Basiswährung",
+    "save": "Speichern",
+    "saved": "Gespeichert.",
+    "saveFailed": "Konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "alwaysConvert": "Immer in {currency} umrechnen",
+    "alwaysConvertHint": "Standardmäßig aus: Solange alles dieselbe Währung hat, bleiben Summen in ihrer eigenen Währung und es wird kein Kurs benötigt. Einschalten, um jede Summe in {currency} zu sehen — dafür ist für jede weitere Währung ein Kurs erforderlich.",
+    "ratesTitle": "Wechselkurse",
+    "oneUnitOf": "Eine Einheit",
+    "isWorthIn": "Entspricht, in",
+    "amount": "Betrag",
+    "asOf": "Stand",
+    "saveRate": "Kurs speichern",
+    "remove": "Entfernen",
+    "recorded": "erfasst {date}",
+    "noRates": "Noch keine Kurse",
+    "noRatesHint": "Legen Sie oben einen an, dann weisen auch währungsübergreifende Portfolios Summen aus.",
+    "rateTooSmall": "Geben Sie einen Kurs größer als null ein.",
+    "rateSaveFailed": "Kurs konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "rateRemoveFailed": "Kurs konnte nicht entfernt werden. Bitte erneut versuchen.",
+    "ratesIntro": "Kurse geben Sie selbst ein — es wird nichts abgerufen, eine umgerechnete Summe ist also immer nur so gut wie diese Liste, und zu jedem Kurs steht das Datum der Erfassung. Eine Richtung genügt; die andere ergibt sich aus derselben Zeile.",
+    "sameCurrency": "Eine Währung ist sich selbst gegenüber immer eins wert; wählen Sie zwei verschiedene Währungen."
+  },
+  "auth": {
+    "welcomeBack": "Willkommen zurück",
+    "welcomeBackHint": "Schön, dass Sie da sind — sehen wir uns Ihre Finanzen an.",
+    "createAccount": "Konto erstellen",
+    "createAccountHint": "Behalten wir Ihr Geld im Blick.",
+    "username": "Benutzername",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "logIn": "Anmelden",
+    "register": "Registrieren",
+    "registering": "Registrierung läuft…",
+    "invalidLogin": "Benutzername oder Passwort falsch",
+    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+    "registeredSuccessfully": "Registrierung erfolgreich",
+    "registrationClosed": "Auf dieser Instanz ist keine Registrierung möglich. Bitten Sie um ein Konto.",
+    "registerFailed": "Fehler bei der Registrierung: {reason}",
+    "registerFailedFallback": "bitte erneut versuchen"
+  },
+  "property": {
+    "rented": "Vermietet",
+    "vacant": "Leerstand",
+    "timeline": {
+      "title": "Verlauf",
+      "empty": "Noch nichts erfasst."
+    },
+    "totalRent": {
+      "label": "Monatsmiete gesamt",
+      "mixedCurrency": "Die Immobilien haben verschiedene Währungen — die Summe ist nicht umgerechnet."
+    },
+    "summary": {
+      "label": "Mietobjekte",
+      "rentedVacant": "{rented} vermietet · {vacant} leer",
+      "behindOnRent": "{count} Immobilie mit Mietrückstand | {count} Immobilien mit Mietrückstand"
+    },
+    "highestRent": {
+      "title": "Höchste Miete",
+      "monthlyRent": "Monatsmiete:",
+      "empty": "Keine Immobilien vorhanden."
+    },
+    "rentedVsVacant": {
+      "title": "Vermietet und Leerstand"
+    },
+    "underpriced": {
+      "title": "Verschenkte Miete",
+      "subtitle": "Immobilien, die unter der geschätzten Marktmiete vermietet sind.",
+      "empty": "Nichts unter Marktniveau — oder noch keine Marktschätzung erfasst. Legen Sie eine auf der Seite einer Immobilie an, um den Vergleich zu sehen.",
+      "perYear": "/ Jahr"
+    },
+    "upcomingRent": {
+      "title": "Anstehende Mietzahlungen",
+      "noTenancy": "Kein Mietverhältnis",
+      "none": "In den nächsten 30 Tagen ist keine Miete fällig."
+    },
+    "valuations": {
+      "title": "Bewertungen",
+      "subtitle": "Eigenkapital und Wertzuwachs werden am jüngsten Wert hier gemessen.",
+      "valuePlaceholder": "Wert",
+      "add": "Hinzufügen",
+      "empty": "Nichts erfasst — als aktueller Wert dient der Kaufpreis."
+    },
+    "rentVsMarket": {
+      "title": "Miete im Marktvergleich",
+      "noEstimate": "Für diese Immobilie ist keine Marktschätzung erfasst.",
+      "estimatePlaceholder": "Marktmiete / Monat",
+      "save": "Speichern",
+      "belowMarket": "{gap} unter Marktniveau",
+      "aboveMarket": "{gap} über Marktniveau",
+      "atMarket": "Auf Marktniveau",
+      "belowExplainer": "Sie verlangen {rent} bei geschätzten {market}. Die Lücke zu schließen wäre {uplift} im Jahr wert.",
+      "atOrAboveExplainer": "Sie verlangen {rent} bei geschätzten {market} — auf oder über Marktniveau."
+    },
+    "list": {
+      "title": "Alle Immobilien",
+      "empty": "Noch keine Immobilien."
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "empty": "Noch keine Immobilien. Legen Sie unten eine an, um ihre Rendite zu verfolgen.",
+      "missingRate": "Für {pairs} ist kein Wechselkurs erfasst, daher lassen sich nicht alle Summen unten berechnen.",
+      "addRateLink": "Kurs in den Einstellungen hinterlegen",
+      "addRateSuffix": "und diese Summen erscheinen.",
+      "convertedNote": "Umgerechnet in {currency} mit den von Ihnen erfassten Kursen ({rates}).",
+      "rateOn": "am {date}",
+      "tileProperties": "Immobilien",
+      "tileInvested": "Eingesetztes Kapital",
+      "tileEquity": "Eigenkapital",
+      "tileCashFlow": "Monatlicher Cashflow",
+      "tileRoi": "Portfolio-Rendite"
+    },
+    "rentByMonth": {
+      "title": "Mieteinnahmen nach Monat",
+      "empty": "Für diese {count} Immobilien sind noch keine Mietzahlungen erfasst.",
+      "series": "Mieteinnahmen"
+    },
+    "rentOverTime": {
+      "title": "Mietentwicklung",
+      "empty": "Noch kein Mietverlauf. Er füllt sich automatisch, sobald Mietverhältnisse beginnen und Mieten sich ändern.",
+      "charged": "Verlangte Miete",
+      "marketEstimate": "Marktschätzung"
+    },
+    "metrics": {
+      "title": "Anlageergebnis",
+      "asOf": "Stand {date}",
+      "roi": "Gesamtrendite",
+      "roiHint": "{rate} pro Jahr",
+      "cashFlow": "Monatlicher Cashflow",
+      "cashFlowHint": "nach laufenden Kosten und Kreditrate",
+      "invested": "Eingesetztes Kapital",
+      "investedHint": "{amount} Gesamtkosten",
+      "equity": "Eigenkapital",
+      "equityHint": "{amount} Wert",
+      "grossYield": "Bruttorendite",
+      "grossYieldHint": "Miete ÷ Gesamtinvestition",
+      "capRate": "Kapitalisierungszins",
+      "capRateHint": "Nettoertrag ÷ Wert",
+      "cashOnCash": "Eigenkapitalrendite",
+      "cashOnCashHint": "Rendite auf das tatsächlich eingesetzte Geld",
+      "occupancy": "Auslastung",
+      "occupancyHint": "seit {years} Jahren im Bestand"
+    },
+    "tenancy": {
+      "title": "Mietverhältnisse",
+      "rentLine": "{rent} / Monat, fällig am {day}.",
+      "since": "Seit {start}",
+      "sinceUntil": "Seit {start} bis {end}",
+      "vacant": "Leerstand — derzeit läuft kein Mietverhältnis.",
+      "tenantName": "Name des Mieters",
+      "endOptional": "Ende (optional)",
+      "monthlyRent": "Monatsmiete",
+      "dueDay": "Fälligkeitstag",
+      "add": "Mietverhältnis anlegen"
+    },
+    "add": {
+      "title": "Immobilie anlegen",
+      "subtitle": "Kaufpreis und Kaufdatum sind die Bezugsgrößen jeder Renditezahl — auch ein ungefährer Wert ist besser als keiner.",
+      "name": "Name",
+      "address": "Adresse",
+      "city": "Stadt",
+      "purchasePrice": "Kaufpreis",
+      "size": "Fläche (m²)",
+      "bedrooms": "Schlafzimmer",
+      "submit": "Immobilie anlegen"
+    },
+    "ledger": {
+      "title": "Buchungen",
+      "amount": "Betrag",
+      "note": "Notiz",
+      "record": "Erfassen",
+      "positiveHint": "Erfassen Sie jeden Betrag als positive Zahl — die Kategorie entscheidet über Einnahme oder Ausgabe.",
+      "empty": "Noch keine Buchungen. Erfasste Mieteinnahmen und Kosten sind es, die die Renditezahlen belastbar statt geschätzt machen.",
+      "deleteAria": "{category} löschen"
+    },
+    "rentCollection": {
+      "title": "Mieteingang",
+      "subtitle": "Erwartet aus dem jeweils laufenden Mietverhältnis, verglichen mit dem tatsächlich Erfassten.",
+      "empty": "Noch kein Mietverhältnis erfasst. Legen Sie eines an, und jeder abgedeckte Monat erscheint hier.",
+      "upToDate": "Kein Rückstand",
+      "behind": "{amount} Rückstand · {count} Monat | {amount} Rückstand · {count} Monate",
+      "month": "Monat",
+      "due": "Fällig",
+      "expected": "Erwartet",
+      "received": "Eingegangen",
+      "status": "Status",
+      "actions": "Aktionen",
+      "short": "{amount} offen",
+      "recording": "Wird erfasst…",
+      "markReceived": "Als eingegangen markieren",
+      "showRecent": "Nur letzte Monate",
+      "showAll": "Alle {count} Monate anzeigen"
+    },
+    "detail": {
+      "loadFailed": "Diese Immobilie konnte nicht geladen werden."
+    },
+    "perMonth": "/ Monat",
+    "manageRent": "Miete verwalten",
+    "setRent": "Miete festlegen",
+    "delete": "Löschen",
+    "deleteAria": "{name} löschen",
+    "confirmDelete": "„{name}“ löschen? Damit werden auch die Mietverhältnisse, Buchungen, Bewertungen und der Mietverlauf entfernt.",
+    "letTo": "Vermietet an {tenant}",
+    "recordRentFailed": "Die Miete für {period} konnte nicht erfasst werden."
+  },
+  "event": {
+    "upcoming": "Anstehend",
+    "past": "Vergangen",
+    "upcomingTitle": "Anstehende Termine",
+    "pastTitle": "Vergangene Termine",
+    "title": "Bezeichnung",
+    "description": "Beschreibung",
+    "date": "Datum",
+    "recurring": "Wiederkehrend",
+    "notified": "Benachrichtigt",
+    "actions": "Aktionen",
+    "yes": "Ja",
+    "no": "Nein",
+    "notifiedBadge": "Benachrichtigt",
+    "pendingBadge": "Ausstehend",
+    "notify": "Benachrichtigen",
+    "delete": "Löschen",
+    "empty": "Keine anstehenden Termine.",
+    "loadFailed": "Termine konnten nicht geladen werden.",
+    "confirmDelete": "Diesen Termin löschen?",
+    "cardTitle": "Termine",
+    "noPast": "Keine vergangenen Termine gefunden."
+  },
+  "loan": {
+    "paidOff": "Abbezahlt",
+    "remaining": "Offen",
+    "active": "Aktiv",
+    "add": {
+      "title": "Kredit anlegen",
+      "name": "Bezeichnung",
+      "originalAmount": "Ursprungsbetrag",
+      "originalAmountHint": "Ursprünglich aufgenommener Betrag, vor Tilgungen.",
+      "remainingBalance": "Restschuld",
+      "interestRate": "Zinssatz (%)",
+      "interestRateHint": "Jahreszins, z. B. 4,5 für 4,5 %.",
+      "dueDateHint": "Geplantes Datum der vollständigen Rückzahlung.",
+      "currencyHint": "Währung, in der dieser Kredit geführt wird.",
+      "paidOffLabel": "Abbezahlt",
+      "paidOffHint": "Ankreuzen, wenn dieser Kredit bereits vollständig getilgt ist.",
+      "submit": "Kredit anlegen"
+    },
+    "list": {
+      "title": "Alle Kredite",
+      "empty": "Noch keine Kredite."
+    },
+    "status": {
+      "title": "Kreditstatus",
+      "empty": "Keine Daten vorhanden."
+    },
+    "summary": {
+      "label": "Kredite",
+      "activePaidOff": "{active} aktiv · {paidOff} abbezahlt"
+    },
+    "nextDue": {
+      "title": "Nächste fällige Raten",
+      "empty": "Keine anstehenden Raten."
+    },
+    "top": {
+      "title": "Größte Kredite",
+      "empty": "Keine Kredite vorhanden."
+    },
+    "total": {
+      "label": "Kreditsumme gesamt"
+    },
+    "confirmDelete": "„{name}“ löschen?"
+  }
+}
