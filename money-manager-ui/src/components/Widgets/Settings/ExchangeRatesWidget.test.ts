@@ -12,18 +12,34 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import * as f from '../../../__tests__/fixtures';
 
-const calls = vi.hoisted(() => ({ refresh: 0 }));
+const calls = vi.hoisted(() => ({
+  refresh: 0,
+  deleted: [] as string[],
+  upserted: 0,
+}));
+
+// The list the widget reloads from. Mutable so a test can say what the server would answer once
+// a manual row has been handed back to the provider.
+const served = vi.hoisted(() => ({ rates: [] as unknown[] }));
 
 vi.mock('../../../services/exchangeRateApi', async () => {
   const fixtures = await import('../../../__tests__/fixtures');
+  served.rates = [...fixtures.exchangeRates];
+
   return {
-    fetchExchangeRates: () => Promise.resolve(fixtures.exchangeRates),
+    fetchExchangeRates: () => Promise.resolve(served.rates),
     refreshExchangeRates: () => {
       calls.refresh += 1;
-      return Promise.resolve(fixtures.exchangeRates);
+      return Promise.resolve(served.rates);
     },
-    upsertExchangeRate: () => Promise.resolve(fixtures.exchangeRates[0]),
-    deleteExchangeRate: () => Promise.resolve(),
+    upsertExchangeRate: () => {
+      calls.upserted += 1;
+      return Promise.resolve(fixtures.exchangeRates[0]);
+    },
+    deleteExchangeRate: (base: string, quote: string) => {
+      calls.deleted.push(`${base}>${quote}`);
+      return Promise.resolve();
+    },
   };
 });
 
@@ -45,6 +61,9 @@ afterEach(() => {
 
 beforeEach(() => {
   calls.refresh = 0;
+  calls.deleted = [];
+  calls.upserted = 0;
+  served.rates = [...f.exchangeRates];
   clearFeatures();
 });
 
@@ -114,6 +133,82 @@ describe('ExchangeRatesWidget', () => {
     // difference between the button doing something and appearing to.
     expect(calls.refresh).toBe(1);
     expect(on.emitted('changed')).toHaveLength(1);
+  });
+
+  it('offers a way to hand a hand-entered pair back to the provider', async () => {
+    // The gap this closes. Fetching only ever filled in pairs nobody had typed a rate for, which
+    // is correct and completely invisible: someone who had entered EUR/HUF once had no way to say
+    // "use whatever today's is" short of guessing that deleting the row would do it. Reported as
+    // "it still doesn't work unless I record the rate by hand".
+    const wrapper = await mountWith(true);
+
+    const manual = f.exchangeRates[0];
+    const button = wrapper.findAll('button').find((b) => b.text() === 'Use live rate');
+
+    expect(button).toBeDefined();
+
+    // Once it is gone the server has nothing hand-entered for the pair, so the next read fetches.
+    served.rates = f.exchangeRates.filter((r) => r.id !== manual.id);
+
+    await button!.trigger('click');
+    await settle();
+
+    expect(calls.deleted).toEqual([`${manual.baseCurrency}>${manual.quoteCurrency}`]);
+    expect(wrapper.emitted('changed')).toHaveLength(1);
+  });
+
+  it('offers it only on the rows the user typed in', async () => {
+    const wrapper = await mountWith(true);
+
+    // The ECB row is already live; a control saying "use the live rate" on it would be a button
+    // that does nothing, and one that deleted the row would be actively wrong.
+    const buttons = wrapper.findAll('button').filter((b) => b.text() === 'Use live rate');
+
+    expect(buttons).toHaveLength(f.exchangeRates.filter((r) => r.source === 0).length);
+  });
+
+  it('says so when nothing came back, rather than leaving a quietly emptier table', async () => {
+    const wrapper = await mountWith(true);
+
+    // The pair is deleted and the provider has nothing for it — an unreachable provider, or a
+    // currency the ECB does not publish. The user's own figure is gone by then, which is what
+    // they asked for, and precisely why it has to be said out loud.
+    served.rates = [];
+
+    await wrapper.findAll('button').find((b) => b.text() === 'Use live rate')!.trigger('click');
+    await settle();
+
+    expect(wrapper.text()).toContain('No rate has arrived for that pair yet');
+  });
+
+  it('takes no amount when the checkbox is ticked', async () => {
+    const wrapper = await mountWith(true);
+
+    const checkbox = wrapper.find('input[type="checkbox"]');
+    expect(checkbox.exists()).toBe(true);
+
+    await checkbox.setValue(true);
+    await settle();
+
+    // Typing a number is the thing being opted out of, so the field goes rather than sitting
+    // there greyed out inviting a value that would be discarded.
+    expect(wrapper.find('input[type="number"]').exists()).toBe(false);
+
+    served.rates = [];
+    await wrapper.find('form').trigger('submit');
+    await settle();
+
+    // Saved as "this pair is nobody's opinion", not as a rate of zero.
+    expect(calls.upserted).toBe(0);
+    expect(calls.deleted).toHaveLength(1);
+  });
+
+  it('hides the checkbox where fetching is switched off', async () => {
+    const wrapper = await mountWith(false);
+
+    // Offering it would promise a live rate the deployment has no way to get.
+    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false);
+    expect(wrapper.findAll('button').some((b) => b.text() === 'Use live rate')).toBe(false);
   });
 
   it('renders the fetching copy in Hungarian too', async () => {

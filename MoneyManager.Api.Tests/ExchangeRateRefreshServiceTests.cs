@@ -276,6 +276,80 @@ public sealed class ExchangeRateRefreshServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Dropping_a_manual_rate_lets_the_pair_be_asked_about_again()
+    {
+        // The user's way of saying "stop using my rate, use whatever today's is" is to remove the
+        // row — that is what automatic means here, a pair nobody has spoken for. Without this the
+        // window says "already asked about your pairs" for up to six hours, so the row disappears
+        // and nothing takes its place. From the outside that is indistinguishable from the whole
+        // feature not working, which is precisely how it was reported.
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "EUR",
+            QuoteCurrency = "HUF",
+            Rate = 400m,
+            AsOf = Entered,
+            Source = ExchangeRateSource.Manual,
+        });
+
+        using (var first = ContextFor(Alice))
+            await RefreshFor(first, Alice, provider, cache: cache);
+
+        // Skipped, correctly: the pair was spoken for.
+        using (var check = ContextFor(Alice))
+            Assert.Equal(400m, (await check.ExchangeRates.SingleAsync()).Rate);
+
+        using (var dropped = ContextFor(Alice))
+        {
+            dropped.ExchangeRates.RemoveRange(await dropped.ExchangeRates.ToListAsync());
+            await dropped.SaveChangesAsync();
+
+            ServiceFor(dropped, Alice, provider, cache).Invalidate("EUR");
+        }
+
+        using var after = ContextFor(Alice);
+        await RefreshFor(after, Alice, provider, cache: cache);
+
+        var filled = await after.ExchangeRates.SingleAsync();
+        Assert.Equal(398.5m, filled.Rate);
+        Assert.Equal(ExchangeRateSource.Ecb, filled.Source);
+    }
+
+    [Fact]
+    public async Task Invalidating_one_users_window_leaves_anothers_alone()
+    {
+        // The key is per user. Invalidating on every write would hand one landlord's edit the
+        // power to spend everybody else's fetch, which is the rate limit undone by accident.
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        using (var alice = ContextFor(Alice))
+            await RefreshFor(alice, Alice, provider, cache: cache);
+
+        using (var bob = ContextFor(Bob))
+            await RefreshFor(bob, Bob, provider, cache: cache);
+
+        Assert.Equal(2, provider.Calls);
+
+        using (var alice = ContextFor(Alice))
+            ServiceFor(alice, Alice, provider, cache).Invalidate("EUR");
+
+        using (var bob = ContextFor(Bob))
+            await RefreshFor(bob, Bob, provider, cache: cache);
+
+        // Bob's window is untouched, so his refresh still answers from it.
+        Assert.Equal(2, provider.Calls);
+
+        using (var alice = ContextFor(Alice))
+            await RefreshFor(alice, Alice, provider, cache: cache);
+
+        Assert.Equal(3, provider.Calls);
+    }
+
+    [Fact]
     public async Task An_explicit_refresh_ignores_the_window()
     {
         var provider = ProviderReturning(("EUR", "HUF", 398.5m));

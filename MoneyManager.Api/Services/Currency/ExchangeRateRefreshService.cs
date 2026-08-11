@@ -200,6 +200,32 @@ namespace MoneyManager.Api.Services.Currency
         }
 
         /// <summary>
+        /// Forgets that this user's pairs have been asked about recently, so the next read fetches.
+        ///
+        /// <para>
+        /// Called whenever the set of pairs worth asking about changes — which is exactly what
+        /// adding or removing a manual rate does. Without this, deleting a hand-entered rate to
+        /// fall back on the live one leaves the pair empty for the rest of the window: the row is
+        /// gone, the cache says "already asked", and the user is looking at a rate table that lost
+        /// a row and gained nothing. That is indistinguishable from the feature not working, and
+        /// it is the shape of the complaint that prompted it.
+        /// </para>
+        ///
+        /// <para>
+        /// The floor under explicit refreshes is deliberately left alone. This is invalidation
+        /// caused by the user's own write, not a way to ask again for free.
+        /// </para>
+        /// </summary>
+        public void Invalidate(string baseCurrency)
+        {
+            if (currentUser.UserId is not { } userId)
+                return;
+
+            if (SupportedCurrencies.Normalize(baseCurrency) is { } target)
+                cache.Remove($"fx:{userId}:{target}");
+        }
+
+        /// <summary>
         /// Marks the ordinary window, and the short floor on explicit refreshes when that is what
         /// this was.
         /// </summary>

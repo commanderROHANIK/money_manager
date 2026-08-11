@@ -107,7 +107,12 @@
     "ratesProvider": "Les taux de référence sont publiés par la Banque centrale européenne une fois par jour ouvré, vers 16h00 CET. Ce ne sont pas des taux négociables — celui de votre banque sera différent.",
     "refreshRates": "Actualiser les taux",
     "refreshing": "Actualisation…",
-    "refreshFailed": "Impossible d'actualiser les taux pour le moment. Les taux déjà enregistrés restent utilisés."
+    "refreshFailed": "Impossible d'actualiser les taux pour le moment. Les taux déjà enregistrés restent utilisés.",
+    "useLiveRateLabel": "Utiliser le taux du jour",
+    "useLiveRateHint": "Aucun montant à saisir : cette paire utilise le taux de référence de la Banque centrale européenne du jour, actualisé quotidiennement. Le taux que vous aviez saisi est supprimé.",
+    "useLiveRate": "Taux du jour",
+    "useLiveRateFailed": "Impossible de basculer cette paire sur le taux du jour. Veuillez réessayer.",
+    "noLiveRateYet": "Aucun taux n'est encore arrivé pour cette paire. Il apparaîtra dès que le fournisseur répondra — d'ici là, les totaux la traversant ne peuvent pas être calculés."
   },
   "auth": {
     "welcomeBack": "Bon retour",

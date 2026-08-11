@@ -13,12 +13,30 @@
         <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
       </BaseSelect>
 
-      <BaseInput v-model.number="rate" :label="t('settings.amount')" type="number" step="any" min="0" class="w-40" />
+      <template v-if="!useLive">
+        <BaseInput v-model.number="rate" :label="t('settings.amount')" type="number" step="any" min="0" class="w-40" />
 
-      <BaseInput v-model="asOf" :label="t('settings.asOf')" type="date" class="w-44" />
+        <BaseInput v-model="asOf" :label="t('settings.asOf')" type="date" class="w-44" />
+      </template>
 
-      <BaseButton type="submit" :disabled="saving">{{ t('settings.saveRate') }}</BaseButton>
+      <BaseButton type="submit" :disabled="saving">{{
+        useLive ? t('settings.useLiveRate') : t('settings.saveRate')
+      }}</BaseButton>
     </form>
+
+    <!--
+      The control this widget was missing. Fetching only ever filled in the pairs nobody had
+      typed a rate for, which is correct and completely invisible: a user who had entered a rate
+      once had no way to say "stop using mine, use whatever today's is" short of guessing that
+      deleting the row would do it.
+    -->
+    <label v-if="automatic" class="mt-3 flex items-start gap-2.5 text-sm">
+      <input v-model="useLive" type="checkbox" class="mt-0.5" />
+      <span>
+        <span class="font-semibold">{{ t('settings.useLiveRateLabel') }}</span>
+        <span class="block text-text-muted">{{ t('settings.useLiveRateHint') }}</span>
+      </span>
+    </label>
 
     <p v-if="error" class="mt-3 text-sm text-danger">{{ error }}</p>
 
@@ -36,6 +54,20 @@
         </span>
         <span class="flex items-center gap-3">
           <span class="text-xs text-text-muted">{{ provenance(entry) }}</span>
+
+          <!--
+            Offered per row, because the choice is genuinely per pair: you might want the ECB's
+            EUR/HUF and your bank's actual GBP/HUF from the day you moved the money. A single
+            account-wide switch would make you give up the second to get the first.
+          -->
+          <BaseButton
+            v-if="automatic && entry.source === ExchangeRateSource.Manual"
+            variant="secondary"
+            size="sm"
+            :disabled="switching === entry.id"
+            @click="useLiveFor(entry)"
+          >{{ switching === entry.id ? t('settings.refreshing') : t('settings.useLiveRate') }}</BaseButton>
+
           <BaseButton variant="danger" size="sm" @click="remove(entry)">{{
             t('settings.remove')
           }}</BaseButton>
@@ -91,6 +123,8 @@ const rate = ref<number | null>(null);
 const asOf = ref<string>(new Date().toISOString().slice(0, 10));
 const saving = ref(false);
 const refreshing = ref(false);
+const useLive = ref(false);
+const switching = ref<number | null>(null);
 const error = ref('');
 const refreshError = ref('');
 
@@ -126,6 +160,11 @@ async function save() {
 
   if (from.value === to.value) {
     error.value = t('settings.sameCurrency');
+    return;
+  }
+
+  if (useLive.value) {
+    await switchToLive(from.value, to.value);
     return;
   }
 
@@ -167,6 +206,53 @@ async function refresh() {
     refreshError.value = t('settings.refreshFailed');
   } finally {
     refreshing.value = false;
+  }
+}
+
+/** The row-level version of the checkbox: stop using this hand-entered rate, use the live one. */
+async function useLiveFor(entry: ExchangeRate) {
+  switching.value = entry.id;
+
+  try {
+    await switchToLive(entry.baseCurrency, entry.quoteCurrency);
+  } finally {
+    switching.value = null;
+  }
+}
+
+/**
+ * Hands a pair back to the provider.
+ *
+ * <p>Implemented as "remove what you entered", because that is literally what automatic means
+ * here — a pair nobody has spoken for. The server forgets its fetch window on a delete, so the
+ * reload below fetches rather than answering from a cache that already decided this pair was
+ * covered. Without that the row would vanish and nothing would take its place until the window
+ * expired, which is exactly what "it still doesn't work" looks like from the outside.</p>
+ *
+ * <p>The user's figure is gone afterwards. That is what they asked for, but it is also why this
+ * says so when no live rate arrives, rather than leaving a silently emptier table.</p>
+ */
+async function switchToLive(baseCurrency: string, quoteCurrency: string) {
+  error.value = '';
+  saving.value = true;
+
+  try {
+    await deleteExchangeRate(baseCurrency, quoteCurrency);
+    await load();
+    emit('changed');
+
+    const arrived = rates.value.some(
+      (r) =>
+        (r.baseCurrency === baseCurrency && r.quoteCurrency === quoteCurrency) ||
+        (r.baseCurrency === quoteCurrency && r.quoteCurrency === baseCurrency)
+    );
+
+    if (!arrived) error.value = t('settings.noLiveRateYet');
+  } catch (err) {
+    console.error('Failed to switch to the live rate:', err);
+    error.value = t('settings.useLiveRateFailed');
+  } finally {
+    saving.value = false;
   }
 }
 

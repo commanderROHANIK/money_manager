@@ -153,6 +153,11 @@ namespace MoneyManager.Api.Controllers
 
             await _context.SaveChangesAsync();
 
+            // The set of pairs worth asking the provider about just changed: this one is now
+            // spoken for. Nothing breaks without it, but leaving a stale window costs a pointless
+            // request on the next read.
+            await InvalidateAsync();
+
             return Ok(ExchangeRateDto.From(rate));
         }
 
@@ -172,7 +177,28 @@ namespace MoneyManager.Api.Controllers
             _context.ExchangeRates.Remove(rate);
             await _context.SaveChangesAsync();
 
+            // This is the one that matters. Removing a hand-entered rate is how a user says "stop
+            // using mine, use the live one" — and the pair only gets fetched again if the window
+            // is forgotten. Left cached, the next list shows the row gone and nothing in its
+            // place, for up to six hours.
+            await InvalidateAsync();
+
             return NoContent();
+        }
+
+        /// <summary>
+        /// Forgets this user's fetch window, so the next read asks the provider again.
+        /// </summary>
+        private async Task InvalidateAsync()
+        {
+            var userId = _currentUser.UserId;
+            if (userId is null)
+                return;
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId.Value);
+
+            if (SupportedCurrencies.Normalize(user?.BaseCurrency) is { } baseCurrency)
+                _refresh.Invalidate(baseCurrency);
         }
 
         /// <summary>

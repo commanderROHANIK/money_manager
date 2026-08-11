@@ -107,7 +107,12 @@
     "ratesProvider": "Referenzkurse werden von der Europäischen Zentralbank an jedem Werktag einmal gegen 16:00 MEZ veröffentlicht. Es sind keine handelbaren Kurse — der Kurs Ihrer Bank weicht davon ab.",
     "refreshRates": "Kurse aktualisieren",
     "refreshing": "Wird aktualisiert…",
-    "refreshFailed": "Die Kurse konnten gerade nicht aktualisiert werden. Es gelten weiter die bereits erfassten."
+    "refreshFailed": "Die Kurse konnten gerade nicht aktualisiert werden. Es gelten weiter die bereits erfassten.",
+    "useLiveRateLabel": "Immer den aktuellen Kurs verwenden",
+    "useLiveRateHint": "Kein Betrag nötig: für dieses Währungspaar wird der Referenzkurs der Europäischen Zentralbank des jeweiligen Tages verwendet und täglich aktualisiert. Ein von Ihnen erfasster Kurs wird dabei entfernt.",
+    "useLiveRate": "Aktuellen Kurs verwenden",
+    "useLiveRateFailed": "Dieses Paar konnte nicht auf den aktuellen Kurs umgestellt werden. Bitte erneut versuchen.",
+    "noLiveRateYet": "Für dieses Paar ist noch kein Kurs eingetroffen. Er erscheint, sobald der Anbieter antwortet — bis dahin lassen sich Summen darüber nicht bilden."
   },
   "auth": {
     "welcomeBack": "Willkommen zurück",

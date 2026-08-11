@@ -107,7 +107,12 @@
     "ratesProvider": "A referenciaárfolyamokat az Európai Központi Bank teszi közzé, minden munkanapon egyszer, közép-európai idő szerint 16:00 körül. Ezek nem kereskedési árfolyamok — a bankod árfolyama ettől eltér.",
     "refreshRates": "Árfolyamok frissítése",
     "refreshing": "Frissítés…",
-    "refreshFailed": "Az árfolyamokat most nem sikerült frissíteni. A már rögzítettekkel számolunk tovább."
+    "refreshFailed": "Az árfolyamokat most nem sikerült frissíteni. A már rögzítettekkel számolunk tovább.",
+    "useLiveRateLabel": "Az aktuális árfolyamot használjuk",
+    "useLiveRateHint": "Nem kell összeget megadnod: ehhez a pénznempárhoz az Európai Központi Bank aznapi referenciaárfolyamát töltjük le, és naponta frissítjük. A korábban általad megadott árfolyam törlődik.",
+    "useLiveRate": "Aktuális árfolyam",
+    "useLiveRateFailed": "Nem sikerült átállítani ezt a párt az aktuális árfolyamra. Próbáld meg újra.",
+    "noLiveRateYet": "Ehhez a párhoz még nem érkezett árfolyam. Amint a szolgáltató válaszol, megjelenik — addig a párt érintő összesítések nem számolhatók ki."
   },
   "auth": {
     "welcomeBack": "Üdv újra itt",

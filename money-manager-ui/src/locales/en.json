@@ -107,7 +107,12 @@
     "ratesProvider": "Reference rates are published by the European Central Bank once each working day, at around 16:00 CET. They are not tradeable rates — your bank's rate will differ.",
     "refreshRates": "Refresh rates",
     "refreshing": "Refreshing…",
-    "refreshFailed": "Could not refresh the rates just now. The rates already on record still apply."
+    "refreshFailed": "Could not refresh the rates just now. The rates already on record still apply.",
+    "useLiveRateLabel": "Use whatever the current rate is",
+    "useLiveRateHint": "No amount to type: this pair uses the European Central Bank's reference rate for the day, refreshed daily. Any rate you entered for it is removed.",
+    "useLiveRate": "Use live rate",
+    "useLiveRateFailed": "Could not switch that pair to the live rate. Please try again.",
+    "noLiveRateYet": "No rate has arrived for that pair yet. It will appear once the provider answers — until then, totals spanning it cannot be worked out."
   },
   "auth": {
     "welcomeBack": "Welcome back",
