@@ -42,7 +42,7 @@ defineProps<{
 const emit = defineEmits<{ (e: 'delete-loan', id: number): void }>();
 
 function confirmDelete(loan: Loan) {
-  if (window.confirm(`Delete "${loan.loanName}"?`)) {
+  if (window.confirm(t('loan.confirmDelete', { name: loan.loanName }))) {
     emit('delete-loan', loan.id);
   }
 }

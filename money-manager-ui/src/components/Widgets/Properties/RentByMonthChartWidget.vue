@@ -27,6 +27,7 @@ import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { chartColors } from '../../../utils/chartTheme';
 import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
 
 const { t } = useI18n();
 
@@ -58,7 +59,7 @@ const rentByMonth = computed(() => {
   const monthlyTotals: Record<string, number> = {};
 
   for (const payment of props.payments) {
-    const month = new Date(payment.datePaid).toLocaleString('default', {
+    const month = new Date(payment.datePaid).toLocaleString(intlLocale(), {
       year: 'numeric',
       month: 'short'
     });

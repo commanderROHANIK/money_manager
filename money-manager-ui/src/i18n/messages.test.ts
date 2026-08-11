@@ -116,6 +116,33 @@ describe('locale files', () => {
     }
   );
 
+  /**
+   * The only messages allowed to contain a `|`.
+   *
+   * <p>vue-i18n reads `|` as the separator between plural forms, not as a character. A message
+   * written as `"{rented} Rented | {vacant} Vacant"` is therefore a two-form plural, and
+   * rendering it with named arguments and no count selects form zero — so it displayed
+   * `"2 Rented"` and silently dropped the vacant count, in all four languages, on the dashboard.
+   * `loan.summary.activePaidOff` had the same defect.</p>
+   *
+   * <p>An allowlist rather than a ban, because genuine plurals need the separator. The point is
+   * that reaching for `|` has to be a deliberate act that shows up in a diff, instead of looking
+   * like the typographic divider it resembles.</p>
+   */
+  const PLURALISED_KEYS = ['property.summary.behindOnRent', 'property.rentCollection.behind'];
+
+  it.each(Object.keys(FILES))('%s uses the plural separator only where intended', (locale) => {
+    const offenders = leafKeys(FILES[locale]).filter((key) => {
+      const value = read(FILES[locale], key);
+      return typeof value === 'string' && value.includes('|') && !PLURALISED_KEYS.includes(key);
+    });
+
+    expect(
+      offenders,
+      `${locale}: these contain | and are not pluralised, so everything after the first | is dropped`
+    ).toEqual([]);
+  });
+
   it.each(Object.keys(FILES))('%s resolves a pluralised message for every count', (locale) => {
     // Pluralisation is where an i18n layer usually goes wrong quietly. Hungarian needs one form
     // where English needs two, so the count has to select a form per language rather than per

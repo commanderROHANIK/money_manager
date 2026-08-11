@@ -69,6 +69,7 @@ import EmptyState from '../../ui/EmptyState.vue';
 import ErrorState from '../../ui/ErrorState.vue';
 import LoadingSkeleton from '../../ui/LoadingSkeleton.vue';
 import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
 
 const { t } = useI18n();
 
@@ -104,7 +105,7 @@ const upcoming = computed(() => {
 
 function formatDate(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleString('en-US', {
+  return d.toLocaleString(intlLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

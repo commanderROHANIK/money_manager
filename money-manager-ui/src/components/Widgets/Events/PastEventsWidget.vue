@@ -24,6 +24,7 @@ import BaseCard from '../../ui/BaseCard.vue'
 import ListRow from '../../ui/ListRow.vue'
 import EmptyState from '../../ui/EmptyState.vue'
 import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
 
 const { t } = useI18n();
 
@@ -45,7 +46,7 @@ const pastEvents = computed(() =>
 )
 
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString(undefined, {
+  return new Date(dateString).toLocaleDateString(intlLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

@@ -28,6 +28,7 @@ import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import ListRow from '../../ui/ListRow.vue';
 import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
 
 const { t } = useI18n();
 
@@ -39,7 +40,7 @@ const props = defineProps<{
 // than turning it into an Invalid Date.
 function formatDueDate(iso: string | null | undefined): string {
   if (!iso) return t('property.upcomingRent.noTenancy');
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

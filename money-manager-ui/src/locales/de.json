@@ -134,7 +134,7 @@
     },
     "summary": {
       "label": "Mietobjekte",
-      "rentedVacant": "{rented} vermietet | {vacant} leer",
+      "rentedVacant": "{rented} vermietet · {vacant} leer",
       "behindOnRent": "{count} Immobilie mit Mietrückstand | {count} Immobilien mit Mietrückstand"
     },
     "highestRent": {
@@ -275,7 +275,15 @@
     },
     "detail": {
       "loadFailed": "Diese Immobilie konnte nicht geladen werden."
-    }
+    },
+    "perMonth": "/ Monat",
+    "manageRent": "Miete verwalten",
+    "setRent": "Miete festlegen",
+    "delete": "Löschen",
+    "deleteAria": "{name} löschen",
+    "confirmDelete": "„{name}“ löschen? Damit werden auch die Mietverhältnisse, Buchungen, Bewertungen und der Mietverlauf entfernt.",
+    "letTo": "Vermietet an {tenant}",
+    "recordRentFailed": "Die Miete für {period} konnte nicht erfasst werden."
   },
   "event": {
     "upcoming": "Anstehend",
@@ -328,7 +336,7 @@
     },
     "summary": {
       "label": "Kredite",
-      "activePaidOff": "{active} aktiv | {paidOff} abbezahlt"
+      "activePaidOff": "{active} aktiv · {paidOff} abbezahlt"
     },
     "nextDue": {
       "title": "Nächste fällige Raten",
@@ -340,6 +348,7 @@
     },
     "total": {
       "label": "Kreditsumme gesamt"
-    }
+    },
+    "confirmDelete": "„{name}“ löschen?"
   }
 }

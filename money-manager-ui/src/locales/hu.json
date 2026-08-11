@@ -134,7 +134,7 @@
     },
     "summary": {
       "label": "Bérbe adott ingatlanok",
-      "rentedVacant": "{rented} kiadva | {vacant} üres",
+      "rentedVacant": "{rented} kiadva · {vacant} üres",
       "behindOnRent": "{count} ingatlannál elmaradás van a bérleti díjban"
     },
     "highestRent": {
@@ -275,7 +275,15 @@
     },
     "detail": {
       "loadFailed": "Nem sikerült betölteni ezt az ingatlant."
-    }
+    },
+    "perMonth": "/ hó",
+    "manageRent": "Bérleti díj kezelése",
+    "setRent": "Bérleti díj megadása",
+    "delete": "Törlés",
+    "deleteAria": "{name} törlése",
+    "confirmDelete": "Törlöd a(z) „{name}” ingatlant? Ezzel a bérletei, tételei, értékbecslései és bérletidíj-előzményei is törlődnek.",
+    "letTo": "Bérlő: {tenant}",
+    "recordRentFailed": "Nem sikerült rögzíteni a(z) {period} havi bérleti díjat."
   },
   "event": {
     "upcoming": "Közelgő",
@@ -328,7 +336,7 @@
     },
     "summary": {
       "label": "Hitelek",
-      "activePaidOff": "{active} aktív | {paidOff} kifizetve"
+      "activePaidOff": "{active} aktív · {paidOff} kifizetve"
     },
     "nextDue": {
       "title": "Következő esedékes törlesztők",
@@ -340,6 +348,7 @@
     },
     "total": {
       "label": "Hitelek összege"
-    }
+    },
+    "confirmDelete": "Törlöd a(z) „{name}” hitelt?"
   }
 }

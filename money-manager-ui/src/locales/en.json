@@ -134,7 +134,7 @@
     },
     "summary": {
       "label": "Rental Properties",
-      "rentedVacant": "{rented} Rented | {vacant} Vacant",
+      "rentedVacant": "{rented} rented · {vacant} vacant",
       "behindOnRent": "{count} property behind on rent | {count} properties behind on rent"
     },
     "highestRent": {
@@ -275,7 +275,15 @@
     },
     "detail": {
       "loadFailed": "Could not load this property."
-    }
+    },
+    "perMonth": "/ month",
+    "manageRent": "Manage rent",
+    "setRent": "Set rent",
+    "delete": "Delete",
+    "deleteAria": "Delete {name}",
+    "confirmDelete": "Delete \"{name}\"? This also removes its tenancies, transactions, valuations and rent history.",
+    "letTo": "Let to {tenant}",
+    "recordRentFailed": "Could not record the rent for {period}."
   },
   "event": {
     "upcoming": "Upcoming",
@@ -328,7 +336,7 @@
     },
     "summary": {
       "label": "Loans",
-      "activePaidOff": "{active} Active | {paidOff} Paid Off"
+      "activePaidOff": "{active} active · {paidOff} paid off"
     },
     "nextDue": {
       "title": "Next Due Repayments",
@@ -340,6 +348,7 @@
     },
     "total": {
       "label": "Total Loan Amount"
-    }
+    },
+    "confirmDelete": "Delete \"{name}\"?"
   }
 }

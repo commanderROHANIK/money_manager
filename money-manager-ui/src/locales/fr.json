@@ -134,7 +134,7 @@
     },
     "summary": {
       "label": "Biens locatifs",
-      "rentedVacant": "{rented} loué(s) | {vacant} vacant(s)",
+      "rentedVacant": "{rented} loué(s) · {vacant} vacant(s)",
       "behindOnRent": "{count} bien en retard de loyer | {count} biens en retard de loyer"
     },
     "highestRent": {
@@ -275,7 +275,15 @@
     },
     "detail": {
       "loadFailed": "Impossible de charger ce bien."
-    }
+    },
+    "perMonth": "/ mois",
+    "manageRent": "Gérer le loyer",
+    "setRent": "Définir le loyer",
+    "delete": "Supprimer",
+    "deleteAria": "Supprimer {name}",
+    "confirmDelete": "Supprimer « {name} » ? Cela supprime aussi ses baux, ses écritures, ses estimations et l'historique des loyers.",
+    "letTo": "Loué à {tenant}",
+    "recordRentFailed": "Impossible d'enregistrer le loyer de {period}."
   },
   "event": {
     "upcoming": "À venir",
@@ -328,7 +336,7 @@
     },
     "summary": {
       "label": "Prêts",
-      "activePaidOff": "{active} en cours | {paidOff} remboursé(s)"
+      "activePaidOff": "{active} en cours · {paidOff} remboursé(s)"
     },
     "nextDue": {
       "title": "Prochaines échéances",
@@ -340,6 +348,7 @@
     },
     "total": {
       "label": "Encours total"
-    }
+    },
+    "confirmDelete": "Supprimer « {name} » ?"
   }
 }

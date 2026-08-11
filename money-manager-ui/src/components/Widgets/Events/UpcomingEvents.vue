@@ -25,6 +25,7 @@ import ListRow from '../../ui/ListRow.vue';
 import Badge from '../../ui/Badge.vue';
 import EmptyState from '../../ui/EmptyState.vue';
 import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../../i18n/locale';
 
 const { t } = useI18n();
 
@@ -40,6 +41,6 @@ onMounted(async () => {
 
 function formatDate(dateStr: string): string {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateStr).toLocaleDateString('hu-HU', options);
+  return new Date(dateStr).toLocaleDateString(intlLocale(), options);
 }
 </script>

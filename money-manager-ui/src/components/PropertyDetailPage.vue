@@ -23,7 +23,11 @@
           </p>
         </div>
         <Badge :variant="property.isRented ? 'primary' : 'neutral'">
-          {{ property.isRented ? `Let to ${property.tenantName}` : 'Vacant' }}
+          {{
+            property.isRented
+              ? t('property.letTo', { tenant: property.tenantName })
+              : t('property.vacant')
+          }}
         </Badge>
       </div>
 
@@ -209,7 +213,7 @@ async function onRecordRent(period: string) {
     await recordRentForPeriod(propertyId, period);
     await load();
   } catch (e) {
-    rentError.value = messageFrom(e) ?? `Could not record the rent for ${period}.`;
+    rentError.value = messageFrom(e) ?? t('property.recordRentFailed', { period });
   } finally {
     recordingPeriod.value = null;
   }

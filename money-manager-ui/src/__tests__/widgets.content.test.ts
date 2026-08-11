@@ -78,9 +78,11 @@ describe('PropertyMetricsWidget', () => {
     // formatPercent uses toFixed, which is locale-independent, so a literal is safe here.
     expect(text).toContain('22.3%'); // totalRoi 0.223
 
-    // Money is not: formatMoney follows the ambient locale, so this is '43,333' under en-US
-    // and '43.333' under de-DE. Compute the expectation rather than hardcoding the separator.
-    expect(text).toContain((43333).toLocaleString(undefined, { maximumFractionDigits: 0 }));
+    // Money is not: formatMoney follows the *application's* locale, which these tests pin to
+    // English. Computed rather than hardcoded for the original reason — the separator differs by
+    // language — but computed against the same locale the widget uses, not the machine's, which
+    // is what the two siblings above were already updated to and this one was missed.
+    expect(text).toContain((43333).toLocaleString(intlLocale(), { maximumFractionDigits: 0 }));
   });
 });
 
