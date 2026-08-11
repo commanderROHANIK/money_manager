@@ -4,15 +4,27 @@ import { api } from './api';
 
 /**
  * Which sections this deployment presents. Mirrors `FeaturesDto` on the API.
+ *
+ * <p>`automaticExchangeRates` is the odd one out: it hides no section, and no route is guarded on
+ * it. It is here because Settings has to describe what it is doing — "the pairs you have not
+ * entered are fetched from the ECB" is either true or a lie depending on this flag, and a rate
+ * table looks the same either way.</p>
  */
 export interface Features {
   banking: boolean;
   stocks: boolean;
   loans: boolean;
   events: boolean;
+  automaticExchangeRates: boolean;
 }
 
-export type FeatureName = keyof Features;
+/**
+ * The flags a route or a navigation link may be gated on — the sections, and not
+ * `automaticExchangeRates`. Excluded rather than merely discouraged: gating a route on it would
+ * hide Settings from a deployment that had switched fetching off, which is the screen where the
+ * rates would then have to be typed in.
+ */
+export type FeatureName = Exclude<keyof Features, 'automaticExchangeRates'>;
 
 /**
  * What the UI believes before the server has answered, and what it falls back to if the request
@@ -24,7 +36,13 @@ export type FeatureName = keyof Features;
  * waits for that request before the first authenticated view renders, so in practice nobody sees
  * the closed state at all.</p>
  */
-const closed: Features = { banking: false, stocks: false, loans: false, events: false };
+const closed: Features = {
+  banking: false,
+  stocks: false,
+  loans: false,
+  events: false,
+  automaticExchangeRates: false,
+};
 
 const features = ref<Features>({ ...closed });
 

@@ -93,14 +93,21 @@
     "asOf": "Stand",
     "saveRate": "Kurs speichern",
     "remove": "Entfernen",
-    "recorded": "erfasst {date}",
     "noRates": "Noch keine Kurse",
     "noRatesHint": "Legen Sie oben einen an, dann weisen auch währungsübergreifende Portfolios Summen aus.",
     "rateTooSmall": "Geben Sie einen Kurs größer als null ein.",
     "rateSaveFailed": "Kurs konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "rateRemoveFailed": "Kurs konnte nicht entfernt werden. Bitte erneut versuchen.",
-    "ratesIntro": "Kurse geben Sie selbst ein — es wird nichts abgerufen, eine umgerechnete Summe ist also immer nur so gut wie diese Liste, und zu jedem Kurs steht das Datum der Erfassung. Eine Richtung genügt; die andere ergibt sich aus derselben Zeile.",
-    "sameCurrency": "Eine Währung ist sich selbst gegenüber immer eins wert; wählen Sie zwei verschiedene Währungen."
+    "sameCurrency": "Eine Währung ist sich selbst gegenüber immer eins wert; wählen Sie zwei verschiedene Währungen.",
+    "ratesIntroManual": "Kurse geben Sie selbst ein — es wird nichts abgerufen, eine umgerechnete Summe ist also immer nur so gut wie diese Liste, und zu jedem Kurs steht das Datum der Erfassung. Eine Richtung genügt; die andere ergibt sich aus derselben Zeile.",
+    "ratesIntroAutomatic": "Für Währungspaare, die Sie nicht selbst erfasst haben, werden die täglichen Referenzkurse der Europäischen Zentralbank abgerufen und mit dem Datum ihrer Veröffentlichung angezeigt. Ein selbst erfasster Kurs hat immer Vorrang und wird nie überschrieben. Eine Richtung genügt; die andere ergibt sich aus derselben Zeile.",
+    "noRatesHintAutomatic": "Kurse werden abgerufen, sobald eine Summe mehrere Währungen umfasst. Sie können oben auch einen eigenen erfassen — Ihrer hat immer Vorrang.",
+    "sourceEcb": "EZB-Referenzkurs · {date}",
+    "sourceManual": "von Ihnen erfasst · {date}",
+    "ratesProvider": "Referenzkurse werden von der Europäischen Zentralbank an jedem Werktag einmal gegen 16:00 MEZ veröffentlicht. Es sind keine handelbaren Kurse — der Kurs Ihrer Bank weicht davon ab.",
+    "refreshRates": "Kurse aktualisieren",
+    "refreshing": "Wird aktualisiert…",
+    "refreshFailed": "Die Kurse konnten gerade nicht aktualisiert werden. Es gelten weiter die bereits erfassten."
   },
   "auth": {
     "welcomeBack": "Willkommen zurück",
@@ -184,13 +191,15 @@
       "missingRate": "Für {pairs} ist kein Wechselkurs erfasst, daher lassen sich nicht alle Summen unten berechnen.",
       "addRateLink": "Kurs in den Einstellungen hinterlegen",
       "addRateSuffix": "und diese Summen erscheinen.",
-      "convertedNote": "Umgerechnet in {currency} mit den von Ihnen erfassten Kursen ({rates}).",
-      "rateOn": "am {date}",
+      "convertedNote": "Umgerechnet in {currency} mit: {rates}.",
       "tileProperties": "Immobilien",
       "tileInvested": "Eingesetztes Kapital",
       "tileEquity": "Eigenkapital",
       "tileCashFlow": "Monatlicher Cashflow",
-      "tileRoi": "Portfolio-Rendite"
+      "tileRoi": "Portfolio-Rendite",
+      "rateEcb": "1 {from} = {rate} {to} (EZB-Referenzkurs, {date})",
+      "rateManual": "1 {from} = {rate} {to} (von Ihnen erfasster Kurs, {date})",
+      "ratePlain": "1 {from} = {rate} {to}"
     },
     "rentByMonth": {
       "title": "Mieteinnahmen nach Monat",

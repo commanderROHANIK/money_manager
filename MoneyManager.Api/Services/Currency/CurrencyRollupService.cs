@@ -36,7 +36,7 @@ namespace MoneyManager.Api.Services.Currency
             var rates = await context.ExchangeRates.ToListAsync();
 
             var converter = new CurrencyConverter(rates.Select(r =>
-                new ExchangeRateSnapshot(r.BaseCurrency, r.QuoteCurrency, r.Rate, r.AsOf)));
+                new ExchangeRateSnapshot(r.BaseCurrency, r.QuoteCurrency, r.Rate, r.AsOf, r.Source)));
 
             var userId = currentUser.UserId;
             var user = userId is null

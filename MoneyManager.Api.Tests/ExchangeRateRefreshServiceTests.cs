@@ -1,0 +1,346 @@
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using MoneyManager.Api.Data;
+using MoneyManager.Api.Infrastructure;
+using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.Currency;
+using Xunit;
+
+namespace MoneyManager.Api.Tests;
+
+/// <summary>
+/// The one rule the whole automatic-rate feature rests on: <b>a rate the user entered is never
+/// overwritten by one that was fetched.</b>
+///
+/// <para>
+/// Everything else about this feature is recoverable. Getting this wrong is not: a landlord who
+/// recorded the rate their bank actually gave them on the day of a transfer, and later finds a
+/// daily reference rate in its place, has had a decision quietly discarded — and nothing in the
+/// output says so, because both rows look like a rate.
+/// </para>
+///
+/// <para>
+/// Against real SQLite through the real DbContext, like <see cref="TenantIsolationTests"/> and for
+/// the same reason: the global query filter and the owner stamping are what make "the user's
+/// rates" mean anything, and the in-memory provider does not enforce them.
+/// </para>
+/// </summary>
+public sealed class ExchangeRateRefreshServiceTests : IDisposable
+{
+    private readonly SqliteConnection _connection;
+    private readonly DbContextOptions<MoneyManagerDbContext> _options;
+
+    private const int Alice = 1;
+    private const int Bob = 2;
+
+    private static readonly DateTime Published = new(2026, 8, 10);
+    private static readonly DateTime Entered = new(2026, 7, 1);
+
+    public ExchangeRateRefreshServiceTests()
+    {
+        _connection = new SqliteConnection("DataSource=:memory:");
+        _connection.Open();
+
+        _options = new DbContextOptionsBuilder<MoneyManagerDbContext>()
+            .UseSqlite(_connection)
+            .Options;
+
+        using var setup = ContextFor(null);
+        setup.Database.EnsureCreated();
+
+        setup.Users.AddRange(
+            new User { Id = Alice, Username = "alice", NormalizedUsername = "ALICE", Email = "a@e.com", NormalizedEmail = "A@E.COM" },
+            new User { Id = Bob, Username = "bob", NormalizedUsername = "BOB", Email = "b@e.com", NormalizedEmail = "B@E.COM" });
+
+        setup.SaveChanges();
+    }
+
+    [Fact]
+    public async Task A_pair_with_no_row_is_fetched_and_stored_with_its_source()
+    {
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+
+        using var context = ContextFor(Alice);
+        var written = await RefreshFor(context, Alice, provider);
+
+        Assert.Equal(1, written);
+
+        var stored = Assert.Single(await context.ExchangeRates.ToListAsync());
+
+        Assert.Equal(398.5m, stored.Rate);
+        Assert.Equal(Published, stored.AsOf);
+
+        // Stored rather than inferred later. A row that cannot say where it came from turns every
+        // disclosure built on it into a guess.
+        Assert.Equal(ExchangeRateSource.Ecb, stored.Source);
+    }
+
+    [Fact]
+    public async Task A_rate_the_user_entered_survives_a_refresh_untouched()
+    {
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "EUR",
+            QuoteCurrency = "HUF",
+            Rate = 400m,
+            AsOf = Entered,
+            Source = ExchangeRateSource.Manual,
+        });
+
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+
+        using var context = ContextFor(Alice);
+        var written = await RefreshFor(context, Alice, provider);
+
+        Assert.Equal(0, written);
+
+        var stored = Assert.Single(await context.ExchangeRates.ToListAsync());
+
+        Assert.Equal(400m, stored.Rate);
+        Assert.Equal(Entered, stored.AsOf);
+        Assert.Equal(ExchangeRateSource.Manual, stored.Source);
+    }
+
+    [Fact]
+    public async Task A_pair_the_user_entered_backwards_is_not_even_asked_about()
+    {
+        // HUF→EUR and EUR→HUF are the same fact, so having entered one is having spoken for both.
+        // Asked and then discarded would be correct too; not asked is cheaper and says the same
+        // thing about what the user meant.
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "HUF",
+            QuoteCurrency = "EUR",
+            Rate = 0.0025m,
+            AsOf = Entered,
+            Source = ExchangeRateSource.Manual,
+        });
+
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+
+        using var context = ContextFor(Alice);
+        await RefreshFor(context, Alice, provider, held: ["HUF"]);
+
+        Assert.Empty(provider.Requested);
+    }
+
+    [Fact]
+    public async Task A_previously_fetched_row_is_brought_up_to_date()
+    {
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "EUR",
+            QuoteCurrency = "HUF",
+            Rate = 390m,
+            AsOf = new DateTime(2026, 1, 5),
+            Source = ExchangeRateSource.Ecb,
+        });
+
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+
+        using var context = ContextFor(Alice);
+        var written = await RefreshFor(context, Alice, provider);
+
+        Assert.Equal(1, written);
+
+        var stored = Assert.Single(await context.ExchangeRates.ToListAsync());
+
+        Assert.Equal(398.5m, stored.Rate);
+        Assert.Equal(Published, stored.AsOf);
+    }
+
+    [Fact]
+    public async Task A_provider_that_answers_with_nothing_leaves_the_stored_rates_alone()
+    {
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "EUR",
+            QuoteCurrency = "HUF",
+            Rate = 390m,
+            AsOf = new DateTime(2026, 1, 5),
+            Source = ExchangeRateSource.Ecb,
+        });
+
+        using var context = ContextFor(Alice);
+        var written = await RefreshFor(context, Alice, new StubProvider([]));
+
+        // An unreachable provider is an ordinary condition, and the right answer to it is the
+        // rates already on record — not an empty table and not an exception up through a dashboard.
+        Assert.Equal(0, written);
+
+        var stored = Assert.Single(await context.ExchangeRates.ToListAsync());
+        Assert.Equal(390m, stored.Rate);
+    }
+
+    [Fact]
+    public async Task The_no_op_provider_writes_nothing_at_all()
+    {
+        // What a deployment with Features:AutomaticExchangeRates off actually gets. The behaviour
+        // has to be indistinguishable from the app before rates were ever fetched.
+        using var context = ContextFor(Alice);
+
+        var written = await RefreshFor(context, Alice, new NoExchangeRateProvider());
+
+        Assert.Equal(0, written);
+        Assert.Empty(await context.ExchangeRates.ToListAsync());
+    }
+
+    [Fact]
+    public async Task A_second_refresh_inside_the_window_does_not_ask_again()
+    {
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        using var first = ContextFor(Alice);
+        await RefreshFor(first, Alice, provider, cache: cache);
+
+        using var second = ContextFor(Alice);
+        await RefreshFor(second, Alice, provider, cache: cache);
+
+        // The ECB publishes once a working day. Asking on every page load spends requests to learn
+        // nothing, and turns one visitor into a steady stream of outbound calls.
+        Assert.Equal(1, provider.Calls);
+    }
+
+    [Fact]
+    public async Task An_explicit_refresh_ignores_the_window()
+    {
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        using var first = ContextFor(Alice);
+        await RefreshFor(first, Alice, provider, cache: cache);
+
+        using var second = ContextFor(Alice);
+        await RefreshFor(second, Alice, provider, cache: cache, force: true);
+
+        // Someone who pressed "refresh" is asking for today's number, and waiting out a window
+        // they cannot see is not an answer to that.
+        Assert.Equal(2, provider.Calls);
+    }
+
+    [Fact]
+    public async Task One_users_window_does_not_silence_anothers_refresh()
+    {
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        using var alice = ContextFor(Alice);
+        await RefreshFor(alice, Alice, provider, cache: cache);
+
+        using var bob = ContextFor(Bob);
+        await RefreshFor(bob, Bob, provider, cache: cache);
+
+        // Partitioned by user, like everything else here. A cache key shared across the whole
+        // process would mean the first landlord to load a dashboard each morning decides whether
+        // anyone else gets a rate.
+        Assert.Equal(2, provider.Calls);
+    }
+
+    [Fact]
+    public async Task Rates_fetched_for_one_user_are_not_visible_to_another()
+    {
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+
+        using var alice = ContextFor(Alice);
+        await RefreshFor(alice, Alice, provider);
+
+        using var bob = ContextFor(Bob);
+
+        // Fetched rows are owned entities like any other. They arrive from outside the request,
+        // which is exactly the shape of thing that gets written without an owner and then read by
+        // everybody.
+        Assert.Empty(await bob.ExchangeRates.ToListAsync());
+    }
+
+    [Fact]
+    public async Task A_nonsense_quote_is_dropped_rather_than_stored()
+    {
+        // A provider answering with a zero, a negative, or a pair that is the same currency twice
+        // is not a reason to write a row that cannot be inverted and cannot describe an exchange.
+        var provider = new StubProvider(
+        [
+            new ProvidedRate("EUR", "HUF", 0m, Published, ExchangeRateSource.Ecb),
+            new ProvidedRate("EUR", "GBP", -1m, Published, ExchangeRateSource.Ecb),
+            new ProvidedRate("EUR", "EUR", 1m, Published, ExchangeRateSource.Ecb),
+        ]);
+
+        using var context = ContextFor(Alice);
+        var written = await RefreshFor(context, Alice, provider);
+
+        Assert.Equal(0, written);
+        Assert.Empty(await context.ExchangeRates.ToListAsync());
+    }
+
+    // ------------------------------------------------------------------
+
+    private MoneyManagerDbContext ContextFor(int? userId) =>
+        new(_options, new StubCurrentUser(userId));
+
+    private void Seed(int userId, ExchangeRate rate)
+    {
+        using var context = ContextFor(userId);
+        context.ExchangeRates.Add(rate);
+        context.SaveChanges();
+    }
+
+    private static StubProvider ProviderReturning(params (string From, string To, decimal Rate)[] rates) =>
+        new([.. rates.Select(r => new ProvidedRate(r.From, r.To, r.Rate, Published, ExchangeRateSource.Ecb))]);
+
+    /// <summary>
+    /// Builds the service over <paramref name="context"/>, running as the user that context was
+    /// opened for. The two must agree: a service told it is Alice over a context filtered to Bob
+    /// would write rows one of them cannot read.
+    /// </summary>
+    private static Task<int> RefreshFor(
+        MoneyManagerDbContext context,
+        int userId,
+        IExchangeRateProvider provider,
+        IMemoryCache? cache = null,
+        string[]? held = null,
+        bool force = false)
+    {
+        var service = new ExchangeRateRefreshService(
+            context,
+            provider,
+            cache ?? new MemoryCache(new MemoryCacheOptions()),
+            new StubCurrentUser(userId),
+            Options.Create(new ExchangeRateProviderOptions()),
+            NullLogger<ExchangeRateRefreshService>.Instance);
+
+        return service.RefreshAsync("EUR", held ?? ["HUF", "GBP"], force);
+    }
+
+    public void Dispose() => _connection.Dispose();
+
+    private sealed class StubCurrentUser(int? userId) : ICurrentUser
+    {
+        public int? UserId { get; } = userId;
+    }
+
+    /// <summary>
+    /// Records what it was asked for as well as what it returned, because "did not ask" is a
+    /// distinct outcome from "asked and ignored the answer" — and the manual-wins rule is stated
+    /// in terms of the first.
+    /// </summary>
+    private sealed class StubProvider(IReadOnlyList<ProvidedRate> rates) : IExchangeRateProvider
+    {
+        public int Calls { get; private set; }
+
+        public List<string> Requested { get; } = [];
+
+        public Task<IReadOnlyList<ProvidedRate>> GetRatesAsync(
+            string baseCurrency,
+            IReadOnlyCollection<string> quoteCurrencies,
+            CancellationToken cancellationToken = default)
+        {
+            Calls += 1;
+            Requested.AddRange(quoteCurrencies);
+
+            return Task.FromResult(rates);
+        }
+    }
+}

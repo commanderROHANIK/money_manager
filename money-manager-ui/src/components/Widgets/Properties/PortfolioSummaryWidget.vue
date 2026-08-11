@@ -29,7 +29,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { PortfolioAnalytics } from '../../../models/models';
+import type { AppliedRate, PortfolioAnalytics } from '../../../models/models';
+import { ExchangeRateSource } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatPercent, formatDate } from '../../../utils/labels';
 import { useI18n } from 'vue-i18n';
@@ -46,24 +47,40 @@ function money(value: number | null | undefined): string {
 }
 
 /**
- * Shown whenever a rate was applied. Not decoration: a converted total is an estimate built from
- * a number the user typed in themselves, and it has to read differently from a figure that came
- * straight out of the ledger.
+ * Shown whenever a rate was applied. Not decoration: a converted total is an estimate, and it has
+ * to read differently from a figure that came straight out of the ledger.
+ *
+ * Each rate names where it came from, because the two provenances carry different weight. A rate
+ * the user entered is an assertion they can defend; an ECB reference rate is a published daily
+ * figure that no bank will match exactly. Saying "the rates you entered" over a fetched number —
+ * which is what this line used to do — is the confident wrong statement in miniature.
+ *
+ * The source travels on the applied rate rather than being looked up again here, so the figure
+ * disclosed is always the figure the total was built from, even if the table has since moved on.
  */
 const conversionNote = computed(() => {
   const p = props.portfolio;
   if (!p || !p.converted || p.appliedRates.length === 0) return '';
 
-  const rates = p.appliedRates
-    .map(
-      (r) =>
-        `1 ${r.from} = ${r.rate} ${r.to}` +
-        (r.asOf ? ` ${t('property.portfolio.rateOn', { date: formatDate(r.asOf) })}` : '')
-    )
-    .join('; ');
+  const rates = p.appliedRates.map((r) => describe(r)).join('; ');
 
   return t('property.portfolio.convertedNote', { currency: p.currency, rates });
 });
+
+function describe(rate: AppliedRate): string {
+  const parts = { from: rate.from, to: rate.to, rate: String(rate.rate) };
+
+  // Both null together, and only for a conversion no stored row backs. There is nothing to
+  // attribute and no date to give, so the line says the arithmetic and stops.
+  if (rate.asOf === null || rate.source === null) return t('property.portfolio.ratePlain', parts);
+
+  const key =
+    rate.source === ExchangeRateSource.Ecb
+      ? 'property.portfolio.rateEcb'
+      : 'property.portfolio.rateManual';
+
+  return t(key, { ...parts, date: formatDate(rate.asOf) });
+}
 
 const missingRateMessage = computed(() => {
   const missing = props.portfolio?.missingRates ?? [];

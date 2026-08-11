@@ -41,10 +41,27 @@ namespace MoneyManager.Api.Controllers
     /// Deliberately its own type rather than returning <see cref="FeatureOptions"/> directly, so
     /// that adding an option which is not a UI section — a limit, a provider name, a key — does
     /// not silently start being served to the browser.
+    ///
+    /// <para>
+    /// <paramref name="AutomaticExchangeRates"/> is the one member here that hides no section. It
+    /// is served because the Settings screen has to describe what it is doing: with fetching on,
+    /// "the rates you have not entered are fetched from the ECB" is true, and with it off the same
+    /// sentence is a lie. The UI cannot work that out for itself — a table with no fetched rows
+    /// looks identical either way.
+    /// </para>
     /// </summary>
-    public record FeaturesDto(bool Banking, bool Stocks, bool Loans, bool Events)
+    public record FeaturesDto(
+        bool Banking,
+        bool Stocks,
+        bool Loans,
+        bool Events,
+        bool AutomaticExchangeRates)
     {
-        public static FeaturesDto From(FeatureOptions options) =>
-            new(options.Banking, options.Stocks, options.Loans, options.Events);
+        public static FeaturesDto From(FeatureOptions options) => new(
+            options.Banking,
+            options.Stocks,
+            options.Loans,
+            options.Events,
+            options.AutomaticExchangeRates);
     }
 }

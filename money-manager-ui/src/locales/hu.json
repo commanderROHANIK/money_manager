@@ -93,14 +93,21 @@
     "asOf": "Dátum",
     "saveRate": "Árfolyam mentése",
     "remove": "Törlés",
-    "recorded": "rögzítve: {date}",
     "noRates": "Még nincs árfolyam",
     "noRatesHint": "Vegyél fel egyet fent, és a több pénznemet érintő portfóliók is összesítve jelennek meg.",
     "rateTooSmall": "Nullánál nagyobb árfolyamot adj meg.",
     "rateSaveFailed": "Nem sikerült elmenteni az árfolyamot. Próbáld meg újra.",
     "rateRemoveFailed": "Nem sikerült törölni az árfolyamot. Próbáld meg újra.",
-    "ratesIntro": "Az árfolyamokat te adod meg — a rendszer semmit nem tölt le, így egy átváltott összeg mindig csak annyit ér, amennyit ez a lista. Mindegyik mellett ott a rögzítés dátuma. Elég az egyik irányt megadni; a másik ugyanabból a sorból kiolvasható.",
-    "sameCurrency": "Egy pénznem önmagához mérve mindig egy; válassz két különböző pénznemet."
+    "sameCurrency": "Egy pénznem önmagához mérve mindig egy; válassz két különböző pénznemet.",
+    "ratesIntroManual": "Az árfolyamokat te adod meg — a rendszer semmit nem tölt le, így egy átváltott összeg mindig csak annyit ér, amennyit ez a lista. Mindegyik mellett ott a rögzítés dátuma. Elég az egyik irányt megadni; a másik ugyanabból a sorból kiolvasható.",
+    "ratesIntroAutomatic": "Az általad meg nem adott pénznempárok árfolyamát az Európai Központi Bank napi referenciaárfolyamaiból töltjük le, és a közzététel dátumával együtt mutatjuk. Amit te adsz meg, az mindig elsőbbséget élvez, és soha nem írjuk felül. Elég az egyik irányt megadni; a másik ugyanabból a sorból kiolvasható.",
+    "noRatesHintAutomatic": "Az árfolyamok az első több pénznemet érintő összesítéskor töltődnek le. Sajátot is megadhatsz fent — az mindig elsőbbséget élvez.",
+    "sourceEcb": "EKB-referenciaárfolyam · {date}",
+    "sourceManual": "általad megadva · {date}",
+    "ratesProvider": "A referenciaárfolyamokat az Európai Központi Bank teszi közzé, minden munkanapon egyszer, közép-európai idő szerint 16:00 körül. Ezek nem kereskedési árfolyamok — a bankod árfolyama ettől eltér.",
+    "refreshRates": "Árfolyamok frissítése",
+    "refreshing": "Frissítés…",
+    "refreshFailed": "Az árfolyamokat most nem sikerült frissíteni. A már rögzítettekkel számolunk tovább."
   },
   "auth": {
     "welcomeBack": "Üdv újra itt",
@@ -184,13 +191,15 @@
       "missingRate": "Nincs rögzített árfolyam ehhez: {pairs}, ezért az alábbi összegek nem mind számolhatók ki.",
       "addRateLink": "Vedd fel az árfolyamot a Beállításokban",
       "addRateSuffix": "és az összegek megjelennek.",
-      "convertedNote": "Átváltva {currency} pénznemre az általad megadott árfolyamokkal ({rates}).",
-      "rateOn": "{date} napon",
+      "convertedNote": "Átváltva {currency} pénznemre a következőkkel: {rates}.",
       "tileProperties": "Ingatlan",
       "tileInvested": "Befektetett tőke",
       "tileEquity": "Saját tőke",
       "tileCashFlow": "Havi cash flow",
-      "tileRoi": "Portfólió megtérülés"
+      "tileRoi": "Portfólió megtérülés",
+      "rateEcb": "1 {from} = {rate} {to} (EKB-referenciaárfolyam, {date})",
+      "rateManual": "1 {from} = {rate} {to} (általad megadott árfolyam, {date})",
+      "ratePlain": "1 {from} = {rate} {to}"
     },
     "rentByMonth": {
       "title": "Befolyt bérleti díj havonta",

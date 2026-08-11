@@ -147,6 +147,48 @@ builder.Services.AddScoped<RentScheduleService>();
 // will be replaced is the safe assumption in this market.
 builder.Services.AddScoped<IBankDataProvider, ManualBankDataProvider>();
 
+// The application's only outbound call, and the flag decides whether it exists at all. With
+// AutomaticExchangeRates off the no-op provider is registered instead, so nothing is fetched and
+// there is no DNS lookup to observe — "off" is not merely a hidden button.
+//
+// Note what stays true either way: the *page* still makes no third-party request. The fetch is
+// server-side, which is what keeps the CSP and the self-hosted fonts meaningful, and is the
+// distinction CLAUDE.md's invariant now draws rather than forbidding outbound calls outright.
+builder.Services.Configure<ExchangeRateProviderOptions>(
+    builder.Configuration.GetSection(ExchangeRateProviderOptions.SectionName));
+
+var exchangeRateOptions = builder.Configuration
+    .GetSection(ExchangeRateProviderOptions.SectionName)
+    .Get<ExchangeRateProviderOptions>() ?? new ExchangeRateProviderOptions();
+
+// Read from configuration rather than resolved from IOptions, because this decides a
+// *registration* and registrations happen before the container exists. The consequence worth
+// knowing: a test that overrides FeatureOptions after binding changes what /api/features
+// reports and not which provider is registered. In a deployment both read the same
+// configuration, so they cannot disagree.
+var featureOptions = builder.Configuration
+    .GetSection(FeatureOptions.SectionName)
+    .Get<FeatureOptions>() ?? new FeatureOptions();
+
+if (featureOptions.AutomaticExchangeRates)
+{
+    builder.Services.AddHttpClient<IExchangeRateProvider, EcbExchangeRateProvider>(client =>
+    {
+        client.BaseAddress = new Uri(exchangeRateOptions.BaseUrl);
+        // Bounded on purpose: a dashboard waiting on a rate provider looks broken, and the right
+        // answer when this expires is the rates already stored.
+        client.Timeout = TimeSpan.FromSeconds(Math.Max(1, exchangeRateOptions.TimeoutSeconds));
+    });
+}
+else
+{
+    builder.Services.AddScoped<IExchangeRateProvider, NoExchangeRateProvider>();
+}
+
+// One fetch per user per window, so a page load does not become an outbound request.
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ExchangeRateRefreshService>();
+
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // Deployed behind an edge proxy, every request reaches Kestrel from the proxy — so

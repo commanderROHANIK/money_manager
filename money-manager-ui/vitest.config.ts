@@ -31,7 +31,19 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 75.26 / 72.62 / 72.34 / 75.2, after the localization work.
+      // Last measured 75.66 / 73.46 / 72.69 / 75.48, after the exchange-rate provenance work.
+      //
+      // Statements, lines and branches move up — 73 -> 75, 73 -> 75 and 71 -> 73 — keeping the
+      // roughly half-point-to-two-point margin these floors carry. Functions stays at 70: it
+      // measures 72.69 and gained a third of a point, which is the rounding the floor already
+      // absorbs; 72 would be a ratchet on noise.
+      //
+      // Branches is the interesting one again. The disclosure is branching by nature — a rate is
+      // attributed to the ECB, to the user, or to nobody; an introduction describes fetching or
+      // says it does not happen — and those paths came with the tests that walk them, in both
+      // English and Hungarian, rather than after the floor failed.
+      //
+      // Before that: 75.26 / 72.62 / 72.34 / 75.2, after the localization work.
       //
       // Statements, lines and functions move up — 71 -> 73, 71 -> 73 and 69 -> 70 — keeping the
       // roughly two-point margin the floors below were set with. Branches stays at 71: it
@@ -99,10 +111,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 73,
-        branches: 71,
+        statements: 75,
+        branches: 73,
         functions: 70,
-        lines: 73,
+        lines: 75,
       },
     },
   },

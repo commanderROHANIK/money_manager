@@ -84,6 +84,7 @@ vi.mock('../services/exchangeRateApi', async () => {
   const f = await import('./fixtures');
   return {
     fetchExchangeRates: () => Promise.resolve(f.exchangeRates),
+    refreshExchangeRates: () => Promise.resolve(f.exchangeRates),
     upsertExchangeRate: () => Promise.resolve(f.exchangeRates[0]),
     deleteExchangeRate: () => Promise.resolve(),
   };

@@ -126,13 +126,28 @@ export const portfolioConverted = {
   totalInvested: 106500, totalCurrentValue: 505000, totalEquity: 273000,
   totalMonthlyCashFlow: 348.33, totalAnnualRentUplift: 2550, portfolioRoi: 1.6817,
   missingRates: [],
-  appliedRates: [{ from: 'HUF', to: 'EUR', rate: 0.0025, asOf: iso('2026-07-01'), inverted: true }],
+  appliedRates: [
+    { from: 'HUF', to: 'EUR', rate: 0.0025, asOf: iso('2026-07-01'), inverted: true, source: 0 },
+  ],
   warnings: [],
 };
 
+/**
+ * The same totals, built from a rate nobody typed in. Only `source` differs, which is the whole
+ * point: the figures are identical, so the only thing that can tell a reader where the number came
+ * from is the disclosure under it.
+ */
+export const portfolioConvertedFromEcb = {
+  ...portfolioConverted,
+  appliedRates: [
+    { from: 'HUF', to: 'EUR', rate: 0.0025, asOf: iso('2026-08-10'), inverted: true, source: 1 },
+  ],
+};
+
+/** One row of each provenance, because the table can hold both at once. */
 export const exchangeRates = [
   { id: 1, baseCurrency: 'EUR', quoteCurrency: 'HUF', rate: 400, asOf: iso('2026-07-01'), source: 0 },
-  { id: 2, baseCurrency: 'GBP', quoteCurrency: 'HUF', rate: 462.5, asOf: iso('2026-06-15'), source: 0 },
+  { id: 2, baseCurrency: 'GBP', quoteCurrency: 'HUF', rate: 462.5, asOf: iso('2026-06-15'), source: 1 },
 ];
 
 export const settings = { baseCurrency: 'HUF', alwaysConvertToBaseCurrency: false };

@@ -1,3 +1,4 @@
+using MoneyManager.Api.Models;
 using MoneyManager.Api.Services.Currency;
 using Xunit;
 
@@ -128,5 +129,56 @@ public sealed class CurrencyConverterTests
     {
         Assert.Null(WithEurToHuf().Convert(100m, new CurrencyPair("", "HUF")));
         Assert.Null(WithEurToHuf().Convert(100m, new CurrencyPair("EUR", "   ")));
+    }
+
+    // ------------------------------------------------------------------
+    // Where the rate came from
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public void An_applied_rate_carries_the_source_of_the_row_it_came_from()
+    {
+        // The UI's disclosure is built from this. Losing the source here does not break a total —
+        // it makes the sentence under the total say "the rates you entered" over a number nobody
+        // entered, which is the failure this whole feature exists to avoid.
+        var converter = new CurrencyConverter(
+        [
+            new ExchangeRateSnapshot("EUR", "HUF", 400m, Quoted, ExchangeRateSource.Ecb),
+            new ExchangeRateSnapshot("GBP", "HUF", 462.5m, Quoted, ExchangeRateSource.Manual),
+        ]);
+
+        var fetched = Assert.IsType<AppliedRate>(converter.RateFor(new CurrencyPair("EUR", "HUF")));
+        var entered = Assert.IsType<AppliedRate>(converter.RateFor(new CurrencyPair("GBP", "HUF")));
+
+        Assert.Equal(ExchangeRateSource.Ecb, fetched.Source);
+        Assert.Equal(ExchangeRateSource.Manual, entered.Source);
+    }
+
+    [Fact]
+    public void A_reciprocal_keeps_the_source_of_the_row_it_was_read_off()
+    {
+        // Reading a row backwards does not change who published it. Defaulting the reverse
+        // direction to Manual would attribute an ECB rate to the user for every pair they happened
+        // to hold the other way round — and a portfolio in HUF reporting in EUR is exactly that
+        // case, so it would be the common one rather than the edge.
+        var converter = new CurrencyConverter(
+            [new ExchangeRateSnapshot("EUR", "HUF", 400m, Quoted, ExchangeRateSource.Ecb)]);
+
+        var applied = Assert.IsType<AppliedRate>(converter.RateFor(new CurrencyPair("HUF", "EUR")));
+
+        Assert.True(applied.Inverted);
+        Assert.Equal(ExchangeRateSource.Ecb, applied.Source);
+    }
+
+    [Fact]
+    public void The_identity_conversion_claims_no_source_because_no_row_backs_it()
+    {
+        // Null rather than Manual: nobody entered "1 HUF is worth 1 HUF", and attributing it to
+        // the user would put a provenance on a line that has none to give.
+        var identity = Assert.IsType<AppliedRate>(
+            CurrencyConverter.Empty.RateFor(new CurrencyPair("HUF", "HUF")));
+
+        Assert.Null(identity.Source);
+        Assert.Null(identity.AsOf);
     }
 }

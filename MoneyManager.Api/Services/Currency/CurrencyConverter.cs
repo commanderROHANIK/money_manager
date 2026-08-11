@@ -43,13 +43,13 @@ namespace MoneyManager.Api.Services.Currency
                 return new AppliedRate(from, to, 1m, null, false);
 
             if (_rates.TryGetValue(new CurrencyPair(from, to), out var direct))
-                return new AppliedRate(from, to, direct.Rate, direct.AsOf, false);
+                return new AppliedRate(from, to, direct.Rate, direct.AsOf, false, direct.Source);
 
             // A HUF→EUR row already answers "what is a HUF worth in EUR"; the EUR→HUF question is
             // the same row read backwards. Making the user type both directions would be busywork
             // whose main product is two rows that disagree.
             if (_rates.TryGetValue(new CurrencyPair(to, from), out var inverse))
-                return new AppliedRate(from, to, 1m / inverse.Rate, inverse.AsOf, true);
+                return new AppliedRate(from, to, 1m / inverse.Rate, inverse.AsOf, true, inverse.Source);
 
             // No transitive chaining (EUR→USD via HUF). A rate the user never entered, carrying
             // the compounded error of two others, is precisely the confident wrong number this

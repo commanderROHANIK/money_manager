@@ -1,7 +1,7 @@
 <template>
   <BaseCard :title="t('settings.ratesTitle')">
     <p class="mb-4 text-sm text-text-muted">
-      {{ t('settings.ratesIntro') }}
+      {{ automatic ? t('settings.ratesIntroAutomatic') : t('settings.ratesIntroManual') }}
     </p>
 
     <form class="flex flex-wrap items-end gap-3" @submit.prevent="save">
@@ -26,33 +26,51 @@
       v-if="rates.length === 0"
       class="mt-4"
       :title="t('settings.noRates')"
-      :description="t('settings.noRatesHint')"
+      :description="automatic ? t('settings.noRatesHintAutomatic') : t('settings.noRatesHint')"
     />
 
     <ul v-else class="mt-4 divide-y divide-border">
-      <li v-for="entry in rates" :key="entry.id" class="flex items-center justify-between py-2.5 text-sm">
+      <li v-for="entry in rates" :key="entry.id" class="flex items-center justify-between gap-3 py-2.5 text-sm">
         <span class="tabular-nums">
           1 {{ entry.baseCurrency }} = {{ entry.rate }} {{ entry.quoteCurrency }}
         </span>
         <span class="flex items-center gap-3">
-          <span class="text-xs text-text-muted">{{
-            t('settings.recorded', { date: formatDate(entry.asOf) })
-          }}</span>
-          <BaseButton variant="danger" size="sm" @click="remove(entry)">{{ t('settings.remove') }}</BaseButton>
+          <span class="text-xs text-text-muted">{{ provenance(entry) }}</span>
+          <BaseButton variant="danger" size="sm" @click="remove(entry)">{{
+            t('settings.remove')
+          }}</BaseButton>
         </span>
       </li>
     </ul>
+
+    <!--
+      Shown only where fetching actually happens. Naming the source is the point of the whole
+      change: a converted total that cannot say where its rate came from is a spreadsheet with
+      better fonts.
+    -->
+    <div v-if="automatic" class="mt-4 border-t border-border pt-3">
+      <p class="text-xs text-text-muted">{{ t('settings.ratesProvider') }}</p>
+      <div class="mt-2 flex items-center gap-3">
+        <BaseButton variant="secondary" size="sm" :disabled="refreshing" @click="refresh">
+          {{ refreshing ? t('settings.refreshing') : t('settings.refreshRates') }}
+        </BaseButton>
+        <span v-if="refreshError" class="text-xs text-danger">{{ refreshError }}</span>
+      </div>
+    </div>
   </BaseCard>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import type { ExchangeRate } from '../../../models/models';
+import { ExchangeRateSource } from '../../../models/models';
 import {
   deleteExchangeRate,
   fetchExchangeRates,
+  refreshExchangeRates,
   upsertExchangeRate,
 } from '../../../services/exchangeRateApi';
+import { featureFlags } from '../../../services/features';
 import { CURRENCIES } from '../../../utils/currencies';
 import { formatDate } from '../../../utils/labels';
 import BaseButton from '../../ui/BaseButton.vue';
@@ -72,7 +90,17 @@ const to = ref<string>('HUF');
 const rate = ref<number | null>(null);
 const asOf = ref<string>(new Date().toISOString().slice(0, 10));
 const saving = ref(false);
+const refreshing = ref(false);
 const error = ref('');
+const refreshError = ref('');
+
+/**
+ * Whether this deployment fetches at all. Read from the server rather than assumed, because the
+ * two states look identical from here — a table of rows says nothing about where the next one
+ * would come from — and describing fetching that is switched off would be worse than saying
+ * nothing.
+ */
+const automatic = computed(() => featureFlags.value.automaticExchangeRates);
 
 onMounted(load);
 
@@ -82,6 +110,15 @@ async function load() {
   } catch (err) {
     console.error('Failed to load exchange rates:', err);
   }
+}
+
+/** Where one row came from, and when. Per row, because a table can hold both kinds at once. */
+function provenance(entry: ExchangeRate): string {
+  const date = formatDate(entry.asOf);
+
+  return entry.source === ExchangeRateSource.Ecb
+    ? t('settings.sourceEcb', { date })
+    : t('settings.sourceManual', { date });
 }
 
 async function save() {
@@ -109,6 +146,27 @@ async function save() {
     error.value = t('settings.rateSaveFailed');
   } finally {
     saving.value = false;
+  }
+}
+
+/**
+ * Asks the server to fetch now instead of waiting out its cache window.
+ *
+ * <p>Rows the user entered are left alone by the server, so this cannot quietly undo an override —
+ * which is what makes the button safe to offer next to a table the user also edits by hand.</p>
+ */
+async function refresh() {
+  refreshError.value = '';
+  refreshing.value = true;
+
+  try {
+    rates.value = await refreshExchangeRates();
+    emit('changed');
+  } catch (err) {
+    console.error('Failed to refresh exchange rates:', err);
+    refreshError.value = t('settings.refreshFailed');
+  } finally {
+    refreshing.value = false;
   }
 }
 

@@ -93,14 +93,21 @@
     "asOf": "Au",
     "saveRate": "Enregistrer le taux",
     "remove": "Supprimer",
-    "recorded": "saisi le {date}",
     "noRates": "Aucun taux",
     "noRatesHint": "Ajoutez-en un ci-dessus et les portefeuilles multidevises afficheront leurs totaux.",
     "rateTooSmall": "Saisissez un taux supérieur à zéro.",
     "rateSaveFailed": "Impossible d'enregistrer ce taux. Veuillez réessayer.",
     "rateRemoveFailed": "Impossible de supprimer ce taux. Veuillez réessayer.",
-    "ratesIntro": "Les taux sont saisis par vous — rien n'est récupéré automatiquement, un total converti ne vaut donc jamais mieux que cette liste, et chaque taux est affiché avec sa date de saisie. Saisir un seul sens suffit ; l'autre se lit sur la même ligne.",
-    "sameCurrency": "Une devise vaut toujours une unité d'elle-même ; choisissez deux devises différentes."
+    "sameCurrency": "Une devise vaut toujours une unité d'elle-même ; choisissez deux devises différentes.",
+    "ratesIntroManual": "Les taux sont saisis par vous — rien n'est récupéré automatiquement, un total converti ne vaut donc jamais mieux que cette liste, et chaque taux est affiché avec sa date de saisie. Saisir un seul sens suffit ; l'autre se lit sur la même ligne.",
+    "ratesIntroAutomatic": "Pour les paires que vous n'avez pas saisies vous-même, les taux de référence quotidiens de la Banque centrale européenne sont récupérés et affichés avec leur date de publication. Un taux que vous saisissez l'emporte toujours et n'est jamais écrasé. Saisir un seul sens suffit ; l'autre se lit sur la même ligne.",
+    "noRatesHintAutomatic": "Les taux sont récupérés dès qu'un total porte sur plusieurs devises. Vous pouvez aussi en saisir un ci-dessus — le vôtre l'emporte toujours.",
+    "sourceEcb": "taux de référence BCE · {date}",
+    "sourceManual": "saisi par vous · {date}",
+    "ratesProvider": "Les taux de référence sont publiés par la Banque centrale européenne une fois par jour ouvré, vers 16h00 CET. Ce ne sont pas des taux négociables — celui de votre banque sera différent.",
+    "refreshRates": "Actualiser les taux",
+    "refreshing": "Actualisation…",
+    "refreshFailed": "Impossible d'actualiser les taux pour le moment. Les taux déjà enregistrés restent utilisés."
   },
   "auth": {
     "welcomeBack": "Bon retour",
@@ -184,13 +191,15 @@
       "missingRate": "Aucun taux de change enregistré pour {pairs}, les totaux ci-dessous ne peuvent donc pas tous être calculés.",
       "addRateLink": "Ajoutez le taux dans les Paramètres",
       "addRateSuffix": "et ces totaux apparaîtront.",
-      "convertedNote": "Converti en {currency} avec les taux que vous avez saisis ({rates}).",
-      "rateOn": "au {date}",
+      "convertedNote": "Converti en {currency} avec : {rates}.",
       "tileProperties": "Biens",
       "tileInvested": "Capital investi",
       "tileEquity": "Fonds propres",
       "tileCashFlow": "Flux de trésorerie mensuel",
-      "tileRoi": "Rendement du portefeuille"
+      "tileRoi": "Rendement du portefeuille",
+      "rateEcb": "1 {from} = {rate} {to} (taux de référence BCE, {date})",
+      "rateManual": "1 {from} = {rate} {to} (taux que vous avez saisi, {date})",
+      "ratePlain": "1 {from} = {rate} {to}"
     },
     "rentByMonth": {
       "title": "Loyers encaissés par mois",

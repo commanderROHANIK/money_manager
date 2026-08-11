@@ -30,8 +30,20 @@ vi.mock('../components/SettingsPage.vue', () => ({ default: { template: '<div />
 vi.mock('../components/Login.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('../components/Register.vue', () => ({ default: { template: '<div />' } }));
 
-const everything: Features = { banking: true, stocks: true, loans: true, events: true };
-const mvp: Features = { banking: false, stocks: false, loans: true, events: true };
+const everything: Features = {
+  banking: true,
+  stocks: true,
+  loans: true,
+  events: true,
+  automaticExchangeRates: true,
+};
+const mvp: Features = {
+  banking: false,
+  stocks: false,
+  loans: true,
+  events: true,
+  automaticExchangeRates: true,
+};
 
 /**
  * What GET /api/Features answers for the next navigation. Everything on by default, so the tests
@@ -122,7 +134,13 @@ describe('sections this deployment does not present', () => {
   });
 
   it.each(['/properties', '/settings'])('leaves the ungated %s alone', async (path) => {
-    flags = { banking: false, stocks: false, loans: false, events: false };
+    flags = {
+      banking: false,
+      stocks: false,
+      loans: false,
+      events: false,
+      automaticExchangeRates: false,
+    };
 
     expect((await go(path)).path).toBe(path);
   });

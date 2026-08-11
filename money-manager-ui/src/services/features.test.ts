@@ -12,8 +12,20 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { AxiosAdapter } from 'axios';
 import type { Features } from './features';
 
-const mvp: Features = { banking: false, stocks: false, loans: true, events: true };
-const closed: Features = { banking: false, stocks: false, loans: false, events: false };
+const mvp: Features = {
+  banking: false,
+  stocks: false,
+  loans: true,
+  events: true,
+  automaticExchangeRates: true,
+};
+const closed: Features = {
+  banking: false,
+  stocks: false,
+  loans: false,
+  events: false,
+  automaticExchangeRates: false,
+};
 
 /**
  * A fresh module graph with a counting adapter swapped into axios, so "how many requests" is

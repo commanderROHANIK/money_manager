@@ -90,11 +90,20 @@ excluded from income because they are repayable.
 
 Each property is denominated in a single currency, fixed at creation, so per-property
 analytics involve no FX at all. Conversion happens only at a rollup — portfolio totals and
-the bank-balance summary — using rates the user enters themselves under Settings; nothing is
-fetched, because the app makes no outbound calls. A pair with no rate on record leaves the
-affected totals null and names the rate that would fill them in, rather than adding unlike
-amounts into a plausible wrong number, and any total that did come from a conversion is
-labelled with the rate and the date it was recorded.
+the bank-balance summary.
+
+Rates come from one of two places, and every converted total says which. A rate the user
+entered under Settings always wins and is never overwritten. For the pairs they have not
+spoken for, the API fetches the European Central Bank's daily reference rates — the only
+outbound call the application makes, switchable off in full with
+`Features:AutomaticExchangeRates`, and made by the server rather than the browser. These are
+reference rates rather than tradeable ones, which the interface says out loud instead of
+implying a precision that is not there.
+
+A pair with no rate on record leaves the affected totals null and names the rate that would
+fill them in, rather than adding unlike amounts into a plausible wrong number. Any total that
+did come from a conversion is labelled with the rate, its date and its source — the rate that
+was actually applied, not whatever the table says by the time the page renders.
 
 Whether a portfolio that already shares one currency is converted into the user's base
 currency is their choice, in Settings. It is off by default, so a landlord holding only HUF

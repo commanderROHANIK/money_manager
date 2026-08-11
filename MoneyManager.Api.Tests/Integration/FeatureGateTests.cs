@@ -180,6 +180,7 @@ public sealed class FeatureGateTests
             options.Stocks = false;
             options.Loans = true;
             options.Events = true;
+            options.AutomaticExchangeRates = true;
         });
 
         using var client = await AuthenticatedClientAsync(host, "203.0.113.76");
@@ -196,6 +197,16 @@ public sealed class FeatureGateTests
         Assert.False(body.RootElement.GetProperty("stocks").GetBoolean());
         Assert.True(body.RootElement.GetProperty("loans").GetBoolean());
         Assert.True(body.RootElement.GetProperty("events").GetBoolean());
+
+        // Served for a different reason from the four above: it hides no section, but the
+        // Settings screen has to say whether the rates it is showing are fetched or typed in,
+        // and a table of rows looks identical either way.
+        //
+        // Note this asserts what the endpoint reports, not which provider was registered. That
+        // choice is made from configuration before the container is built, so the options
+        // override here cannot reach it — which is exactly why the suite still makes no outbound
+        // call despite this flag reading true.
+        Assert.True(body.RootElement.GetProperty("automaticExchangeRates").GetBoolean());
     }
 
     [Fact]
@@ -223,6 +234,11 @@ public sealed class FeatureGateTests
         Assert.False(defaults.Stocks);
         Assert.True(defaults.Loans);
         Assert.True(defaults.Events);
+
+        // On by default, unlike the two above, because the failure it prevents is silent: a
+        // converted portfolio total built from a rate somebody typed in months ago is wrong in a
+        // way that still looks like money.
+        Assert.True(defaults.AutomaticExchangeRates);
     }
 
     // ------------------------------------------------------------------
@@ -233,6 +249,7 @@ public sealed class FeatureGateTests
         options.Stocks = false;
         options.Loans = false;
         options.Events = false;
+        options.AutomaticExchangeRates = false;
     }
 
     private static void AllOn(FeatureOptions options)
@@ -241,6 +258,7 @@ public sealed class FeatureGateTests
         options.Stocks = true;
         options.Loans = true;
         options.Events = true;
+        options.AutomaticExchangeRates = true;
     }
 
     /// <summary>

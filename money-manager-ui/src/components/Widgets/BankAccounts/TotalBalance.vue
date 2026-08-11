@@ -39,6 +39,10 @@ const note = computed(() => {
     return `No rate for ${s.missingRates.map((p) => `${p.from}→${p.to}`).join(', ')}`;
   }
 
-  return s.converted ? `Converted to ${s.currency} at your rates` : '';
+  // Deliberately vague about provenance, unlike PortfolioSummaryWidget, which names the source
+  // and date of each rate it used. Banking is switched off for the MVP and this widget is still
+  // untranslated, so it gets the statement that stays true either way rather than a second copy
+  // of the disclosure that would have to be written in four languages to ship.
+  return s.converted ? `Converted to ${s.currency}` : '';
 });
 </script>
