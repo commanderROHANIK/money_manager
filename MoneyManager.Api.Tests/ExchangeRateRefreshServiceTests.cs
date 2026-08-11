@@ -128,6 +128,76 @@ public sealed class ExchangeRateRefreshServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task A_fetched_row_stored_the_other_way_round_is_updated_rather_than_duplicated()
+    {
+        // The base-currency change. A row was fetched while the user reported in EUR; they switch
+        // to HUF and the next refresh asks the other way round.
+        //
+        // The unique index is on (UserId, Base, Quote), so it does not stop EUR→HUF and HUF→EUR
+        // both existing — nothing does except this lookup. Two rows for one pair means the table
+        // shows the pair twice, and the converter prefers whichever direction is asked for while
+        // the other silently goes stale.
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "EUR",
+            QuoteCurrency = "HUF",
+            Rate = 390m,
+            AsOf = new DateTime(2026, 1, 5),
+            Source = ExchangeRateSource.Ecb,
+        });
+
+        var provider = new StubProvider(
+            [new ProvidedRate("HUF", "EUR", 0.0025m, Published, ExchangeRateSource.Ecb)]);
+
+        using var context = ContextFor(Alice);
+
+        // Reporting in HUF now, so the pair is asked about the other way round. Note this only
+        // reaches the loop because the target changed — with baseCurrency still EUR, "EUR" would
+        // be filtered out of `wanted` as the target itself and nothing would be fetched at all.
+        await RefreshFor(context, Alice, provider, held: ["EUR"], baseCurrency: "HUF");
+
+        var stored = Assert.Single(await context.ExchangeRates.ToListAsync());
+
+        // Rewritten into the direction just fetched, rather than inverted into the stored one:
+        // both say the same thing, and storing the figure the provider gave avoids a reciprocal.
+        Assert.Equal("HUF", stored.BaseCurrency);
+        Assert.Equal("EUR", stored.QuoteCurrency);
+        Assert.Equal(0.0025m, stored.Rate);
+        Assert.Equal(Published, stored.AsOf);
+    }
+
+    [Fact]
+    public async Task A_manual_row_is_not_overwritten_by_a_fetch_of_the_opposite_direction()
+    {
+        // The same defect, aimed at the invariant rather than at tidiness. The pair filter above
+        // means this provider is answering with something it was never asked for — which a mirror,
+        // a future provider, or a response whose `base` field disagrees with the request could all
+        // do. A lookup that only matched the fetched direction would see no row, insert one, and
+        // leave a fetched rate shadowing a rate the user asserted.
+        Seed(Alice, new ExchangeRate
+        {
+            BaseCurrency = "EUR",
+            QuoteCurrency = "HUF",
+            Rate = 400m,
+            AsOf = Entered,
+            Source = ExchangeRateSource.Manual,
+        });
+
+        var provider = new StubProvider(
+            [new ProvidedRate("HUF", "EUR", 0.0025m, Published, ExchangeRateSource.Ecb)]);
+
+        using var context = ContextFor(Alice);
+        var written = await RefreshFor(context, Alice, provider, held: ["GBP"]);
+
+        Assert.Equal(0, written);
+
+        var stored = Assert.Single(await context.ExchangeRates.ToListAsync());
+
+        Assert.Equal(400m, stored.Rate);
+        Assert.Equal(ExchangeRateSource.Manual, stored.Source);
+    }
+
+    [Fact]
     public async Task A_previously_fetched_row_is_brought_up_to_date()
     {
         Seed(Alice, new ExchangeRate
@@ -223,6 +293,28 @@ public sealed class ExchangeRateRefreshServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task An_explicit_refresh_still_has_a_floor_under_it()
+    {
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        using var first = ContextFor(Alice);
+        await RefreshFor(first, Alice, provider, cache: cache, force: true);
+
+        using var second = ContextFor(Alice);
+        await RefreshFor(second, Alice, provider, cache: cache, force: true);
+
+        // Otherwise "ignore the window" is an authenticated caller's lever for driving unbounded
+        // outbound traffic at the provider — and CLAUDE.md's precondition for having an outbound
+        // call at all is that a cache limits it, which `force` would be a hole in.
+        //
+        // Nothing is lost by the floor: the endpoint answers with the table either way, and the
+        // ECB publishes once a working day, so a second press this soon could not have returned a
+        // different number.
+        Assert.Equal(1, provider.Calls);
+    }
+
+    [Fact]
     public async Task One_users_window_does_not_silence_anothers_refresh()
     {
         var provider = ProviderReturning(("EUR", "HUF", 398.5m));
@@ -276,6 +368,40 @@ public sealed class ExchangeRateRefreshServiceTests : IDisposable
     }
 
     // ------------------------------------------------------------------
+    // Where the fetch is actually triggered from
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task A_rollup_fetches_rather_than_waiting_for_someone_to_open_settings()
+    {
+        // The defect this catches is a wiring one, and it is invisible to every test that calls
+        // RefreshAsync directly: fetching used to happen only in ExchangeRatesController, so it
+        // only ever ran for a user who had already opened Settings. A landlord with a HUF flat and
+        // a EUR mortgage, who never went looking for a rate table, saw null totals and "Add the
+        // rate in Settings" with the feature switched on and working perfectly.
+        //
+        // CurrencyRollupService is the choke point both rollups go through, so this is where being
+        // up to date has to be arranged.
+        var provider = ProviderReturning(("EUR", "HUF", 398.5m));
+
+        using var context = ContextFor(Alice);
+
+        var rollup = new CurrencyRollupService(
+            context,
+            new StubCurrentUser(Alice),
+            ServiceFor(context, Alice, provider));
+
+        var loaded = await rollup.LoadAsync();
+
+        Assert.Equal(1, provider.Calls);
+
+        // And the rate it fetched is in the converter it hands back — the refresh has to happen
+        // before the rates are read, which is an ordering mistake that would leave this green on
+        // the second request and wrong on the first.
+        Assert.Equal(398.5m, loaded.Rates.Convert(1m, new CurrencyPair("EUR", "HUF")));
+    }
+
+    // ------------------------------------------------------------------
 
     private MoneyManagerDbContext ContextFor(int? userId) =>
         new(_options, new StubCurrentUser(userId));
@@ -295,24 +421,28 @@ public sealed class ExchangeRateRefreshServiceTests : IDisposable
     /// opened for. The two must agree: a service told it is Alice over a context filtered to Bob
     /// would write rows one of them cannot read.
     /// </summary>
-    private static Task<int> RefreshFor(
+    private static ExchangeRateRefreshService ServiceFor(
         MoneyManagerDbContext context,
         int userId,
         IExchangeRateProvider provider,
-        IMemoryCache? cache = null,
-        string[]? held = null,
-        bool force = false)
-    {
-        var service = new ExchangeRateRefreshService(
-            context,
+        IMemoryCache? cache = null) =>
+        new(context,
             provider,
             cache ?? new MemoryCache(new MemoryCacheOptions()),
             new StubCurrentUser(userId),
             Options.Create(new ExchangeRateProviderOptions()),
             NullLogger<ExchangeRateRefreshService>.Instance);
 
-        return service.RefreshAsync("EUR", held ?? ["HUF", "GBP"], force);
-    }
+    private static Task<int> RefreshFor(
+        MoneyManagerDbContext context,
+        int userId,
+        IExchangeRateProvider provider,
+        IMemoryCache? cache = null,
+        string[]? held = null,
+        bool force = false,
+        string baseCurrency = "EUR") =>
+        ServiceFor(context, userId, provider, cache)
+            .RefreshAsync(baseCurrency, held ?? ["HUF", "GBP"], force);
 
     public void Dispose() => _connection.Dispose();
 

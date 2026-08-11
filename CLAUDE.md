@@ -72,6 +72,12 @@ A landlord seeing another landlord's portfolio is the one defect this product ca
   it, and a daily reference rate is not a correction to that. This is also why "automatic" is not
   a stored mode: it is what happens for the pairs nobody has expressed an opinion about, so it
   needs no per-user column.
+- **One row per pair, in either direction.** `EUR→HUF` and `HUF→EUR` are the same fact, and
+  `Upsert`, `Delete`, `CurrencyConverter` and `ExchangeRateRefreshService` all have to agree about
+  that. The unique index is on `(UserId, BaseCurrency, QuoteCurrency)`, so it does **not** stop
+  both directions existing — only matching bidirectionally in code does. A lookup that matches
+  one direction still passes every test written against a fixed reporting currency, and breaks
+  the first time somebody changes theirs.
 - **The rate disclosed is the rate that was used.** `AppliedRate` carries `Source` and `AsOf`
   alongside the figure it was applied at, and the UI renders those rather than looking the pair up
   again. Re-reading the table at render time would show a number the total was never built from,
@@ -150,8 +156,11 @@ them again rather than citing this one as precedent:
 - **It is behind an interface, and failure is ordinary.** `IExchangeRateProvider` returns an empty
   list for unreachable, slow or malformed — never throws — because the correct response to a rate
   provider being down is the rates already stored, not a failed dashboard.
-- **It is rate-limited by a cache.** One fetch per user per window. A page load must not become an
-  outbound request.
+- **It is rate-limited by a cache.** One fetch per user per window, and a shorter floor under the
+  explicit refresh that skips that window. A page load must not become an outbound request, and
+  neither must a button. Note the limiter middleware cannot help here: `UseRateLimiter` runs ahead
+  of `UseAuthentication`, so a policy partitioned by user would see no principal and hand the
+  whole deployment one shared bucket — the failure the `auth` policy's own comment warns about.
 - **What it produces says where it came from.** `ExchangeRateSource` is stored on the row and
   travels on `AppliedRate`, so every figure derived from a fetched rate can name its origin and
   its date. A number from outside the ledger that cannot say where it came from does not belong

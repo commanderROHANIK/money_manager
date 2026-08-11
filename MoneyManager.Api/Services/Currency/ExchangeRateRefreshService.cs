@@ -67,6 +67,20 @@ namespace MoneyManager.Api.Services.Currency
             if (!force && cache.TryGetValue(cacheKey, out _))
                 return 0;
 
+            // `force` skips the window above but not this one. Without a floor, the refresh button
+            // is an authenticated user's lever for making this deployment call somebody else's API
+            // as fast as they can click — and CLAUDE.md's precondition for having an outbound call
+            // at all is that a cache limits it, which `force` would otherwise be an exception to.
+            //
+            // A minute rather than a rate limiter because UseRateLimiter runs ahead of
+            // UseAuthentication, so a policy partitioned by user would see no principal and hand
+            // the whole deployment one shared bucket. The endpoint still answers with the table
+            // either way, and the ECB publishes once a working day, so a second press inside the
+            // floor could not have produced a different number.
+            var forcedKey = $"fx:forced:{userId}";
+            if (force && cache.TryGetValue(forcedKey, out _))
+                return 0;
+
             var existing = await context.ExchangeRates.ToListAsync(cancellationToken);
 
             // A pair the user has spoken for is not asked about at all, rather than fetched and
@@ -86,7 +100,7 @@ namespace MoneyManager.Api.Services.Currency
             if (wanted.Length == 0)
             {
                 // Nothing to ask for is still a reason not to ask again for a while.
-                Remember(cacheKey);
+                Remember(cacheKey, forcedKey, force);
                 return 0;
             }
 
@@ -94,7 +108,7 @@ namespace MoneyManager.Api.Services.Currency
 
             // Cached even when the provider gave nothing, so an outage does not turn every page
             // load into another timeout. The rates already stored keep working in the meantime.
-            Remember(cacheKey);
+            Remember(cacheKey, forcedKey, force);
 
             if (fetched.Count == 0)
                 return 0;
@@ -112,9 +126,20 @@ namespace MoneyManager.Api.Services.Currency
                 // Loaded through the filtered set and mutated, never attached from outside it —
                 // the tenant isolation rule in CLAUDE.md, which is why this is a lookup in the
                 // materialised list rather than an Entry(...).State assignment.
+                //
+                // Matched in either direction, because a pair is one fact and that is already how
+                // Upsert, Delete and the converter all treat it. Matching only the direction just
+                // fetched looks harmless and is not: the unique index is on
+                // (UserId, Base, Quote), so EUR→HUF and HUF→EUR are two different keys and
+                // nothing stops both existing. Change your reporting currency from EUR to HUF and
+                // the next refresh inserts the mirror image of a row you already had — after
+                // which the table shows one pair twice, the converter prefers whichever direction
+                // is asked for while the other drifts, and a Manual row is shadowed by a fetched
+                // one that reads the other way round. That last part would break the rule this
+                // whole service exists to keep.
                 var row = existing.FirstOrDefault(r =>
-                    string.Equals(r.BaseCurrency, from, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(r.QuoteCurrency, to, StringComparison.OrdinalIgnoreCase));
+                    (Matches(r.BaseCurrency, from) && Matches(r.QuoteCurrency, to))
+                    || (Matches(r.BaseCurrency, to) && Matches(r.QuoteCurrency, from)));
 
                 if (row is null)
                 {
@@ -130,25 +155,64 @@ namespace MoneyManager.Api.Services.Currency
                     continue;
                 }
 
+                // Now correctly covers a manual row stored the other way round, which the
+                // one-directional lookup above silently did not.
                 if (row.Source == ExchangeRateSource.Manual)
                     continue;
 
+                // Rewritten into the direction just fetched rather than inverted into the stored
+                // one. Both express the same fact; storing the figure the provider actually gave
+                // avoids a reciprocal, and a reciprocal is a second place for the number to lose
+                // precision on its way to a total.
+                row.BaseCurrency = from;
+                row.QuoteCurrency = to;
                 row.Rate = rate.Rate;
                 row.AsOf = rate.AsOf;
                 row.Source = rate.Source;
                 written += 1;
             }
 
-            if (written > 0)
+            if (written == 0)
+                return 0;
+
+            try
+            {
                 await context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex)
+            {
+                // Two requests refreshing the same rate-less account at once both read an empty
+                // table and both insert; the unique index rejects the loser. `force` skips the
+                // window that would otherwise have made this vanishingly unlikely, so a
+                // double-clicked refresh button is enough to reach it.
+                //
+                // Swallowed rather than surfaced because the caller's answer is unchanged: the
+                // rate is on record, written by the request that got there first. Failing the
+                // dashboard over having lost a race to store a number that is now stored anyway
+                // would be the opposite of the "failure is ordinary" stance the provider takes.
+                logger.LogWarning(ex, "Could not store refreshed rates against {Base}.", target);
+                return 0;
+            }
 
             logger.LogInformation("Refreshed {Count} exchange rate(s) against {Base}.", written, target);
 
             return written;
         }
 
-        private void Remember(string cacheKey) =>
+        /// <summary>
+        /// Marks the ordinary window, and the short floor on explicit refreshes when that is what
+        /// this was.
+        /// </summary>
+        private void Remember(string cacheKey, string forcedKey, bool force)
+        {
             cache.Set(cacheKey, true, TimeSpan.FromHours(Math.Max(1, _options.CacheHours)));
+
+            if (force)
+                cache.Set(forcedKey, true, TimeSpan.FromMinutes(Math.Max(1, _options.ForcedRefreshMinutes)));
+        }
+
+        private static bool Matches(string stored, string code) =>
+            string.Equals(stored, code, StringComparison.OrdinalIgnoreCase);
 
         private static string Pair(string from, string to) =>
             $"{from.Trim().ToUpperInvariant()}>{to.Trim().ToUpperInvariant()}";

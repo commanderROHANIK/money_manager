@@ -80,12 +80,20 @@ namespace MoneyManager.Api.Services.Currency
                     .ToArray();
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException
-                                          or System.Text.Json.JsonException)
+                                          or System.Text.Json.JsonException or NotSupportedException)
             {
-                // Unreachable, slow, or answering with something unexpected. All three mean the
+                // Unreachable, slow, or answering with something unexpected. All of them mean the
                 // same thing to the caller — carry on with the rates already stored — and none of
                 // them is worth failing a dashboard over. Logged rather than swallowed silently,
                 // because a provider that has been down for a week should be discoverable.
+                //
+                // NotSupportedException is the one that is easy to leave out and the most likely
+                // to be met in the wild: GetFromJsonAsync throws it when the response arrives with
+                // a Content-Type it cannot read, which is what a captive portal, a proxy block
+                // page or a mirror serving HTML for an unknown path all look like. Omitted, it
+                // escapes this method and turns GET /api/ExchangeRates into a 500 — the exact
+                // outcome the "returns an empty list, never throws" contract on
+                // IExchangeRateProvider promises callers they do not have to handle.
                 _logger.LogWarning(ex, "Could not fetch exchange rates for {Base}.", baseCurrency);
                 return [];
             }
@@ -145,5 +153,16 @@ namespace MoneyManager.Api.Services.Currency
         /// day, so anything shorter than a few hours is spending requests to learn nothing.
         /// </summary>
         public int CacheHours { get; set; } = 6;
+
+        /// <summary>
+        /// The floor between two explicit refreshes by the same user.
+        ///
+        /// <para>
+        /// <c>CacheHours</c> is what stops a page load becoming an outbound request; this is what
+        /// stops the refresh button becoming one. Without it, "fetch now, ignoring the window" is
+        /// an authenticated caller's lever for driving unbounded traffic at the provider.
+        /// </para>
+        /// </summary>
+        public int ForcedRefreshMinutes { get; set; } = 1;
     }
 }

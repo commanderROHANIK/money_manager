@@ -46,6 +46,7 @@ path, and `numReplicas: 1`. Everything else is set in the Railway dashboard.
 | `ExchangeRateProvider__BaseUrl` | `https://api.frankfurter.dev/v1/` | Default. Point at a mirror if you have one. **The trailing slash matters**: `HttpClient` resolves the relative path against it, and dropping it silently truncates the last path segment. |
 | `ExchangeRateProvider__TimeoutSeconds` | `5` | Default. Short on purpose: the right answer when it expires is the rates already stored. |
 | `ExchangeRateProvider__CacheHours` | `6` | Default. One fetch per user per window. |
+| `ExchangeRateProvider__ForcedRefreshMinutes` | `1` | Default. The floor between two presses of Settings' refresh button, which otherwise bypasses the window above. |
 
 ### Bind a literal address, never `${{PORT}}`
 
