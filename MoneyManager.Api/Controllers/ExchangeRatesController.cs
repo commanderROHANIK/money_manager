@@ -153,11 +153,13 @@ namespace MoneyManager.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            // The set of pairs worth asking the provider about just changed: this one is now
-            // spoken for. Nothing breaks without it, but leaving a stale window costs a pointless
-            // request on the next read.
-            await InvalidateAsync();
-
+            // Deliberately does *not* invalidate the fetch window, unlike Delete below. Recording a
+            // rate by hand only ever removes a pair from the list worth asking about, so there is
+            // nothing new to go and get — forgetting the window here would spend an outbound call
+            // to learn strictly less than before, and would make saving a rate a button that
+            // reaches the provider. CLAUDE.md's precondition for having an outbound call at all is
+            // that a cache limits it: "a page load must not become an outbound request, and
+            // neither must a button."
             return Ok(ExchangeRateDto.From(rate));
         }
 
