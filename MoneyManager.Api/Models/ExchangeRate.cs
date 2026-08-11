@@ -1,9 +1,30 @@
 namespace MoneyManager.Api.Models
 {
-    /// <summary>Where a rate came from. Manual is the only source: the app makes no outbound calls.</summary>
+    /// <summary>
+    /// Where a rate came from, and therefore what a converted total can honestly claim about
+    /// itself.
+    ///
+    /// <para>
+    /// Persisted as an int on a column that already exists, so adding a member here is not a
+    /// schema change — which is the whole reason the enum was introduced with one value before
+    /// there was a second one to add.
+    /// </para>
+    /// </summary>
     public enum ExchangeRateSource
     {
+        /// <summary>Typed in by the user. Always wins over a fetched rate for the same pair.</summary>
         Manual = 0,
+
+        /// <summary>
+        /// The European Central Bank's daily reference rates, fetched by the API.
+        ///
+        /// <para>
+        /// Reference rates, not tradeable ones: the ECB publishes them once each working day at
+        /// around 16:00 CET, and no bank will give you exactly this. That is a distinction the UI
+        /// has to make rather than hide, which is why the source is stored rather than inferred.
+        /// </para>
+        /// </summary>
+        Ecb = 1,
     }
 
     /// <summary>

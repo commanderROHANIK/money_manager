@@ -120,6 +120,55 @@ describe('PortfolioSummaryWidget', () => {
     expect(text).not.toContain('No exchange rate on record');
   });
 
+  it('says the rate came from the user when it did', () => {
+    const wrapper = mount(PortfolioSummaryWidget, {
+      props: { portfolio: f.portfolioConverted as unknown as PortfolioAnalytics },
+    });
+
+    const text = wrapper.text();
+
+    expect(text).toContain('rate you entered');
+    expect(text).not.toContain('ECB');
+  });
+
+  it('names the ECB when the rate was fetched rather than entered', () => {
+    // The two fixtures differ in exactly one field, and produce the same totals. That is the
+    // point: nothing about the figures themselves distinguishes a rate somebody asserted from one
+    // the API looked up, so the sentence underneath is the only thing that can — and the line
+    // this replaced claimed "the rates you entered" over both.
+    const wrapper = mount(PortfolioSummaryWidget, {
+      props: { portfolio: f.portfolioConvertedFromEcb as unknown as PortfolioAnalytics },
+    });
+
+    const text = wrapper.text();
+
+    expect(text).toContain('ECB reference rate');
+    expect(text).toContain('1 HUF = 0.0025 EUR');
+    // The date shown is the one the applied rate carried, not today's.
+    expect(text).toContain(formatDate('2026-08-10'));
+    expect(text).not.toContain('rate you entered');
+  });
+
+  it('discloses the rate the total was built from, not the newest one on record', () => {
+    // The acceptance criterion in one assertion: a stale applied rate is still what produced the
+    // figures above it, so that is what gets disclosed. Looking the rate up again at render time
+    // would show a number the total was never built from — a disclosure that is worse than none,
+    // because it invites the reader to check the arithmetic and find it wrong.
+    const stale = {
+      ...f.portfolioConvertedFromEcb,
+      appliedRates: [
+        { from: 'HUF', to: 'EUR', rate: 0.0024, asOf: '2026-01-31T00:00:00', inverted: true, source: 1 },
+      ],
+    };
+
+    const text = mount(PortfolioSummaryWidget, {
+      props: { portfolio: stale as unknown as PortfolioAnalytics },
+    }).text();
+
+    expect(text).toContain('1 HUF = 0.0024 EUR');
+    expect(text).toContain(formatDate('2026-01-31'));
+  });
+
   it('says nothing about conversion when the portfolio never needed it', () => {
     const wrapper = mount(PortfolioSummaryWidget, {
       props: { portfolio: f.portfolio as unknown as PortfolioAnalytics },

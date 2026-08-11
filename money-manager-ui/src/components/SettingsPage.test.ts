@@ -9,13 +9,17 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import * as f from '../__tests__/fixtures';
 
-const calls = vi.hoisted(() => ({ fetchRates: 0, updateSettings: 0 }));
+const calls = vi.hoisted(() => ({ fetchRates: 0, refreshRates: 0, updateSettings: 0 }));
 
 vi.mock('../services/exchangeRateApi', async () => {
   const fixtures = await import('../__tests__/fixtures');
   return {
     fetchExchangeRates: () => {
       calls.fetchRates += 1;
+      return Promise.resolve(fixtures.exchangeRates);
+    },
+    refreshExchangeRates: () => {
+      calls.refreshRates += 1;
       return Promise.resolve(fixtures.exchangeRates);
     },
     upsertExchangeRate: () => Promise.resolve(fixtures.exchangeRates[0]),
@@ -51,6 +55,7 @@ async function settle() {
 
 beforeEach(() => {
   calls.fetchRates = 0;
+  calls.refreshRates = 0;
   calls.updateSettings = 0;
 });
 

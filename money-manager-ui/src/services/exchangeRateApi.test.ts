@@ -31,6 +31,10 @@ afterEach(() => {
 const CALLS: [string, string, string, () => Promise<unknown>][] = [
   ['fetchExchangeRates', 'get', '/ExchangeRates',
     () => rates.fetchExchangeRates()],
+  // POST rather than GET, because it has an effect: it spends an outbound request and writes
+  // rows. A refresh reachable by GET is one a browser or a link prefetcher can trigger on its own.
+  ['refreshExchangeRates', 'post', '/ExchangeRates/refresh',
+    () => rates.refreshExchangeRates()],
   ['upsertExchangeRate', 'put', '/ExchangeRates/EUR/HUF',
     () => rates.upsertExchangeRate('EUR', 'HUF', 400)],
   ['deleteExchangeRate', 'delete', '/ExchangeRates/EUR/HUF',

@@ -87,6 +87,14 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Features__Loans", "true");
         Environment.SetEnvironmentVariable("Features__Events", "true");
 
+        // The one flag switched the other way, and for the opposite reason. It is on by default
+        // because a deployment should fetch rates; a test run must not, because a suite that
+        // reaches the internet fails when someone else's DNS is having a bad morning and passes
+        // for reasons it cannot describe. Off here registers NoExchangeRateProvider, so the
+        // endpoints behave exactly as they did before rates were ever fetched.
+        // ExchangeRateProviderTests exercises the fetching path against a stub instead.
+        Environment.SetEnvironmentVariable("Features__AutomaticExchangeRates", "false");
+
         // A deployed image has the Vite bundle in wwwroot; a test run has no wwwroot at all,
         // because WebApplicationFactory roots the app at this test project's directory. Without a
         // stand-in web root every static-file assertion would pass for the wrong reason — the SPA

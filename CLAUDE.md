@@ -66,6 +66,23 @@ A landlord seeing another landlord's portfolio is the one defect this product ca
 - **SQLite has no decimal type.** `SumAsync` on a money column loses precision. Materialise
   with `ToListAsync` first and aggregate in memory. All of this is confined to the analytics
   service so that moving to PostgreSQL later stays a provider swap.
+- **A rate the user entered is never overwritten by a fetched one.** `ExchangeRateRefreshService`
+  skips any pair with a `Manual` row, in either direction — the two directions are the same fact.
+  A landlord who recorded the rate their bank actually gave them on the day of a transfer means
+  it, and a daily reference rate is not a correction to that. This is also why "automatic" is not
+  a stored mode: it is what happens for the pairs nobody has expressed an opinion about, so it
+  needs no per-user column.
+- **One row per pair, in either direction.** `EUR→HUF` and `HUF→EUR` are the same fact, and
+  `Upsert`, `Delete`, `CurrencyConverter` and `ExchangeRateRefreshService` all have to agree about
+  that. The unique index is on `(UserId, BaseCurrency, QuoteCurrency)`, so it does **not** stop
+  both directions existing — only matching bidirectionally in code does. A lookup that matches
+  one direction still passes every test written against a fixed reporting currency, and breaks
+  the first time somebody changes theirs.
+- **The rate disclosed is the rate that was used.** `AppliedRate` carries `Source` and `AsOf`
+  alongside the figure it was applied at, and the UI renders those rather than looking the pair up
+  again. Re-reading the table at render time would show a number the total was never built from,
+  which is worse than showing nothing — it invites the reader to check the arithmetic and find it
+  wrong.
 
 ### Nullable means "cannot be known"
 
@@ -118,10 +135,43 @@ do not add `Microsoft.IdentityModel.Tokens` to the test project either.
 forgets `[Authorize]` is still protected. Only `register` and `login` are `[AllowAnonymous]`.
 Adding `[AllowAnonymous]` anywhere is a security decision — call it out in the PR.
 
-### No outbound network calls
+### The browser makes no third-party request
 
-The app makes none, and fonts are self-hosted via `@fontsource` specifically so the page makes
-no third-party request on load. Do not add a CDN link, an analytics SDK, or telemetry.
+Fonts are self-hosted via `@fontsource` specifically so the page reaches nobody but its own
+origin on load. Do not add a CDN link, an analytics SDK, or telemetry.
+
+This used to read "the app makes no outbound calls", which was true until exchange rates started
+being fetched. The line that was actually load-bearing is the one above: what the *page* does.
+A server-side fetch the operator can see, switch off, and point at a mirror is a different thing
+from a script tag that reports every visitor to somebody else, and collapsing the two into one
+rule meant the rule had to be broken rather than applied.
+
+So the API may reach out, under these conditions, and adding a second such call means meeting
+them again rather than citing this one as precedent:
+
+- **It is behind a flag that removes it entirely.** `Features:AutomaticExchangeRates` off
+  registers `NoExchangeRateProvider`, so there is no `HttpClient`, no request and no DNS lookup —
+  not merely a hidden button. The registration is chosen from configuration in `Program.cs`,
+  before the container exists.
+- **It is behind an interface, and failure is ordinary.** `IExchangeRateProvider` returns an empty
+  list for unreachable, slow or malformed — never throws — because the correct response to a rate
+  provider being down is the rates already stored, not a failed dashboard.
+- **It is rate-limited by a cache.** One fetch per user per window, and a shorter floor under the
+  explicit refresh that skips that window. A page load must not become an outbound request, and
+  neither must a button. Note the limiter middleware cannot help here: `UseRateLimiter` runs ahead
+  of `UseAuthentication`, so a policy partitioned by user would see no principal and hand the
+  whole deployment one shared bucket — the failure the `auth` policy's own comment warns about.
+- **What it produces says where it came from.** `ExchangeRateSource` is stored on the row and
+  travels on `AppliedRate`, so every figure derived from a fetched rate can name its origin and
+  its date. A number from outside the ledger that cannot say where it came from does not belong
+  in this product.
+- **No credentials, and nothing is sent.** The ECB endpoint takes currency codes and needs no key.
+  A provider requiring an API key, or one that would carry portfolio data outbound, is a different
+  decision and not covered by this.
+
+`ExchangeRateRefreshServiceTests` holds the first three; `CurrencyConverterTests` holds the
+fourth. The suite itself fetches nothing: `ApiFactory` sets `Features__AutomaticExchangeRates` to
+false, so a test that reached the real provider would be a deliberate act.
 
 ## Things that look wrong but are deliberate
 
@@ -149,6 +199,7 @@ A change to… | needs a test in…
 `Models/` or `Data/MoneyManagerDbContext.cs` | `MoneyManager.Api.Tests/TenantIsolationTests.cs`
 `Services/Analytics/PropertyAnalyticsCalculator.cs` | `PropertyAnalyticsCalculatorTests.cs`, plus the worked example in its docblock
 `Services/Rent/RentScheduleBuilder.cs` | `RentScheduleBuilderTests.cs`, plus the worked example in its docblock
+`Services/Currency/` | `CurrencyConverterTests.cs` for the arithmetic and the provenance it carries, `ExchangeRateRefreshServiceTests.cs` for anything that fetches or writes a rate
 `Controllers/` | an integration test in `MoneyManager.Api.Tests/Integration/`
 `Program.cs`'s auth, or any `Microsoft.IdentityModel.*` / `JwtBearer` version | `Integration/AuthenticationTests.cs`
 a new widget | fixture props in `src/__tests__/fixtures.ts`, so the smoke suite mounts it

@@ -46,6 +46,24 @@ namespace MoneyManager.Api.Models
         public bool Events { get; set; } = true;
 
         /// <summary>
+        /// Whether the API fetches exchange rates from the European Central Bank.
+        ///
+        /// <para>
+        /// The one flag here that is not about hiding a section. It gates the application's only
+        /// outbound call, so a deployment that must not reach the internet — or one that simply
+        /// prefers the old behaviour of rates typed in by hand — gets exactly that, with no
+        /// request attempted and no DNS lookup to observe.
+        /// </para>
+        ///
+        /// <para>
+        /// On by default: a converted total that quietly goes stale is worse than one that says
+        /// where its rate came from, and a manual rate still wins over a fetched one for any pair
+        /// the user has entered.
+        /// </para>
+        /// </summary>
+        public bool AutomaticExchangeRates { get; set; } = true;
+
+        /// <summary>
         /// Whether <paramref name="feature"/> is switched on for this deployment.
         ///
         /// <para>
@@ -61,6 +79,7 @@ namespace MoneyManager.Api.Models
             Feature.Stocks => Stocks,
             Feature.Loans => Loans,
             Feature.Events => Events,
+            Feature.AutomaticExchangeRates => AutomaticExchangeRates,
             _ => throw new ArgumentOutOfRangeException(nameof(feature), feature, "Unhandled feature."),
         };
     }
@@ -75,5 +94,6 @@ namespace MoneyManager.Api.Models
         Stocks,
         Loans,
         Events,
+        AutomaticExchangeRates,
     }
 }

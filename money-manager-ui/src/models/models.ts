@@ -290,6 +290,10 @@ export interface CurrencyPair {
 /**
  * A rate a total was actually built with. `asOf` is null only for the identity conversion, and
  * `inverted` means it was read backwards off a row entered the other way round.
+ *
+ * `source` travels with the rate that was applied rather than being looked up again afterwards,
+ * which is what lets the disclosure under a converted total name the same number the total was
+ * built from. Null for the identity conversion, where no stored row was involved.
  */
 export interface AppliedRate {
     from: string;
@@ -297,6 +301,7 @@ export interface AppliedRate {
     rate: number;
     asOf: string | null;
     inverted: boolean;
+    source: ExchangeRateSource | null;
 }
 
 /**
@@ -347,8 +352,20 @@ export interface BankBalanceSummary {
     warnings: MetricWarning[];
 }
 
+/**
+ * Where a rate came from, and therefore what the figure it produced can honestly claim about
+ * itself. Mirrors `ExchangeRateSource` on the API.
+ */
 export enum ExchangeRateSource {
+    /** Typed in by the user. Always wins over a fetched rate for the same pair. */
     Manual = 0,
+
+    /**
+     * The European Central Bank's daily reference rates, fetched by the API. Reference rates
+     * rather than tradeable ones — the UI says so rather than implying a bank would give you
+     * exactly this.
+     */
+    Ecb = 1,
 }
 
 /** `rate` reads as "one baseCurrency buys this many quoteCurrency". */

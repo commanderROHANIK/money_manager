@@ -29,8 +29,20 @@ vi.mock('../services/authService', () => ({
   logout: vi.fn(),
 }));
 
-const mvp: Features = { banking: false, stocks: false, loans: true, events: true };
-const everything: Features = { banking: true, stocks: true, loans: true, events: true };
+const mvp: Features = {
+  banking: false,
+  stocks: false,
+  loans: true,
+  events: true,
+  automaticExchangeRates: true,
+};
+const everything: Features = {
+  banking: true,
+  stocks: true,
+  loans: true,
+  events: true,
+  automaticExchangeRates: true,
+};
 
 /**
  * Mounts the sidebar with the flags already resolved, the way the router guard leaves them before
@@ -116,6 +128,7 @@ describe('Menu', () => {
       stocks: false,
       loans: false,
       events: false,
+      automaticExchangeRates: false,
     });
 
     // Properties and Settings carry no flag. A deployment with every switch off is still the

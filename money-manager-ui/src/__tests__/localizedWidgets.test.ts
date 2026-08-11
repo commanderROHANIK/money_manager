@@ -14,13 +14,14 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import type { PropertyMetrics, RentSchedule } from '../models/models';
+import type { PortfolioAnalytics, PropertyMetrics, RentSchedule } from '../models/models';
 import { setLocale } from '../i18n';
 import { DEFAULT_LOCALE } from '../i18n/locale';
 import * as f from './fixtures';
 import { FROZEN_NOW } from './fixtures';
 
 import MostExpensivePropertyWidget from '../components/Widgets/Properties/MostExpensivePropertyWidget.vue';
+import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSummaryWidget.vue';
 import RentCollectionWidget from '../components/Widgets/Properties/RentCollectionWidget.vue';
 import RentVsMarketWidget from '../components/Widgets/Properties/RentVsMarketWidget.vue';
 import TenancyWidget from '../components/Widgets/Properties/TenancyWidget.vue';
@@ -198,5 +199,42 @@ describe('highest rent', () => {
 
     expect(wrapper.text()).toContain('Nincs rögzített ingatlan');
     assertFullyTranslated(wrapper.text());
+  });
+});
+
+describe('portfolio conversion note', () => {
+  const withRate = (source: number, asOf: string) =>
+    ({
+      ...f.portfolioConverted,
+      appliedRates: [{ from: 'HUF', to: 'EUR', rate: 0.0025, asOf, inverted: true, source }],
+    }) as unknown as PortfolioAnalytics;
+
+  it('attributes an entered rate and a fetched one differently, in Hungarian', () => {
+    // The branch translation created and nothing else walks. Before this change there was one
+    // sentence, so the Hungarian file had one key — and the version that names the ECB is the one
+    // a translator never sees, because it only appears once a deployment starts fetching.
+    const entered = mount(PortfolioSummaryWidget, { props: { portfolio: withRate(0, '2026-07-01T00:00:00') } }).text();
+    const fetched = mount(PortfolioSummaryWidget, { props: { portfolio: withRate(1, '2026-08-10T00:00:00') } }).text();
+
+    expect(entered).toContain('általad megadott árfolyam');
+    expect(fetched).toContain('EKB-referenciaárfolyam');
+    expect(entered).not.toEqual(fetched);
+
+    for (const text of [entered, fetched]) assertFullyTranslated(text);
+  });
+
+  it('says only the arithmetic when no stored row backs the rate', () => {
+    // asOf and source are null together, for a conversion nothing was stored for. Attributing it
+    // to anybody would be inventing a provenance.
+    const portfolio = {
+      ...f.portfolioConverted,
+      appliedRates: [{ from: 'HUF', to: 'EUR', rate: 0.0025, asOf: null, inverted: true, source: null }],
+    } as unknown as PortfolioAnalytics;
+
+    const text = mount(PortfolioSummaryWidget, { props: { portfolio } }).text();
+
+    expect(text).toContain('1 HUF = 0.0025 EUR');
+    expect(text).not.toContain('EKB');
+    assertFullyTranslated(text);
   });
 });

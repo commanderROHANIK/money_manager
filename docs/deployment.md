@@ -42,6 +42,11 @@ path, and `numReplicas: 1`. Everything else is set in the Railway dashboard.
 | `Features__Stocks` | `false` | Not in the MVP. Default already `false`. |
 | `Features__Loans` | `true` | Financing is part of a property's return. Default. |
 | `Features__Events` | `true` | Rent due dates. Default. |
+| `Features__AutomaticExchangeRates` | `true` | Default. The only flag that gates an outbound call rather than a section — see below. Set `false` for an air-gapped deployment. |
+| `ExchangeRateProvider__BaseUrl` | `https://api.frankfurter.dev/v1/` | Default. Point at a mirror if you have one. **The trailing slash matters**: `HttpClient` resolves the relative path against it, and dropping it silently truncates the last path segment. |
+| `ExchangeRateProvider__TimeoutSeconds` | `5` | Default. Short on purpose: the right answer when it expires is the rates already stored. |
+| `ExchangeRateProvider__CacheHours` | `6` | Default. One fetch per user per window. |
+| `ExchangeRateProvider__ForcedRefreshMinutes` | `1` | Default. The floor between two presses of Settings' refresh button, which otherwise bypasses the window above. |
 
 ### Bind a literal address, never `${{PORT}}`
 
@@ -143,6 +148,34 @@ The flags do not touch the seeder: `Seed__IncludeDemoData=true` still writes dem
 and stocks. They simply become unreachable, which is the intended outcome — turning a flag back on
 finds the data where it was.
 
+## Exchange rates
+
+`Features__AutomaticExchangeRates` is on by default, and it is the one flag here that hides no
+section. It decides whether the API fetches the European Central Bank's daily reference rates —
+through [Frankfurter](https://frankfurter.dev), which republishes them as JSON with no API key
+and no quota — for the currency pairs the user has not entered themselves.
+
+This is the application's only outbound call. Things worth knowing before deciding whether to
+leave it on:
+
+- **Off is genuinely off.** The provider is chosen from configuration in `Program.cs` before the
+  container is built, so with the flag false there is no `HttpClient`, no request and no DNS
+  lookup — not a hidden button. An air-gapped or egress-restricted deployment sets this and the
+  app behaves exactly as it did before rates were fetched: totals convert at whatever the user
+  typed into Settings.
+- **The browser still talks to nobody but this origin.** The fetch is server-side. Self-hosted
+  fonts and the absence of any CDN link are unaffected.
+- **A rate the user entered is never overwritten.** Fetching fills in the pairs nobody has spoken
+  for. A manual row wins in both directions, so entering `EUR→HUF` also protects `HUF→EUR`.
+- **An outage is not an incident.** An unreachable, slow or malformed response yields no rates and
+  a warning in the log; the stored rates keep working. The result is cached either way, so a
+  provider that is down does not turn every page load into a five-second wait.
+- **Reference rates, not tradeable ones.** The ECB publishes once each working day at around
+  16:00 CET, and no bank gives exactly this. The UI says so, and every converted total names the
+  source and date of the rate it used.
+- **No credentials and nothing outbound but currency codes.** If you point `BaseUrl` at something
+  that needs a key, that is a new decision — the code has nowhere to put one.
+
 ## Accounts
 
 Registration is closed (`Auth__AllowRegistration=false`), so `POST /api/auth/register` returns
@@ -204,6 +237,13 @@ Each of these is a real possibility rather than a formality:
    environment. Evidence points that way — Railway sells volume-data copying as an opt-in feature
    — but the seeding design rests on it.
 3. **That PR environments are available on the current plan.** Not clearly documented either way.
+4. **That the container's egress reaches `api.frankfurter.dev`.** Never exercised from a sandbox —
+   the environment this was written in blocks outbound HTTPS, so the provider's happy path has
+   only ever run against a stub. The failure is quiet by design: unreachable means no rates and a
+   `Could not fetch exchange rates` warning in the log, with the stored rates still in use.
+   **Check the log for that warning after the first dashboard load, and check that a row with
+   `source: 1` appears in `GET /api/ExchangeRates`.** If the network is closed, set
+   `Features__AutomaticExchangeRates=false` rather than leaving it retrying.
 
 ## Local development is unchanged
 
