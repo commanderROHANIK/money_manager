@@ -70,9 +70,7 @@ describe('feature flags', () => {
     expect(requestCount()).toBe(1);
   });
 
-  it('stays closed but tries again when the request fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-
+  it('recovers from a single dropped request without the caller noticing', async () => {
     let attempt = 0;
 
     const { ensureFeaturesLoaded, featureFlags, requestCount } = await load(async () => {
@@ -83,14 +81,49 @@ describe('feature flags', () => {
       return mvp;
     });
 
-    // A failure must not be cached. The flags gate the whole application, so a blip on the first
-    // navigation would otherwise leave the session showing a one-page product until a reload —
-    // and nothing on screen would explain why.
+    // The case a review caught: the router guard consumes *this* navigation's answer, so one
+    // dropped request used to bounce someone off /loans to the dashboard with the sidebar
+    // collapsed — and the retry only came on a navigation they had no reason to make. Retrying
+    // inside the same call is what makes a blip invisible instead of disorienting.
+    expect(await ensureFeaturesLoaded()).toEqual(mvp);
+    expect(featureFlags.value).toEqual(mvp);
+    expect(requestCount()).toBe(2);
+  });
+
+  it('holds the closed default when it fails twice, and starts fresh next time', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    let attempt = 0;
+
+    const { ensureFeaturesLoaded, featureFlags, requestCount } = await load(async () => {
+      attempt += 1;
+      if (attempt <= 2) {
+        throw new Error('network');
+      }
+      return mvp;
+    });
+
+    // Two failures in a row is an outage rather than a blip, and closed is the right thing to
+    // hold: guessing "on" renders a section whose every endpoint answers 404.
     expect(await ensureFeaturesLoaded()).toEqual(closed);
     expect(featureFlags.value).toEqual(closed);
-
-    expect(await ensureFeaturesLoaded()).toEqual(mvp);
     expect(requestCount()).toBe(2);
+
+    // But the failure is still not cached, so the next navigation is a clean slate.
+    expect(await ensureFeaturesLoaded()).toEqual(mvp);
+  });
+
+  it('does not retry a 401, which the interceptor is already handling', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { ensureFeaturesLoaded, requestCount } = await load(async () => {
+      throw Object.assign(new Error('unauthorised'), { response: { status: 401 } });
+    });
+
+    // A second request would only race the interceptor's redirect to the login screen with
+    // another guaranteed failure.
+    expect(await ensureFeaturesLoaded()).toEqual(closed);
+    expect(requestCount()).toBe(1);
   });
 
   it('forgets the flags on logout', async () => {
