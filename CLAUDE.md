@@ -204,6 +204,53 @@ A change to… | needs a test in…
 `Program.cs`'s auth, or any `Microsoft.IdentityModel.*` / `JwtBearer` version | `Integration/AuthenticationTests.cs`
 a new widget | fixture props in `src/__tests__/fixtures.ts`, so the smoke suite mounts it
 `src/utils/` or `src/services/` | a colocated unit test
+`Data/DemoDataSeeder.cs` | `DemoDataSeederTests.cs` for the rows, `e2e/demo-portfolio.spec.ts` for what they render as
+
+### The end-to-end suite
+
+`money-manager-ui/e2e/` runs Playwright against a **running deployment image**, not against
+`dotnet run` plus a Vite dev server. It is one file today, covering what the demo seed promises:
+three properties, one vacant and one denominated in forint, a converted portfolio total that
+names the rate it used, and a valuation warning present on one property and absent on another.
+
+Running the image rather than the dev servers is the whole reason it earns its place. The
+container is where the two halves meet on one origin, and its failure modes are invisible to
+every other check — the SPA fallback's `{*path:nonfile}` pattern meeting the deny-by-default
+`FallbackPolicy`, static files registered after `UseAuthorization` so every asset 401s behind an
+`index.html` that still loads, `wwwroot` resolving off a `ContentRoot` that does not match
+`WORKDIR`. A dev server serves the bundle itself and sails through all of them.
+
+```bash
+docker build --tag moneymanager:e2e .
+docker run --rm --detach --name mm-e2e --publish 8080:8080 \
+  --env ASPNETCORE_HTTP_PORTS=8080 \
+  --env 'ConnectionStrings__Default=Data Source=/tmp/e2e.db' \
+  --env JwtSettings__SecretKey=e2e-only-signing-key-not-a-secret-0123456789 \
+  --env Seed__Enabled=true --env Seed__Password=e2e-demo-password \
+  --env Features__AutomaticExchangeRates=false \
+  moneymanager:e2e
+
+cd money-manager-ui
+E2E_PASSWORD=e2e-demo-password npm run test:e2e
+```
+
+Three things about it are deliberate:
+
+- **It asserts contrasts, not presences.** "Kerkstraat 8 warns that it has no valuation" passes
+  on a seed where *nothing* has a valuation — which is a worse demo than the one it replaced.
+  Paired with "Maple Court does not warn", it only passes on a seed that has both. Keep new specs
+  in pairs like that.
+- **The locale is pinned to English in `localStorage` before the first navigation.** `DEFAULT_LOCALE`
+  is Hungarian, so without that every text assertion would be checking the wrong language while
+  appearing to pass. Seeded property names and the analytics warning strings are the exception:
+  they are data, built server-side, and read the same in all four locales.
+- **`retries: 0`.** A retry turns "the demo is intermittently broken" into a green check, and an
+  intermittently broken demo is what this suite exists to report. If a spec is flaky, the flake
+  is the finding.
+
+The suite fetches no rates — `Features__AutomaticExchangeRates=false` registers
+`NoExchangeRateProvider`, the same posture `ApiFactory` takes — so the converted total under test
+rests on the seeded manual row rather than on the runner reaching the ECB.
 
 **Never delete or weaken an existing assertion to make a build pass.** If you believe a test is
 wrong, leave it failing and say so in the PR description.
