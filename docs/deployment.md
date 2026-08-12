@@ -191,6 +191,22 @@ the login screen of a live instance holding seeded data.
 Seeding is idempotent and runs on every boot. It creates the account only if that username is
 absent, and the demo portfolio only if the seeded user has no properties.
 
+### What the demo portfolio contains
+
+Three properties, chosen so the app can be shown answering its own question rather than merely
+rendering. Utrecht is let and paying, with an appraisal on record. Budapest is in **forint**, which
+is what forces the portfolio total to convert and therefore gives the applied-rate disclosure
+something to disclose. Rotterdam is the underperformer, and its ledger says why: vacant since the
+tenancy ended four months ago, a €8,900 roof, and the larger of the two mortgages. It deliberately
+has **no valuation**, so the "no valuation on record, using purchase price" warning appears beside
+a property that did not need it.
+
+A **manual** EUR→HUF rate is seeded as well, so a machine with no egress still shows a converted
+total instead of "cannot be known" on the headline figure. That is also the more useful starting
+point for a demo: the conversion note reads *"rate you entered"*, and Settings can then be shown
+handing that pair to the ECB with **Use live rate** — which is the one step that needs the network,
+and the one that will visibly do nothing if item 4 below has not been checked.
+
 ## Deploys
 
 - **Wait for CI** is enabled, so `main` deploys only after the **API** and **UI** checks pass.

@@ -21,10 +21,12 @@ jobs:
   api:
     name: API
     runs-on: ubuntu-latest
-    # Raised from 6 when the image build joined this job. The build runs npm ci, a Vite build and
-    # a dotnet publish from a cold cache, so the old ceiling was close enough to the new runtime
-    # to fail on a slow runner rather than on a defect.
-    timeout-minutes: 12
+    # Raised from 6 when the image build joined this job, and from 12 when the end-to-end suite
+    # did. Each addition brought work that is slow from a cold cache — a Vite build and a dotnet
+    # publish for the image, then a second npm ci and a browser download for the suite — and the
+    # ceiling has to clear the slowest plausible runner, or it starts reporting congestion as a
+    # defect.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
@@ -80,6 +82,100 @@ jobs:
       # what a build path nothing else covers deserves.
       - name: Build the deployment image
         run: docker build --tag moneymanager:ci .
+
+      # The end-to-end suite, run against the image built immediately above rather than against
+      # `dotnet run` plus a Vite dev server.
+      #
+      # That choice is the point of it. The container is where the two halves meet on one origin,
+      # and the defects that only appear there are exactly the ones no other check can see: the
+      # SPA fallback's {*path:nonfile} pattern meeting the deny-by-default FallbackPolicy, static
+      # files registered after UseAuthorization so every asset 401s behind an index.html that
+      # still loads, wwwroot resolving off a ContentRoot that does not match WORKDIR. A dev server
+      # serves the bundle itself and so passes through all of them.
+      #
+      # It also runs with ASPNETCORE_ENVIRONMENT unset, which is what the image ships and what a
+      # deployment must use — so the suite exercises the production pipeline, not the developer
+      # exception page.
+      #
+      # Like the image build, this lives in the API job rather than a job of its own so the
+      # required check names stay API and UI and branch protection never needs editing.
+      - name: Start the deployment image
+        env:
+          # Deliberately literal, not repository secrets. They configure a container that lives
+          # for the length of this job, holds nothing but fabricated demo records, and is not
+          # reachable from outside the runner. Storing them as secrets would imply they protect
+          # something, and would leave this file describing a run nobody can reproduce.
+          SEED_PASSWORD: e2e-demo-password
+          JWT_KEY: e2e-only-signing-key-not-a-secret-0123456789
+        run: |
+          docker run --detach --name moneymanager-e2e \
+            --publish 8080:8080 \
+            --env ASPNETCORE_HTTP_PORTS=8080 \
+            --env 'ConnectionStrings__Default=Data Source=/tmp/e2e.db' \
+            --env "JwtSettings__SecretKey=$JWT_KEY" \
+            --env Seed__Enabled=true \
+            --env "Seed__Password=$SEED_PASSWORD" \
+            --env Features__AutomaticExchangeRates=false \
+            --env "Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning" \
+            moneymanager:ci
+
+      # The suite fetches no rates: the flag above registers NoExchangeRateProvider, so there is
+      # no HttpClient and no DNS lookup, the same posture ApiFactory takes for the API tests. The
+      # seeded EUR/HUF rate is a manual row, so the converted total under test does not depend on
+      # the runner being able to reach the ECB.
+      - name: Wait for the container to answer
+        run: |
+          for _ in $(seq 1 60); do
+            if curl --fail --silent --show-error http://localhost:8080/health > /dev/null 2>&1; then
+              echo "Container is answering."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::The container never answered /health."
+          docker logs moneymanager-e2e
+          exit 1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: money-manager-ui/package-lock.json
+
+      - name: Install UI dependencies
+        working-directory: money-manager-ui
+        run: npm ci
+
+      # Only chromium. The suite asserts what the seeded data renders as, which is not a
+      # cross-browser question, and installing three engines would add minutes to every run.
+      - name: Install the browser
+        working-directory: money-manager-ui
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the end-to-end suite
+        working-directory: money-manager-ui
+        env:
+          E2E_BASE_URL: http://localhost:8080
+          E2E_PASSWORD: e2e-demo-password
+        run: npm run test:e2e
+
+      # The container's own log is usually the answer when the suite fails to log in or the page
+      # comes up empty, and it is gone the moment the runner is reclaimed.
+      #
+      # Tailed, and with EF's command logging turned down where the container starts. Dumping it
+      # whole put roughly a thousand lines of SELECT between the reader and the Playwright output
+      # immediately above it, which is how a step meant to aid diagnosis ends up preventing it.
+      - name: Container logs
+        if: failure()
+        run: docker logs --tail 200 moneymanager-e2e
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: money-manager-ui/playwright-report/
+          retention-days: 7
 
   ui:
     name: UI

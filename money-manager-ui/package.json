@@ -12,6 +12,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "tailwind:init": "tailwindcss init"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/eslint-config-typescript": "^14.9.0",

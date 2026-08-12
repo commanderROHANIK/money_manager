@@ -78,8 +78,9 @@ public sealed class DemoDataSeederTests : IDisposable
 
         // Without a named owner this assertion is never reached: SaveChanges throws
         // "Cannot persist a user-owned entity outside an authenticated request" first.
-        var property = Assert.Single(context.RentalProperties.IgnoreQueryFilters());
-        Assert.Equal(user.Id, property.UserId);
+        var properties = context.RentalProperties.IgnoreQueryFilters().ToList();
+        Assert.NotEmpty(properties);
+        Assert.All(properties, property => Assert.Equal(user.Id, property.UserId));
 
         // The portfolio is only worth seeding if it renders something. A property with no
         // tenancy and no ledger produces a dashboard of dashes.
@@ -89,6 +90,89 @@ public sealed class DemoDataSeederTests : IDisposable
         Assert.All(context.Leases.IgnoreQueryFilters(), lease => Assert.Equal(user.Id, lease.UserId));
         Assert.All(context.PropertyTransactions.IgnoreQueryFilters(),
             transaction => Assert.Equal(user.Id, transaction.UserId));
+
+        // Everything the seeder writes is owned, not only the three types that existed when this
+        // test was written. A new kind of seeded row that forgets its owner is invisible to the
+        // assertions above and fails at runtime on somebody else's machine.
+        Assert.All(context.Loans.IgnoreQueryFilters(), loan => Assert.Equal(user.Id, loan.UserId));
+        Assert.All(context.UpcomingEvents.IgnoreQueryFilters(), e => Assert.Equal(user.Id, e.UserId));
+        Assert.All(context.PropertyEvents.IgnoreQueryFilters(), e => Assert.Equal(user.Id, e.UserId));
+        Assert.All(context.PropertyValuations.IgnoreQueryFilters(), v => Assert.Equal(user.Id, v.UserId));
+        Assert.All(context.ExchangeRates.IgnoreQueryFilters(), r => Assert.Equal(user.Id, r.UserId));
+    }
+
+    /// <summary>
+    /// The demo exists to show the product answering its own question — "which of my properties is
+    /// underperforming, and by how much". A portfolio of one has no answer to that, and a portfolio
+    /// in one currency never exercises the conversion the dashboard is built around, so both are
+    /// pinned here rather than left to whoever next edits the seeder.
+    /// </summary>
+    [Fact]
+    public async Task The_demo_portfolio_can_demonstrate_the_product()
+    {
+        await SeedAsync();
+
+        using var context = ContextFor(null);
+
+        var properties = context.RentalProperties.IgnoreQueryFilters().ToList();
+
+        // More than one, or there is nothing to compare.
+        Assert.True(properties.Count >= 3, $"expected a comparable portfolio, got {properties.Count}");
+
+        // More than one currency, or the portfolio total never has to convert and the applied-rate
+        // disclosure — the whole point of the currency work — has nothing to disclose.
+        Assert.True(
+            properties.Select(p => p.CurrencyCode).Distinct().Count() >= 2,
+            "the demo portfolio is single-currency, so conversion is never exercised");
+
+        // A rate for the pair, so a machine with no network still shows a converted total rather
+        // than "cannot be known" on the headline figure of the demo.
+        Assert.NotEmpty(context.ExchangeRates.IgnoreQueryFilters());
+
+        // One property with a valuation and one without, so the "no valuation on record, using
+        // purchase price" warning appears next to a figure that did not need it. That contrast is
+        // the honesty the product is sold on; a demo where every input is present never shows it.
+        var valued = context.PropertyValuations.IgnoreQueryFilters().Select(v => v.RentalPropertyId).ToHashSet();
+        Assert.Contains(properties, p => valued.Contains(p.Id));
+        Assert.Contains(properties, p => !valued.Contains(p.Id));
+
+        // A tenancy that has ended, so occupancy has something to report other than "all let".
+        var leases = context.Leases.IgnoreQueryFilters().ToList();
+        Assert.Contains(leases, l => l.EndDate is not null);
+        Assert.Contains(leases, l => l.EndDate is null);
+
+        // The two flags that ship on. A switched-on section with nothing behind it is the thing
+        // this seeding exists to stop.
+        Assert.NotEmpty(context.Loans.IgnoreQueryFilters());
+        Assert.NotEmpty(context.UpcomingEvents.IgnoreQueryFilters());
+    }
+
+    /// <summary>
+    /// Every seeded amount is positive, whatever it means. Direction lives in the category, via
+    /// <c>TransactionCategoryInfo</c> — a negative expense here would be a second sign convention
+    /// entering through the back door, and the analytics would subtract it twice.
+    /// </summary>
+    [Fact]
+    public async Task Seeded_amounts_are_positive_and_take_their_direction_from_the_category()
+    {
+        await SeedAsync();
+
+        using var context = ContextFor(null);
+
+        var transactions = context.PropertyTransactions.IgnoreQueryFilters().ToList();
+
+        Assert.NotEmpty(transactions);
+        Assert.All(transactions, t => Assert.True(t.Amount > 0, $"{t.Description} is not positive"));
+
+        // Both directions are represented, or the ledger only ever demonstrates half the model.
+        Assert.Contains(transactions, t => TransactionCategoryInfo.DirectionOf(t.Category) == CashFlowDirection.Income);
+        Assert.Contains(transactions, t => TransactionCategoryInfo.DirectionOf(t.Category) == CashFlowDirection.Expense);
+
+        // A transaction is denominated in its property's currency. Mixing them is how a total in
+        // forint acquires a euro row and stops being a number anyone can defend.
+        var currencyOf = context.RentalProperties.IgnoreQueryFilters().ToDictionary(p => p.Id, p => p.CurrencyCode);
+
+        Assert.All(transactions, t => Assert.Equal(currencyOf[t.RentalPropertyId], t.CurrencyCode));
     }
 
     [Fact]
@@ -96,10 +180,23 @@ public sealed class DemoDataSeederTests : IDisposable
     {
         await SeedAsync();
 
-        int transactionsAfterFirstRun;
+        // Counted rather than assumed. These used to be Assert.Single, which was the same claim
+        // while the demo held one property — but the invariant under test is "a second run adds
+        // nothing", not "the portfolio is small", and only one of those survives the seeder
+        // growing. Comparing counts across the two runs states the real rule and gets stricter as
+        // the demo gains rows, where a hard-coded 1 would simply have to be edited.
+        int propertiesAfterFirstRun, leasesAfterFirstRun, transactionsAfterFirstRun;
+        int loansAfterFirstRun, ratesAfterFirstRun;
+
         using (var afterFirstRun = ContextFor(null))
         {
+            propertiesAfterFirstRun = afterFirstRun.RentalProperties.IgnoreQueryFilters().Count();
+            leasesAfterFirstRun = afterFirstRun.Leases.IgnoreQueryFilters().Count();
             transactionsAfterFirstRun = afterFirstRun.PropertyTransactions.IgnoreQueryFilters().Count();
+            loansAfterFirstRun = afterFirstRun.Loans.IgnoreQueryFilters().Count();
+            ratesAfterFirstRun = afterFirstRun.ExchangeRates.IgnoreQueryFilters().Count();
+
+            Assert.NotEqual(0, propertiesAfterFirstRun);
         }
 
         // The long-lived environment runs the seeder on every boot, so this is the ordinary
@@ -111,10 +208,16 @@ public sealed class DemoDataSeederTests : IDisposable
         // IgnoreQueryFilters throughout: the filter is the mechanism under suspicion here, so
         // counting through it would be asking the accused to testify.
         Assert.Single(context.Users);
-        Assert.Single(context.RentalProperties.IgnoreQueryFilters());
-        Assert.Single(context.Leases.IgnoreQueryFilters());
+        Assert.Equal(propertiesAfterFirstRun, context.RentalProperties.IgnoreQueryFilters().Count());
+        Assert.Equal(leasesAfterFirstRun, context.Leases.IgnoreQueryFilters().Count());
         Assert.Equal(transactionsAfterFirstRun,
             context.PropertyTransactions.IgnoreQueryFilters().Count());
+        Assert.Equal(loansAfterFirstRun, context.Loans.IgnoreQueryFilters().Count());
+
+        // The seeded rate is the one row a second boot could plausibly duplicate by a different
+        // route: it is upserted by pair elsewhere, so a seeder that re-added it would collide with
+        // the unique index rather than merely double the demo.
+        Assert.Equal(ratesAfterFirstRun, context.ExchangeRates.IgnoreQueryFilters().Count());
     }
 
     [Fact]
