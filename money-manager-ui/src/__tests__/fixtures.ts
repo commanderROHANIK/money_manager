@@ -258,3 +258,19 @@ export const upcomingEvents = [
   { id: 2, title: 'Mortgage rate review', description: 'Fixed period ends', eventDate: iso('2026-11-01'), isRecurring: false, isNotified: true },
   { id: 3, title: 'Gas safety check', description: 'Annual inspection', eventDate: iso('2025-02-20'), isRecurring: true, isNotified: true },
 ];
+
+/**
+ * A landlord who has just signed up, so the smoke suite mounts `OnboardingChecklist` with
+ * something to render. An established fixture would make the widget correctly render nothing —
+ * and a widget that renders nothing cannot fail the undefined-component check this suite exists
+ * for, so the empty case is the useful one here.
+ */
+export const onboardingProgress = {
+  hasProperty: false,
+  hasLease: false,
+  hasTransaction: false,
+  hasValuation: false,
+  hasBankAccount: false,
+  hasLoan: false,
+  hasStock: false,
+};

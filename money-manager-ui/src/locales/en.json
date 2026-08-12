@@ -364,5 +364,44 @@
       "label": "Total Loan Amount"
     },
     "confirmDelete": "Delete \"{name}\"?"
+  },
+  "onboarding": {
+    "title": "Getting started",
+    "intro": "Set these up and the dashboard can start telling you which property is underperforming, and by how much.",
+    "dismiss": "Hide",
+    "done": "Done",
+    "todo": "To do",
+    "go": "Go",
+    "optional": "optional",
+    "steps": {
+      "property": {
+        "title": "Add your first property",
+        "hint": "The flat or house you rent out."
+      },
+      "tenancy": {
+        "title": "Record who is renting it",
+        "hint": "The tenancy, the rent, and the day it falls due."
+      },
+      "ledger": {
+        "title": "Enter what you have received and paid",
+        "hint": "Rent, the mortgage, repairs and everything else in the ledger."
+      },
+      "valuation": {
+        "title": "Say what it is worth today",
+        "hint": "Without one the purchase price stands in, and appreciation reads as zero."
+      },
+      "bankAccount": {
+        "title": "Add a bank account",
+        "hint": "Where the rent arrives and the bills leave from."
+      },
+      "loan": {
+        "title": "Record the mortgage",
+        "hint": "What is still owed, so returns on your own cash can be worked out."
+      },
+      "holding": {
+        "title": "Add a holding",
+        "hint": "Anything you own outside property."
+      }
+    }
   }
 }

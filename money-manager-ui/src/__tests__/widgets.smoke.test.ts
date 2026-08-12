@@ -90,6 +90,13 @@ vi.mock('../services/exchangeRateApi', async () => {
   };
 });
 
+vi.mock('../services/onboarding', async () => {
+  const f = await import('./fixtures');
+  return {
+    fetchOnboardingProgress: () => Promise.resolve(f.onboardingProgress),
+  };
+});
+
 vi.mock('../services/settingsApi', async () => {
   const f = await import('./fixtures');
   return {

@@ -364,5 +364,44 @@
       "label": "Hitelek összege"
     },
     "confirmDelete": "Törlöd a(z) „{name}” hitelt?"
+  },
+  "onboarding": {
+    "title": "Első lépések",
+    "intro": "Állítsa be ezeket, és az irányítópult meg tudja mondani, melyik ingatlan teljesít gyengén, és mennyivel.",
+    "dismiss": "Elrejtés",
+    "done": "Kész",
+    "todo": "Teendő",
+    "go": "Ugrás",
+    "optional": "nem kötelező",
+    "steps": {
+      "property": {
+        "title": "Vegye fel az első ingatlanát",
+        "hint": "A lakás vagy ház, amelyet bérbe ad."
+      },
+      "tenancy": {
+        "title": "Rögzítse, ki bérli",
+        "hint": "A bérleti jogviszony, a bérleti díj és a fizetési határnap."
+      },
+      "ledger": {
+        "title": "Vezesse fel a bevételeket és a kiadásokat",
+        "hint": "Bérleti díj, hitel, javítások és minden más tétel."
+      },
+      "valuation": {
+        "title": "Adja meg a mai értékét",
+        "hint": "Enélkül a vételár helyettesíti, és az értéknövekedés nullának látszik."
+      },
+      "bankAccount": {
+        "title": "Vegyen fel egy bankszámlát",
+        "hint": "Ahová a bérleti díj érkezik, és ahonnan a számlák mennek."
+      },
+      "loan": {
+        "title": "Rögzítse a jelzáloghitelt",
+        "hint": "A fennálló tartozás, hogy a saját tőkéjén elért hozam kiszámítható legyen."
+      },
+      "holding": {
+        "title": "Vegyen fel egy befektetést",
+        "hint": "Bármi, amit az ingatlanon kívül birtokol."
+      }
+    }
   }
 }
