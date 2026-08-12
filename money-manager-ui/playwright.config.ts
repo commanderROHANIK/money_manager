@@ -41,8 +41,12 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
 
+  // `list` is in the CI set on purpose, alongside the other two. The `github` reporter emits
+  // annotations and the `html` one writes a file you have to download; neither puts a legible
+  // account of the failure in the job log itself, which is the first and often only place anyone
+  // looks. Leaving it out once already cost a full cycle diagnosing a red run.
   reporter: process.env.CI
-    ? [['github'], ['html', { open: 'never' }]]
+    ? [['list'], ['github'], ['html', { open: 'never' }]]
     : [['list']],
 
   use: {

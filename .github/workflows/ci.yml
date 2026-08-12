@@ -116,6 +116,7 @@ jobs:
             --env Seed__Enabled=true \
             --env "Seed__Password=$SEED_PASSWORD" \
             --env Features__AutomaticExchangeRates=false \
+            --env "Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning" \
             moneymanager:ci
 
       # The suite fetches no rates: the flag above registers NoExchangeRateProvider, so there is
@@ -160,9 +161,13 @@ jobs:
 
       # The container's own log is usually the answer when the suite fails to log in or the page
       # comes up empty, and it is gone the moment the runner is reclaimed.
+      #
+      # Tailed, and with EF's command logging turned down where the container starts. Dumping it
+      # whole put roughly a thousand lines of SELECT between the reader and the Playwright output
+      # immediately above it, which is how a step meant to aid diagnosis ends up preventing it.
       - name: Container logs
         if: failure()
-        run: docker logs moneymanager-e2e
+        run: docker logs --tail 200 moneymanager-e2e
 
       - name: Upload the Playwright report
         if: failure()
