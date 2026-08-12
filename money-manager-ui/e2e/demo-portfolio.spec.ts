@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { rowsUnder, signIn } from './helpers';
 
 /**
  * What the demo seed promises, asserted through a browser against a running deployment image.
@@ -17,8 +18,6 @@ import { expect, test, type Page } from '@playwright/test';
  * a seed that has both.</p>
  */
 
-const USERNAME = process.env.E2E_USERNAME ?? 'demo';
-
 /**
  * Seeded property names are data rather than translated copy, so they read identically in all
  * four locales. They are the only strings below that do; everything else is pinned to English by
@@ -36,50 +35,8 @@ const VACANT = 'Kerkstraat 8';
 const NO_VALUATION =
   'No valuation recorded, so the purchase price is used as the current value and appreciation reads as zero.';
 
-function seededPassword(): string {
-  const value = process.env.E2E_PASSWORD;
-
-  if (!value) {
-    // Thrown from the helper rather than at module scope so `playwright test --list` still works
-    // without credentials — listing the suite is how you check it compiles.
-    throw new Error(
-      'E2E_PASSWORD is not set. It must match Seed__Password on the instance under test. There is ' +
-        'deliberately no default: with registration disabled, the seeded account is the only way in.'
-    );
-  }
-
-  return value;
-}
-
-async function signIn(page: Page): Promise<void> {
-  // Pinned before the first navigation, and it survives login's reload because it lives in
-  // localStorage under the same key the language picker writes. Without it the app comes up in
-  // Hungarian — DEFAULT_LOCALE — and every English assertion below would be testing the wrong
-  // language while appearing to test the right thing.
-  await page.addInitScript("window.localStorage.setItem('locale', 'en')");
-
-  await page.goto('/login');
-  await page.locator('input[autocomplete="username"]').fill(USERNAME);
-  await page.locator('input[autocomplete="current-password"]').fill(seededPassword());
-  await page.locator('button[type="submit"]').click();
-
-  // Login pushes to '/' and then calls window.location.reload(). Waiting on the URL alone races
-  // that reload — the assertion can pass against a document that is about to be torn down — so
-  // each spec re-navigates explicitly afterwards, which makes the torn-down document moot.
-  await page.waitForURL((url) => !url.pathname.startsWith('/login'));
-}
-
-/**
- * The rows of the "All Properties" card specifically. Property names also appear in the widgets
- * above it, so an unscoped `getByRole('listitem')` would match several rows and fail strict mode
- * for a reason that has nothing to do with the assertion.
- */
-function propertyRows(page: Page) {
-  return page
-    .getByRole('heading', { name: 'All Properties', exact: true })
-    .locator('xpath=..')
-    .getByRole('listitem');
-}
+/** The rows of the "All Properties" card specifically. */
+const propertyRows = (page: Page) => rowsUnder(page, 'All Properties');
 
 async function openProperty(page: Page, name: string): Promise<void> {
   await page.goto('/properties');

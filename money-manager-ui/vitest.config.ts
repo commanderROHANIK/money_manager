@@ -31,7 +31,25 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 75.66 / 73.46 / 72.69 / 75.48, after the exchange-rate provenance work.
+      // Last measured 76.85 / 74.33 / 74.45 / 76.73, after the onboarding checklist.
+      //
+      // Functions moves 73 -> 74, and it is the only one that moves. It gained 1.19 — the largest
+      // single jump these floors have seen — because the feature arrived as two pure functions
+      // with a table of cases against them rather than as a component with logic buried in it.
+      //
+      // Statements and lines gained about six tenths each and stay at 76: the next rung up is
+      // above the measurement, so raising them would fail the run that just passed. Branches did
+      // not move at all — 74.34 to 74.33 — which is exactly the rounding these floors are written
+      // to absorb, and ratcheting on it would be ratcheting on noise.
+      //
+      // Note this is the second look at functions. The previous pass measured 74.11 and declined
+      // 74, because 0.11 of headroom fails an honest pull request on rounding. The extra tests
+      // for the dismissal path and the failed-request path put it at 74.45, which is the margin
+      // this file has accepted before.
+      //
+      // Before that: 76.25 / 74.34 / 73.26 / 76.10, after the demo seed and its browser suite.
+      //
+      // Before that: 75.66 / 73.46 / 72.69 / 75.48, after the exchange-rate provenance work.
       //
       // Statements, lines and branches move up — 73 -> 75, 73 -> 75 and 71 -> 73 — keeping the
       // roughly half-point-to-two-point margin these floors carry. Functions stays at 70: it
@@ -113,7 +131,7 @@ export default defineConfig({
       thresholds: {
         statements: 76,
         branches: 74,
-        functions: 73,
+        functions: 74,
         lines: 76,
       },
     },

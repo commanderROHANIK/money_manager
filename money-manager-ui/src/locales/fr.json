@@ -364,5 +364,44 @@
       "label": "Encours total"
     },
     "confirmDelete": "Supprimer « {name} » ?"
+  },
+  "onboarding": {
+    "title": "Premiers pas",
+    "intro": "Renseignez ces éléments et le tableau de bord pourra dire quel bien sous-performe, et de combien.",
+    "dismiss": "Masquer",
+    "done": "Fait",
+    "todo": "À faire",
+    "go": "Ouvrir",
+    "optional": "facultatif",
+    "steps": {
+      "property": {
+        "title": "Ajoutez votre premier bien",
+        "hint": "L'appartement ou la maison que vous louez."
+      },
+      "tenancy": {
+        "title": "Indiquez qui le loue",
+        "hint": "Le bail, le loyer et le jour d'échéance."
+      },
+      "ledger": {
+        "title": "Saisissez ce que vous avez perçu et payé",
+        "hint": "Loyer, prêt, réparations et tout le reste du registre."
+      },
+      "valuation": {
+        "title": "Indiquez sa valeur actuelle",
+        "hint": "Sans elle, le prix d'achat sert de substitut et la plus-value apparaît comme nulle."
+      },
+      "bankAccount": {
+        "title": "Ajoutez un compte bancaire",
+        "hint": "Là où le loyer arrive et d'où partent les factures."
+      },
+      "loan": {
+        "title": "Enregistrez le prêt",
+        "hint": "Le capital restant dû, pour calculer le rendement de vos fonds propres."
+      },
+      "holding": {
+        "title": "Ajoutez une position",
+        "hint": "Tout ce que vous détenez en dehors de l'immobilier."
+      }
+    }
   }
 }
