@@ -118,16 +118,23 @@ test.describe('the seeded demo portfolio', () => {
     await expect(propertyRows(page).filter({ hasText: FORINT })).toContainText('Rented');
   });
 
-  test('the let properties are not shown as in arrears', async ({ page }) => {
+  test('the let properties are current, or at most the current month behind', async ({ page }) => {
     await signIn(page);
     await page.goto('/properties');
 
-    // The seed this replaced recorded rent for 6 months of an 18-month tenancy, so the property
-    // meant to look healthy carried a year of arrears in the one view a demo opens on. The rent
-    // schedule derives that from the ledger on every request, so nothing but a browser check
-    // would have noticed.
-    await expect(propertyRows(page).filter({ hasText: HEALTHY })).not.toContainText('behind');
+    // Budapest is paid up to and including this month, on purpose, so that one property in the
+    // portfolio is unambiguously green and "in arrears" does not read as the app's normal state.
     await expect(propertyRows(page).filter({ hasText: FORINT })).not.toContainText('behind');
+
+    // Utrecht deliberately has only the current month unrecorded, so the rent schedule and the
+    // arrears list have something other than green to show. Whether that surfaces as a badge at
+    // all depends on the day of the month against the 5th it falls due, which is why this asserts
+    // magnitude rather than presence.
+    //
+    // The regression it guards is the old seed's: rent for 6 months of an 18-month tenancy, which
+    // put a *year* of arrears on the property meant to look healthy. The label pluralises above
+    // one month, so "months" appearing here is that bug returning, while "1 month" is the design.
+    await expect(propertyRows(page).filter({ hasText: HEALTHY })).not.toContainText('months');
   });
 
   test('the property with no valuation says so', async ({ page }) => {
