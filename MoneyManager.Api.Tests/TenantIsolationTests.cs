@@ -146,6 +146,7 @@ public sealed class TenantIsolationTests : IDisposable
                 QuoteCurrency = "HUF",
                 Rate = 400m,
             });
+            asAlice.AgendaAcknowledgements.Add(new AgendaAcknowledgement { Key = "manual:1" });
             asAlice.SaveChanges();
         }
 
@@ -161,6 +162,33 @@ public sealed class TenantIsolationTests : IDisposable
         Assert.Empty(asBob.RentPricePoints.ToList());
         Assert.Empty(asBob.PropertyEvents.ToList());
         Assert.Empty(asBob.ExchangeRates.ToList());
+        Assert.Empty(asBob.AgendaAcknowledgements.ToList());
+    }
+
+    [Fact]
+    public void Two_users_can_acknowledge_the_same_derived_key_independently()
+    {
+        // The key names a lease or a loan, not a row either user owns exclusively by
+        // construction the way a RentalPropertyId foreign key would — so this is the case that
+        // actually exercises the unique index being scoped to (UserId, Key) rather than to Key
+        // alone.
+        using (var asAlice = ContextFor(Alice))
+        {
+            asAlice.AgendaAcknowledgements.Add(new AgendaAcknowledgement { Key = "loan:1" });
+            asAlice.SaveChanges();
+        }
+
+        using (var asBob = ContextFor(Bob))
+        {
+            asBob.AgendaAcknowledgements.Add(new AgendaAcknowledgement { Key = "loan:1" });
+            asBob.SaveChanges();
+        }
+
+        using var asAlice2 = ContextFor(Alice);
+        Assert.Single(asAlice2.AgendaAcknowledgements.ToList());
+
+        using var asBob2 = ContextFor(Bob);
+        Assert.Single(asBob2.AgendaAcknowledgements.ToList());
     }
 
     [Fact]

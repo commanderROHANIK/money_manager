@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.Agenda;
 
 namespace MoneyManager.Api.Controllers
 {
@@ -15,13 +16,49 @@ namespace MoneyManager.Api.Controllers
     public class UpcomingEventsController : ControllerBase
     {
         private readonly MoneyManagerDbContext _context;
+        private readonly AgendaService _agenda;
 
         // The ILogger this used to take existed solely for the try/catch around CreateEvent.
         // UseExceptionHandler logs unhandled exceptions now, so keeping the dependency would
         // leave a field that is assigned and never read.
-        public UpcomingEventsController(MoneyManagerDbContext context)
+        public UpcomingEventsController(MoneyManagerDbContext context, AgendaService agenda)
         {
             _context = context;
+            _agenda = agenda;
+        }
+
+        /// <summary>
+        /// Manual reminders merged with rent and loan due dates derived from the ledger, sorted
+        /// by due date. <paramref name="days"/> bounds only entries that are not yet due — an
+        /// overdue one shows regardless, because a rent six months overdue must not vanish for
+        /// falling outside a 30-day window.
+        ///
+        /// <para>
+        /// Routed ahead of <see cref="GetEvent"/>'s <c>{id}</c> template on purpose: attribute
+        /// routing prefers the more specific literal segment, the same as <c>/users/me</c> would
+        /// beat <c>/users/{id}</c>, so a request for <c>/agenda</c> never falls through to a
+        /// lookup for an event literally named "agenda".
+        /// </para>
+        /// </summary>
+        [HttpGet("agenda")]
+        public async Task<ActionResult<IEnumerable<AgendaEntry>>> GetAgenda([FromQuery] int days = 30)
+        {
+            if (days < 0)
+                return ValidationProblem(detail: "days must not be negative.");
+
+            return Ok(await _agenda.GetAgendaAsync(days));
+        }
+
+        /// <summary>
+        /// Dismisses one agenda entry by the stable key <see cref="GetAgenda"/> reported it
+        /// under. Works uniformly for a manual event and a derived rent or loan entry — there is
+        /// no row to delete for the derived ones, only a key to remember having seen.
+        /// </summary>
+        [HttpPost("agenda/{key}/ack")]
+        public async Task<IActionResult> AcknowledgeAgendaEntry(string key)
+        {
+            await _agenda.AcknowledgeAsync(key);
+            return NoContent();
         }
 
         [HttpGet]
@@ -78,6 +115,16 @@ namespace MoneyManager.Api.Controllers
             if (ev == null) return NotFound();
 
             _context.UpcomingEvents.Remove(ev);
+
+            // The agenda entry this event would have produced is gone with it, so an
+            // acknowledgement of it is now a row about nothing. Left behind it is harmless — the
+            // key can never be produced again — but cleaning it up keeps the table from
+            // accumulating rows nothing will ever look up again.
+            var key = $"manual:{id}";
+            var ack = await _context.AgendaAcknowledgements.FirstOrDefaultAsync(a => a.Key == key);
+            if (ack is not null)
+                _context.AgendaAcknowledgements.Remove(ack);
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
