@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.Agenda;
 using MoneyManager.Api.Services.Analytics;
 using MoneyManager.Api.Services.Banking;
 using MoneyManager.Api.Services.Currency;
@@ -140,6 +141,7 @@ builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<PropertyAnalyticsService>();
 builder.Services.AddScoped<CurrencyRollupService>();
 builder.Services.AddScoped<RentScheduleService>();
+builder.Services.AddScoped<AgendaService>();
 
 // The seam, with a deliberate no-op behind it. A real provider is registered here instead once
 // one is configured, and nothing above IBankDataProvider changes when that happens — which is

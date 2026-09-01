@@ -129,4 +129,34 @@ namespace MoneyManager.Api.Services.Rent
         public required int OverduePeriodCount { get; init; }
         public string? OldestOverduePeriod { get; init; }
     }
+
+    /// <summary>
+    /// The current month's rent for one let property — the one row the due-date agenda
+    /// (<c>Services.Agenda.AgendaBuilder</c>) needs per active lease.
+    ///
+    /// <para>
+    /// Only produced for a month something was actually billed: a vacant month, or one where the
+    /// tenancy running started after its own due day, has no <see cref="RentSchedule.Periods"/>
+    /// entry worth turning into a reminder, which is why <c>RentScheduleService</c> only ever
+    /// returns one of these when <see cref="AmountDue"/> would be positive-or-already-settled — see
+    /// its docblock for the exact rule.
+    /// </para>
+    ///
+    /// <para>
+    /// <see cref="AmountDue"/> is what is still owed for the month — <c>RentPeriod.Shortfall</c> —
+    /// rather than the full monthly rent, so a partly-paid month reads as the remainder still due
+    /// and a fully-paid one produces no row at all rather than a reminder for money already in.
+    /// </para>
+    /// </summary>
+    public sealed record PropertyRentDue
+    {
+        public required int PropertyId { get; init; }
+        public required string PropertyName { get; init; }
+        public required string CurrencyCode { get; init; }
+        public required int LeaseId { get; init; }
+        public required string TenantName { get; init; }
+        public required DateTime DueDate { get; init; }
+        public required decimal AmountDue { get; init; }
+        public required bool IsOverdue { get; init; }
+    }
 }
