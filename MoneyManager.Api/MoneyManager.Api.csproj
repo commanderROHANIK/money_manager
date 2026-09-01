@@ -8,23 +8,23 @@
 
   <ItemGroup>
     <PackageReference Include="dotenv.net" Version="4.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.18" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.18" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.18" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.18">
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.19" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.19" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.19" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.19">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.11">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.11" />
     <!-- Microsoft.IdentityModel.Tokens is intentionally NOT pinned here. Pinning it to an
          older version than the Microsoft.IdentityModel.JsonWebTokens that JwtBearer resolves
          makes the handler call a Base64UrlEncoder overload that does not exist, and every
          token fails validation with IDX14102 at runtime. Let JwtBearer pick a coherent set. -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.18" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.19" />
   </ItemGroup>
 
   <ItemGroup>

@@ -96,6 +96,81 @@ namespace MoneyManager.Api.Services.Rent
             return arrears.OrderByDescending(a => a.OverduePeriodCount).ThenBy(a => a.PropertyName).ToList();
         }
 
+        /// <summary>
+        /// The current month's rent for every let property, for the due-date agenda.
+        ///
+        /// <para>
+        /// One row per active lease, not one row per property in arrears: unlike
+        /// <see cref="GetArrearsAsync"/>, which sums every overdue month a tenancy has ever
+        /// missed, the agenda only ever asks "what does this lease owe for the period running
+        /// right now" — a landlord already sees the full arrears history on the property's own
+        /// rent-schedule page, and duplicating months of back-rent as separate agenda rows would
+        /// make the reminder list unreadable rather than more complete.
+        /// </para>
+        ///
+        /// <para>
+        /// A property comes back only when the current period actually billed something and some
+        /// of it is still unpaid — a vacant month, a month billed but already paid in full, and a
+        /// month where the tenancy starts after its own due day (no proration, see
+        /// <see cref="RentScheduleBuilder"/>) all produce nothing here, the same as they produce no
+        /// arrears.
+        /// </para>
+        /// </summary>
+        public async Task<IReadOnlyList<PropertyRentDue>> GetCurrentDueAsync(DateTime? asOf = null)
+        {
+            var effectiveAsOf = (asOf ?? DateTime.UtcNow).Date;
+            var monthStart = new DateTime(effectiveAsOf.Year, effectiveAsOf.Month, 1);
+
+            var properties = await context.RentalProperties.ToListAsync();
+            if (properties.Count == 0)
+                return [];
+
+            var ids = properties.Select(p => p.Id).ToList();
+
+            var leases = await context.Leases
+                .Where(l => ids.Contains(l.RentalPropertyId))
+                .ToListAsync();
+
+            var payments = await context.PropertyTransactions
+                .Where(t => ids.Contains(t.RentalPropertyId) && t.Category == TransactionCategory.RentIncome)
+                .ToListAsync();
+
+            var due = new List<PropertyRentDue>();
+
+            foreach (var property in properties)
+            {
+                var schedule = RentScheduleBuilder.Build(new RentScheduleInput
+                {
+                    PropertyId = property.Id,
+                    CurrencyCode = property.CurrencyCode,
+                    Tenancies = ToTenancies(leases.Where(l => l.RentalPropertyId == property.Id)),
+                    Payments = ToPayments(payments.Where(t => t.RentalPropertyId == property.Id)),
+                    From = monthStart,
+                    To = monthStart,
+                    AsOf = effectiveAsOf,
+                });
+
+                var current = schedule.Periods.SingleOrDefault(p => p.Period == RentScheduleBuilder.PeriodKey(monthStart));
+
+                if (current is not { LeaseId: { } leaseId, TenantName: { } tenantName, Shortfall: > 0m })
+                    continue;
+
+                due.Add(new PropertyRentDue
+                {
+                    PropertyId = property.Id,
+                    PropertyName = property.PropertyName,
+                    CurrencyCode = property.CurrencyCode,
+                    LeaseId = leaseId,
+                    TenantName = tenantName,
+                    DueDate = current.DueDate,
+                    AmountDue = current.Shortfall.Value,
+                    IsOverdue = current.IsOverdue,
+                });
+            }
+
+            return due;
+        }
+
         private static List<ScheduledTenancy> ToTenancies(IEnumerable<Lease> leases) =>
             leases
                 .Select(l => new ScheduledTenancy(

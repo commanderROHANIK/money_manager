@@ -177,6 +177,114 @@ public sealed class RentScheduleServiceTests : IDisposable
         Assert.Equal("Bob's flat", only.PropertyName);
     }
 
+    // ------------------------------------------------------------------
+    // GetCurrentDueAsync — the agenda's rent-due feed
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public async Task An_unpaid_current_month_produces_one_due_row()
+    {
+        var propertyId = SeedLetPropertyFor(Alice, "Alice's flat");
+
+        using var context = ContextFor(Alice);
+        var due = await new RentScheduleService(context).GetCurrentDueAsync(AsOf);
+
+        var only = Assert.Single(due);
+        Assert.Equal(propertyId, only.PropertyId);
+        Assert.Equal(1_000m, only.AmountDue);
+        Assert.Equal(new DateTime(2025, 12, 5), only.DueDate);
+
+        // 2025-12-15 is after the 5th, so this month's rent is overdue as well as unpaid.
+        Assert.True(only.IsOverdue);
+    }
+
+    [Fact]
+    public async Task A_current_month_already_paid_in_full_produces_nothing()
+    {
+        var propertyId = SeedLetPropertyFor(Alice, "Alice's flat");
+        Record(Alice, propertyId, new DateTime(2025, 12, 5), 1_000m, TransactionCategory.RentIncome);
+
+        using var context = ContextFor(Alice);
+        var due = await new RentScheduleService(context).GetCurrentDueAsync(AsOf);
+
+        Assert.Empty(due);
+    }
+
+    [Fact]
+    public async Task A_lease_that_ended_before_its_own_due_day_this_month_produces_nothing()
+    {
+        using var context = ContextFor(Alice);
+
+        var property = new RentalProperty { PropertyName = "Ended mid-month", Address = "somewhere", CurrencyCode = "EUR" };
+        context.RentalProperties.Add(property);
+        context.SaveChanges();
+
+        // Rent falls due on the 20th; the tenancy ended on the 10th. December bills nothing —
+        // there is no proration in this model, the same rule RentScheduleBuilderTests covers for
+        // a tenancy that starts after its own due day.
+        context.Leases.Add(new Lease
+        {
+            RentalPropertyId = property.Id,
+            TenantName = "Departing tenant",
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 10),
+            MonthlyRent = 1_000m,
+            CurrencyCode = "EUR",
+            RentDueDayOfMonth = 20,
+        });
+        context.SaveChanges();
+
+        using var reader = ContextFor(Alice);
+        var due = await new RentScheduleService(reader).GetCurrentDueAsync(AsOf);
+
+        Assert.Empty(due);
+    }
+
+    [Fact]
+    public async Task A_due_day_of_31_is_clamped_into_a_shorter_month()
+    {
+        using var context = ContextFor(Alice);
+
+        var property = new RentalProperty { PropertyName = "Due on the 31st", Address = "somewhere", CurrencyCode = "EUR" };
+        context.RentalProperties.Add(property);
+        context.SaveChanges();
+
+        context.Leases.Add(new Lease
+        {
+            RentalPropertyId = property.Id,
+            TenantName = "Anna",
+            StartDate = new DateTime(2025, 1, 1),
+            MonthlyRent = 1_000m,
+            CurrencyCode = "EUR",
+            RentDueDayOfMonth = 31,
+        });
+        context.SaveChanges();
+
+        // April has 30 days, so the 31st clamps to the 30th — the case the issue calls out by
+        // name, and the reason RentScheduleService.GetCurrentDueAsync has to go through
+        // RentScheduleBuilder rather than rolling its own due-date math.
+        var april = new DateTime(2025, 4, 15);
+
+        using var reader = ContextFor(Alice);
+        var due = await new RentScheduleService(reader).GetCurrentDueAsync(april);
+
+        var only = Assert.Single(due);
+        Assert.Equal(new DateTime(2025, 4, 30), only.DueDate);
+    }
+
+    [Fact]
+    public async Task Current_due_rent_never_reaches_across_the_tenant_boundary()
+    {
+        SeedLetPropertyFor(Alice, "Alice's flat");
+        SeedLetPropertyFor(Bob, "Bob's flat");
+
+        using var asBob = ContextFor(Bob);
+        var due = await new RentScheduleService(asBob).GetCurrentDueAsync(AsOf);
+
+        var only = Assert.Single(due);
+        Assert.Equal("Bob's flat", only.PropertyName);
+    }
+
     [Fact]
     public async Task A_property_belonging_to_someone_else_has_no_schedule()
     {

@@ -38,6 +38,8 @@ namespace MoneyManager.Api.Data
 
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
+        public DbSet<AgendaAcknowledgement> AgendaAcknowledgements { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -64,6 +66,7 @@ namespace MoneyManager.Api.Data
             ConfigureOwnership<RentPricePoint>(modelBuilder);
             ConfigureOwnership<PropertyEvent>(modelBuilder);
             ConfigureOwnership<ExchangeRate>(modelBuilder);
+            ConfigureOwnership<AgendaAcknowledgement>(modelBuilder);
 
             modelBuilder.Entity<RentalProperty>(entity =>
             {
@@ -140,6 +143,16 @@ namespace MoneyManager.Api.Data
                 // never a second row for the same pair to disagree with the first — which for a
                 // hand-maintained rate table is the failure that actually happens.
                 entity.HasIndex(r => new { r.UserId, r.BaseCurrency, r.QuoteCurrency }).IsUnique();
+            });
+
+            modelBuilder.Entity<AgendaAcknowledgement>(entity =>
+            {
+                entity.Property(a => a.Key).HasMaxLength(200);
+
+                // One acknowledgement per key per user. The endpoint treats a repeat
+                // acknowledgement as a no-op rather than relying on this to reject the second
+                // insert, but the index is what keeps that true if a caller ever races itself.
+                entity.HasIndex(a => new { a.UserId, a.Key }).IsUnique();
             });
         }
 
