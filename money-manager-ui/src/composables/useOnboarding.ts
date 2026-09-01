@@ -112,6 +112,11 @@ export function useOnboarding(): {
   );
 
   onMounted(async () => {
+    // Dismissed is already decided from localStorage, so no answer this fetch could bring back
+    // would change `visible` — the same reasoning against moving rows to answer a settled
+    // question, applied to a round-trip whose answer is already known.
+    if (dismissed.value) return;
+
     try {
       progress.value = await fetchOnboardingProgress();
     } catch (error) {
