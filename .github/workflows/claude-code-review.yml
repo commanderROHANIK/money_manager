@@ -2,7 +2,12 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
+    types: [opened, reopened, ready_for_review]
+    # Deliberately no `synchronize`: every round of the review/fix loop already runs inside a
+    # single job per PR-open event (see the prompt below). Re-triggering the whole loop on every
+    # subsequent human push isn't what this workflow is for, and would reintroduce the
+    # push-fires-synchronize retrigger problem the single-job design avoids. Want another pass
+    # later? Mention @claude (see claude.yml).
     # Optional: Only run on specific file changes
     # paths:
     #   - "src/**/*.ts"
@@ -17,11 +22,13 @@ jobs:
     #   github.event.pull_request.user.login == 'external-contributor' ||
     #   github.event.pull_request.user.login == 'new-developer' ||
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    if: github.event.pull_request.draft == false
 
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
-      contents: read
-      pull-requests: read
+      contents: write
+      pull-requests: write
       issues: read
       id-token: write
 
@@ -29,6 +36,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 1
 
       - name: Run Claude Code Review
@@ -38,8 +46,48 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
+          prompt: |
+            Review and fix pull request ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+            in rounds, up to 3 rounds total. Do all of this in one continuous session — do not
+            wait for further input between rounds.
+
+            Each round:
+            1. Run `/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}`
+               at medium effort. This posts inline findings on the PR — leave that as the visible
+               audit trail for this round, even if you're about to fix everything it found.
+            2. Classify the findings: a CONFIRMED finding in a correctness-affecting category
+               (e.g. tenant isolation, money/currency handling, auth, data loss, a real crash or
+               wrong-output bug) is BLOCKING. A PLAUSIBLE-only finding, or one that is purely
+               simplification/efficiency/style, is NON-BLOCKING — fix it opportunistically if
+               trivial, but it does not gate the loop.
+            3. If there are no BLOCKING findings, stop the loop now and go to the wrap-up step
+               below.
+            4. Otherwise, fix every BLOCKING finding directly (you have Edit/Write). Then rebuild
+               and retest both halves and do not continue if either is red:
+               `dotnet build app.sln && dotnet test app.sln`, and in `money-manager-ui/`:
+               `npm run typecheck && npm run lint && npm test`.
+            5. Start the next round (back to step 1), unless this was round 3 — after round 3,
+               stop the loop regardless of outcome and go to the wrap-up step.
+
+            Wrap-up (always do this once, at the end, whether clean or not):
+            - If you made any fixes: commit them (identify the commit as an automated
+              review-fix pass, e.g. `Automated review fixes (Claude)` as the summary line) and
+              run `git push origin HEAD:${{ github.event.pull_request.head.ref }}`. If the push
+              fails (expected for a fork PR — this token can't push to a fork), don't treat that
+              as an error: instead post the diff you would have pushed as a PR comment via
+              `gh pr comment`, noting a maintainer needs to apply it manually.
+            - Post exactly one final PR comment via `gh pr comment` summarizing: how many rounds
+              ran, what was fixed in each round, and the final status — either "clean, no
+              blocking findings remain" or the list of blocking findings still open that need a
+              human.
+          claude_args: >-
+            --allowedTools
+            "mcp__github_inline_comment__create_inline_comment"
+            "Bash(git *)"
+            "Bash(dotnet *)"
+            "Bash(npm *)"
+            "Bash(gh pr *)"
+            "Edit"
+            "Write"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
-
