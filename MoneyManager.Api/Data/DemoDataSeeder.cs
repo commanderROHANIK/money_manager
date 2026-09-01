@@ -321,7 +321,7 @@ namespace MoneyManager.Api.Data
             // unrecorded so the rent schedule and the arrears list have something other than green
             // to show. Stopping six months in would instead read as a year of unexplained arrears
             // on the property this portfolio is meant to hold up as the healthy one.
-            foreach (var payment in RentReceived(property, lease, firstOfThisMonth, from: 17, to: 1))
+            foreach (var payment in RentReceived(property, lease, firstOfThisMonth, from: 18, to: 1))
                 yield return payment;
 
             foreach (var payment in MortgagePaid(property, firstOfThisMonth, 780m, months: 6))
@@ -342,7 +342,7 @@ namespace MoneyManager.Api.Data
 
             // Paid up to and including this month, so one property in the portfolio is unambiguously
             // current — otherwise "in arrears" looks like the normal state of the app.
-            foreach (var payment in RentReceived(property, lease, firstOfThisMonth, from: 13, to: 0))
+            foreach (var payment in RentReceived(property, lease, firstOfThisMonth, from: 14, to: 0))
                 yield return payment;
         }
 
@@ -362,7 +362,7 @@ namespace MoneyManager.Api.Data
 
             // Rent runs to the end of the tenancy and then stops. The gap is the story: no arrears,
             // no missing paperwork, simply nobody living there.
-            foreach (var payment in RentReceived(property, lease, firstOfThisMonth, from: 21, to: 5))
+            foreach (var payment in RentReceived(property, lease, firstOfThisMonth, from: 22, to: 5))
                 yield return payment;
 
             // The mortgage does not stop when the tenant leaves, which is most of why this property
