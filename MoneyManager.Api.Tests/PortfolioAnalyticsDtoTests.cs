@@ -35,7 +35,9 @@ public sealed class PortfolioAnalyticsDtoTests
         decimal? cashInvested = null,
         decimal? equity = null,
         decimal? monthlyCashFlow = null,
-        decimal? cumulativeNetCashFlow = null) =>
+        decimal? cumulativeNetCashFlow = null,
+        decimal? annualRentUplift = null,
+        decimal? contractedMonthlyRent = null) =>
         new()
         {
             PropertyId = id,
@@ -46,6 +48,8 @@ public sealed class PortfolioAnalyticsDtoTests
             Equity = equity,
             MonthlyCashFlow = monthlyCashFlow,
             CumulativeNetCashFlow = cumulativeNetCashFlow,
+            AnnualRentUplift = annualRentUplift,
+            ContractedMonthlyRent = contractedMonthlyRent,
         };
 
     [Fact]
@@ -193,6 +197,62 @@ public sealed class PortfolioAnalyticsDtoTests
         Assert.Equal(without.Properties, with.Properties);
         Assert.Equal("HUF", with.Properties[0].CurrencyCode);
         Assert.Equal(18_600_000m, with.Properties[0].CashInvested);
+    }
+
+    [Fact]
+    public void TotalAnnualRentUplift_sums_only_underpriced_properties()
+    {
+        // One underpriced (+1,200/yr), one right at market (0), one overpriced (-600/yr, already
+        // let above the market estimate) and one with no market estimate at all (null, skipped
+        // like any other unrecorded metric). The total is 1,200 — the overpriced property's -600
+        // must not net against it.
+        var dto = PortfolioAnalyticsDto.From(
+            [Metrics(1, "EUR", annualRentUplift: 1_200m),
+             Metrics(2, "EUR", annualRentUplift: 0m),
+             Metrics(3, "EUR", annualRentUplift: -600m),
+             Metrics(4, "EUR", annualRentUplift: null)],
+            Rollup("EUR"));
+
+        Assert.Equal(1_200m, dto.TotalAnnualRentUplift);
+    }
+
+    [Fact]
+    public void TotalAnnualRentUplift_is_null_when_nobody_is_underpriced()
+    {
+        var dto = PortfolioAnalyticsDto.From(
+            [Metrics(1, "EUR", annualRentUplift: 0m), Metrics(2, "EUR", annualRentUplift: -600m)],
+            Rollup("EUR"));
+
+        // No property contributes, so this reads as "cannot be known" via CurrencyRollup.Sum's
+        // own rule — the same "nobody said anything" case as `cashInvested` never being entered,
+        // not a confident zero.
+        Assert.Null(dto.TotalAnnualRentUplift);
+    }
+
+    [Fact]
+    public void TotalMonthlyRent_sums_contracted_rent_and_skips_a_vacant_property()
+    {
+        // A vacant property carries no active lease, so ContractedMonthlyRent is null there — not
+        // zero, the same "skipped rather than counted" rule every other rollup total follows for
+        // a metric nobody has an answer for.
+        var dto = PortfolioAnalyticsDto.From(
+            [Metrics(1, "EUR", contractedMonthlyRent: 1_200m),
+             Metrics(2, "EUR", contractedMonthlyRent: 800m),
+             Metrics(3, "EUR", contractedMonthlyRent: null)],
+            Rollup("EUR"));
+
+        Assert.Equal(2_000m, dto.TotalMonthlyRent);
+    }
+
+    [Fact]
+    public void TotalMonthlyRent_converts_across_currencies_like_every_other_total()
+    {
+        var dto = PortfolioAnalyticsDto.From(
+            [Metrics(1, "HUF", contractedMonthlyRent: 400_000m),
+             Metrics(2, "EUR", contractedMonthlyRent: 500m)],
+            Rollup("EUR", false, EurHuf));
+
+        Assert.Equal(1_500m, dto.TotalMonthlyRent);
     }
 
     [Fact]

@@ -14,6 +14,7 @@ import { mount } from '@vue/test-utils';
 import type { PortfolioAnalytics, PropertyMetrics, RentSchedule } from '../models/models';
 import { currentLocale, DEFAULT_LOCALE, intlLocale } from '../i18n/locale';
 import { formatDate } from '../utils/labels';
+import { formatMoney } from '../utils/money';
 import * as f from './fixtures';
 import { FROZEN_NOW } from './fixtures';
 
@@ -22,6 +23,7 @@ import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSu
 import RentCollectionWidget from '../components/Widgets/Properties/RentCollectionWidget.vue';
 import TransactionLedgerWidget from '../components/Widgets/Properties/TransactionLedgerWidget.vue';
 import UnderpricedPropertiesWidget from '../components/Widgets/Properties/UnderpricedPropertiesWidget.vue';
+import TotalRentWidget from '../components/Widgets/Properties/TotalRentWidget.vue';
 
 // These assert what a widget *shows* — the figures and the labels — not how a locale formats
 // them. Pinned to English so the expectations below stay readable and stable; the formatting
@@ -304,12 +306,47 @@ describe('UnderpricedPropertiesWidget', () => {
     // propertyMetricsAtMarket has a negative rent gap — it is charging above the estimate and
     // must not be presented as an opportunity to raise rent.
     const wrapper = mount(UnderpricedPropertiesWidget, {
-      props: { metrics: f.portfolio.properties as unknown as PropertyMetrics[] },
+      props: { portfolio: f.portfolio as unknown as PortfolioAnalytics },
     });
 
     const text = wrapper.text();
 
     expect(text).toContain('Bartók flat');
     expect(text).not.toContain('Lakeside house');
+  });
+
+  it('shows the portfolio-converted total, not a client-side sum of the list', () => {
+    const wrapper = mount(UnderpricedPropertiesWidget, {
+      props: { portfolio: f.portfolio as unknown as PortfolioAnalytics },
+    });
+
+    // f.portfolio.totalAnnualRentUplift is the backend-computed figure — asserting on it directly
+    // is what proves this widget renders the rollup rather than re-deriving its own from the list.
+    expect(wrapper.text()).toContain(
+      formatMoney(f.portfolio.totalAnnualRentUplift, f.portfolio.currency)
+    );
+  });
+});
+
+describe('TotalRentWidget', () => {
+  it('shows the portfolio-converted total', () => {
+    const wrapper = mount(TotalRentWidget, {
+      props: { portfolio: f.portfolioConverted as unknown as PortfolioAnalytics },
+    });
+
+    expect(wrapper.text()).toContain(
+      formatMoney(f.portfolioConverted.totalMonthlyRent, f.portfolioConverted.currency)
+    );
+  });
+
+  it('shows a blank rather than a raw cross-currency sum when the rate is missing', () => {
+    // The regression this guards: adding a HUF amount and a EUR amount as if the same unit and
+    // labelling the result as one of them.
+    const wrapper = mount(TotalRentWidget, {
+      props: { portfolio: f.portfolioMixedCurrency as unknown as PortfolioAnalytics },
+    });
+
+    expect(wrapper.text()).toContain('—');
+    expect(wrapper.text()).not.toMatch(/\d/);
   });
 });

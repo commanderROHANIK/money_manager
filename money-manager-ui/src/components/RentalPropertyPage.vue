@@ -7,7 +7,7 @@
 
     <!-- Top Row Widgets -->
     <BaseCard class="col-span-1">
-      <TotalRentWidget :properties="properties" />
+      <TotalRentWidget :portfolio="portfolio" />
     </BaseCard>
 
     <BaseCard class="col-span-1">
@@ -20,7 +20,7 @@
 
     <!-- The commercial hook: where rent is trailing the market -->
     <BaseCard class="col-span-1 xl:col-span-2">
-      <UnderpricedPropertiesWidget :metrics="portfolio?.properties ?? []" />
+      <UnderpricedPropertiesWidget :portfolio="portfolio" />
     </BaseCard>
 
     <BaseCard class="col-span-1">

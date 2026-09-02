@@ -20,13 +20,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { fetchBankAccountsTotalBalance, fetchStocks } from '../../../services/api';
-import type { BankBalanceSummary, Stock } from '../../../models/models';
-import { formatMoney, sumSameCurrency } from '../../../utils/money';
+import { fetchBankAccountsTotalBalance, fetchStocksTotalValue } from '../../../services/api';
+import type { BankBalanceSummary, StockValueSummary } from '../../../models/models';
+import { formatMoney } from '../../../utils/money';
 import BaseCard from '../../ui/BaseCard.vue';
 
 const cash = ref<BankBalanceSummary | null>(null);
-const stocks = ref<Stock[]>([]);
+const invested = ref<StockValueSummary | null>(null);
 
 onMounted(async () => {
   try {
@@ -36,19 +36,11 @@ onMounted(async () => {
   }
 
   try {
-    stocks.value = await fetchStocks();
+    invested.value = await fetchStocksTotalValue();
   } catch (error) {
-    console.error('Failed to fetch stocks:', error);
+    console.error('Failed to fetch stock value:', error);
   }
 });
-
-const invested = computed(() =>
-  sumSameCurrency(
-    stocks.value,
-    (stock) => stock.sharesOwned * stock.currentPrice,
-    (stock) => stock.currencyCode
-  )
-);
 
 const formattedCash = computed(() => {
   const s = cash.value;
@@ -56,9 +48,15 @@ const formattedCash = computed(() => {
   return s.totalBalance === null ? '—' : formatMoney(s.totalBalance, s.currency);
 });
 
-const formattedInvested = computed(() =>
-  invested.value.mixed ? '—' : formatMoney(invested.value.total, invested.value.currency)
-);
+// The holdings' own converted total (CurrencyRollup.Sum on the backend) rather than a
+// client-side sum across whatever currencies the holdings happen to be in — this used to add raw
+// amounts across currencies as if they were the same unit, and blank out entirely rather than
+// convert whenever they were mixed. A rate on record now produces a real total here instead.
+const formattedInvested = computed(() => {
+  const i = invested.value;
+  if (!i || i.totalValue === null) return '—';
+  return formatMoney(i.totalValue, i.currency);
+});
 
 /**
  * Cash and holdings only add up when they are in the same currency and both figures are known.
@@ -66,25 +64,24 @@ const formattedInvested = computed(() =>
  * is wrong by two orders of magnitude, which is the exact defect this rollup work exists to end.
  */
 const combinable = computed(() => {
-  const s = cash.value;
-  return (
-    s !== null &&
-    s.totalBalance !== null &&
-    !invested.value.mixed &&
-    invested.value.currency === s.currency
-  );
+  const c = cash.value;
+  const i = invested.value;
+  return c !== null && c.totalBalance !== null && i !== null && i.totalValue !== null && i.currency === c.currency;
 });
 
 const formattedTotal = computed(() => {
-  const s = cash.value;
-  if (!combinable.value || !s || s.totalBalance === null) return '—';
-  return formatMoney(s.totalBalance + invested.value.total, s.currency);
+  const c = cash.value;
+  const i = invested.value;
+  if (!combinable.value || !c || c.totalBalance === null || !i || i.totalValue === null) return '—';
+  return formatMoney(c.totalBalance + i.totalValue, c.currency);
 });
 
 const totalNote = computed(() => {
-  if (combinable.value || !cash.value) return '';
-  if (invested.value.mixed) return 'Holdings span several currencies, so they are not totalled here.';
-  if (cash.value.totalBalance === null) return 'Cash cannot be totalled without an exchange rate.';
-  return `Cash is in ${cash.value.currency} and holdings are in ${invested.value.currency}, so they are not added together.`;
+  const c = cash.value;
+  const i = invested.value;
+  if (combinable.value || !c || !i) return '';
+  if (i.totalValue === null) return 'Holdings cannot be totalled without an exchange rate.';
+  if (c.totalBalance === null) return 'Cash cannot be totalled without an exchange rate.';
+  return `Cash is in ${c.currency} and holdings are in ${i.currency}, so they are not added together.`;
 });
 </script>

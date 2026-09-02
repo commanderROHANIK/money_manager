@@ -62,6 +62,7 @@ export const portfolio = {
   properties: [propertyMetrics, metric({ propertyId: 2, propertyName: 'Szeged studio', rentGapPercent: 0.224, annualRentUplift: 312000 }), propertyMetricsAtMarket],
   propertyCount: 3, currency: 'HUF', mixedCurrency: false,
   totalInvested: 188500000, totalCurrentValue: 231000000, totalEquity: 142400000,
+  totalMonthlyRent: 890000,
   totalMonthlyCashFlow: 128000, totalAnnualRentUplift: 852000, portfolioRoi: 0.187,
   baseCurrency: 'EUR', converted: false, missingRates: [], appliedRates: [], warnings: [],
 };
@@ -103,6 +104,7 @@ export const portfolioMixedCurrency = {
   properties: [propertyMetrics, viennaFlat],
   propertyCount: 2, currency: 'EUR', mixedCurrency: true,
   totalInvested: null, totalCurrentValue: null, totalEquity: null,
+  totalMonthlyRent: null,
   totalMonthlyCashFlow: null, totalAnnualRentUplift: null, portfolioRoi: null,
   baseCurrency: 'EUR', converted: false,
   missingRates: [{ from: 'HUF', to: 'EUR' }],
@@ -124,6 +126,7 @@ export const portfolioConverted = {
   ...portfolioMixedCurrency,
   currency: 'EUR', converted: true,
   totalInvested: 106500, totalCurrentValue: 505000, totalEquity: 273000,
+  totalMonthlyRent: 240600,
   totalMonthlyCashFlow: 348.33, totalAnnualRentUplift: 2550, portfolioRoi: 1.6817,
   missingRates: [],
   appliedRates: [
@@ -170,6 +173,18 @@ export const bankBalanceSummaryUnconvertible = {
   ],
   missingRates: [{ from: 'HUF', to: 'EUR' }],
   warnings: [{ code: 'missing_exchange_rate', message: 'No exchange rate on record for HUF→EUR.' }],
+};
+
+/**
+ * The `stocks` fixture's own value, in one currency: 12×164,500 + 40×21,850 + 8×19,100 +
+ * 55×44,200 = 5,431,800 — an exact total, no rate involved, the stocks equivalent of
+ * `bankBalanceSummary`.
+ */
+export const stockValueSummary = {
+  totalValue: 5431800, currency: 'HUF', mixedCurrency: false, converted: false,
+  baseCurrency: 'HUF',
+  byCurrency: [{ currencyCode: 'HUF', total: 5431800 }],
+  missingRates: [], appliedRates: [], warnings: [],
 };
 
 export const transactions = [

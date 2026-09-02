@@ -8,9 +8,18 @@
     </p>
 
     <div v-else>
-      <p class="font-heading text-3xl font-extrabold tabular-nums text-accent-strong mb-3">
+      <p v-if="missingRateMessage" class="text-sm text-accent-strong mb-3">
+        {{ missingRateMessage }}
+        <router-link to="/settings" class="font-semibold underline">{{
+          t('property.portfolio.addRateLink')
+        }}</router-link>
+        {{ t('property.portfolio.addRateSuffix') }}
+      </p>
+
+      <p class="font-heading text-3xl font-extrabold tabular-nums text-accent-strong mb-1">
         {{ totalUpliftLabel }}<span class="text-base font-normal text-text-muted"> {{ t('property.underpriced.perYear') }}</span>
       </p>
+      <p v-if="conversionNote" class="text-xs text-text-muted mb-3">{{ conversionNote }}</p>
 
       <ul>
         <ListRow v-for="item in underpriced" :key="item.propertyId">
@@ -38,29 +47,31 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { PropertyMetrics } from '../../../models/models';
-import { formatMoney, sumSameCurrency } from '../../../utils/money';
+import type { PortfolioAnalytics } from '../../../models/models';
+import { formatMoney } from '../../../utils/money';
 import { formatPercent } from '../../../utils/labels';
+import { useRateDisclosure } from '../../../composables/useRateDisclosure';
 import ListRow from '../../ui/ListRow.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const props = defineProps<{ metrics: PropertyMetrics[] }>();
+const props = defineProps<{ portfolio: PortfolioAnalytics | null }>();
 
 const underpriced = computed(() =>
-  props.metrics
+  (props.portfolio?.properties ?? [])
     .filter((m) => (m.rentGapPercent ?? 0) > 0 && (m.annualRentUplift ?? 0) > 0)
     .sort((a, b) => (b.annualRentUplift ?? 0) - (a.annualRentUplift ?? 0))
 );
 
+// The portfolio's own converted total (CurrencyRollup.Sum on the backend, summing only the
+// underpriced properties — see PortfolioAnalyticsDto.From) rather than a client-side sum: the
+// same "never sum across currencies without a rate" rule the portfolio summary already follows.
 const totalUpliftLabel = computed(() => {
-  const summed = sumSameCurrency(
-    underpriced.value,
-    (m) => m.annualRentUplift ?? 0,
-    (m) => m.currencyCode
-  );
-  const label = formatMoney(summed.total, summed.currency);
-  return summed.mixed ? `${label} (mixed currencies)` : label;
+  const total = props.portfolio?.totalAnnualRentUplift;
+  if (total === null || total === undefined) return '—';
+  return formatMoney(total, props.portfolio?.currency ?? 'EUR');
 });
+
+const { conversionNote, missingRateMessage } = useRateDisclosure(computed(() => props.portfolio));
 </script>
