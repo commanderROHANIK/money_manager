@@ -10,6 +10,7 @@ import type { OnboardingProgress } from './onboarding';
 
 const established: OnboardingProgress = {
   hasProperty: true,
+  soleRentalPropertyId: 7,
   hasLease: true,
   hasTransaction: true,
   hasValuation: false,

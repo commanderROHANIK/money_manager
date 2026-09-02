@@ -13,6 +13,7 @@ import hu from '../locales/hu.json';
 import {
   buildSteps,
   isChecklistNeeded,
+  ONBOARDING_DECLINED_KEY,
   ONBOARDING_DISMISSED_KEY,
   STEP_IDS,
   useOnboarding,
@@ -26,8 +27,15 @@ vi.mock('../services/onboarding', () => ({
   fetchOnboardingProgress: () => fetchProgress(),
 }));
 
+let userId: string | null = null;
+
+vi.mock('../services/authService', () => ({
+  currentUserId: () => userId,
+}));
+
 const nothing: OnboardingProgress = {
   hasProperty: false,
+  soleRentalPropertyId: null,
   hasLease: false,
   hasTransaction: false,
   hasValuation: false,
@@ -97,6 +105,42 @@ describe('buildSteps', () => {
     expect(before.find((step) => step.id === 'property')?.done).toBe(true);
     expect(after.find((step) => step.id === 'property')?.done).toBe(false);
   });
+
+  it('marks a step declined only when its id is in the declined set', () => {
+    const steps = buildSteps(nothing, mvp, new Set(['valuation']));
+
+    expect(steps.find((step) => step.id === 'valuation')?.declined).toBe(true);
+    expect(steps.find((step) => step.id === 'property')?.declined).toBe(false);
+  });
+
+  it('guides Go to the sole property for tenancy/ledger/valuation, plainly otherwise', () => {
+    const ambiguous = buildSteps({ ...nothing, soleRentalPropertyId: null }, mvp);
+    const unambiguous = buildSteps({ ...nothing, soleRentalPropertyId: 7 }, mvp);
+
+    // No candidate, or more than one: no guess, same plain list page as always.
+    expect(ambiguous.find((step) => step.id === 'tenancy')?.to).toBe('/properties');
+
+    // Exactly one candidate: straight to it, carrying the step id for the target page to explain.
+    expect(unambiguous.find((step) => step.id === 'tenancy')?.to).toBe('/properties/7?onboarding=tenancy');
+    expect(unambiguous.find((step) => step.id === 'ledger')?.to).toBe('/properties/7?onboarding=ledger');
+    expect(unambiguous.find((step) => step.id === 'valuation')?.to).toBe(
+      '/properties/7?onboarding=valuation'
+    );
+  });
+
+  it('guides Go for property and loan without needing a property id', () => {
+    const steps = buildSteps(nothing, mvp);
+
+    expect(steps.find((step) => step.id === 'property')?.to).toBe('/properties?onboarding=property');
+    expect(steps.find((step) => step.id === 'loan')?.to).toBe('/loans?onboarding=loan');
+  });
+
+  it('never guides bankAccount or holding — no working form to guide toward yet', () => {
+    const steps = buildSteps({ ...nothing, soleRentalPropertyId: 7 }, everything);
+
+    expect(steps.find((step) => step.id === 'bankAccount')?.to).toBe('/accounts');
+    expect(steps.find((step) => step.id === 'holding')?.to).toBe('/stocks');
+  });
 });
 
 describe('isChecklistNeeded', () => {
@@ -120,6 +164,7 @@ describe('isChecklistNeeded', () => {
   it('is false for an established portfolio', () => {
     const established: OnboardingProgress = {
       hasProperty: true,
+      soleRentalPropertyId: null,
       hasLease: true,
       hasTransaction: true,
       hasValuation: true,
@@ -129,6 +174,28 @@ describe('isChecklistNeeded', () => {
     };
 
     expect(isChecklistNeeded(buildSteps(established, everything))).toBe(false);
+  });
+
+  it('treats a declined required step as resolved, the same as done', () => {
+    // property is still outstanding but declined; tenancy and ledger are actually done. Nothing
+    // required is left un-answered, so the panel has nothing to say.
+    const declinedProperty = buildSteps(
+      { ...nothing, hasLease: true, hasTransaction: true },
+      mvp,
+      new Set(['property'])
+    );
+
+    expect(declinedProperty.find((step) => step.id === 'property')?.done).toBe(false);
+    expect(isChecklistNeeded(declinedProperty)).toBe(false);
+  });
+
+  it('stays true when a required step is merely outstanding, not declined', () => {
+    const untouched = buildSteps(
+      { ...nothing, hasLease: true, hasTransaction: true },
+      mvp
+    );
+
+    expect(isChecklistNeeded(untouched)).toBe(true);
   });
 });
 
@@ -164,6 +231,7 @@ describe('useOnboarding', () => {
     localStorage.clear();
     fetchProgress.mockReset();
     fetchProgress.mockResolvedValue(nothing);
+    userId = null;
   });
 
   it('shows nothing until the server has answered', async () => {
@@ -209,6 +277,60 @@ describe('useOnboarding', () => {
     const next = await run();
 
     expect(next.visible.value).toBe(false);
+  });
+
+  it('declines a single step and remembers it, independently of dismiss', async () => {
+    const { steps, visible, decline } = await run();
+
+    decline('valuation');
+
+    expect(steps.value.find((step) => step.id === 'valuation')?.declined).toBe(true);
+    expect(JSON.parse(localStorage.getItem(ONBOARDING_DECLINED_KEY) ?? '[]')).toEqual(['valuation']);
+
+    // valuation is optional and never held the panel open on its own, and every required step is
+    // still genuinely outstanding — declining one optional step does not dismiss the whole panel.
+    expect(visible.value).toBe(true);
+    expect(localStorage.getItem(ONBOARDING_DISMISSED_KEY)).toBeNull();
+
+    // Survives a reload, same as dismiss.
+    const next = await run();
+
+    expect(next.steps.value.find((step) => step.id === 'valuation')?.declined).toBe(true);
+  });
+
+  it('namespaces dismissed/declined by the logged-in user, so a shared device cannot leak one account into another', async () => {
+    userId = 'alice';
+    const alice = await run();
+
+    alice.dismiss();
+    alice.decline('valuation');
+
+    expect(localStorage.getItem(`${ONBOARDING_DISMISSED_KEY}:alice`)).toBe('true');
+    expect(JSON.parse(localStorage.getItem(`${ONBOARDING_DECLINED_KEY}:alice`) ?? '[]')).toEqual([
+      'valuation',
+    ]);
+
+    // A different account on the same browser: neither the dismissal nor the decline carries
+    // over — this is the regression a bare, unnamespaced key would have produced, since a
+    // declined *required* step is treated as resolved and could otherwise hide Bob's checklist
+    // entirely despite him having done nothing.
+    userId = 'bob';
+    const bob = await run();
+
+    expect(bob.visible.value).toBe(true);
+    expect(bob.steps.value.find((step) => step.id === 'valuation')?.declined).toBe(false);
+
+    // Switching back to Alice still finds her own choices, unaffected by Bob's session in between.
+    // The panel stays dismissed — and dismissed short-circuits the fetch itself (see
+    // useOnboarding's onMounted), so this is read back from storage directly rather than
+    // through `steps`, which stays empty when nothing was ever fetched.
+    userId = 'alice';
+    const aliceAgain = await run();
+
+    expect(aliceAgain.visible.value).toBe(false);
+    expect(JSON.parse(localStorage.getItem(`${ONBOARDING_DECLINED_KEY}:alice`) ?? '[]')).toEqual([
+      'valuation',
+    ]);
   });
 });
 

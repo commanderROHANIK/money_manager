@@ -56,24 +56,30 @@
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <BaseCard>
-          <TenancyWidget :leases="leases" @create="onCreateLease" />
+          <OnboardingGuideHighlight step-id="tenancy">
+            <TenancyWidget :leases="leases" @create="onCreateLease" />
+          </OnboardingGuideHighlight>
         </BaseCard>
         <BaseCard class="xl:col-span-2">
-          <TransactionLedgerWidget
-            :transactions="transactions"
-            @create="onCreateTransaction"
-            @delete="onDeleteTransaction"
-          />
+          <OnboardingGuideHighlight step-id="ledger">
+            <TransactionLedgerWidget
+              :transactions="transactions"
+              @create="onCreateTransaction"
+              @delete="onDeleteTransaction"
+            />
+          </OnboardingGuideHighlight>
         </BaseCard>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <BaseCard>
-          <ValuationWidget
-            :valuations="valuations"
-            :currency-code="property.currencyCode"
-            @create="onCreateValuation"
-          />
+          <OnboardingGuideHighlight step-id="valuation">
+            <ValuationWidget
+              :valuations="valuations"
+              :currency-code="property.currencyCode"
+              @create="onCreateValuation"
+            />
+          </OnboardingGuideHighlight>
         </BaseCard>
         <BaseCard class="xl:col-span-2">
           <PropertyTimelineWidget :events="events" />
@@ -124,6 +130,8 @@ import TransactionLedgerWidget from './Widgets/Properties/TransactionLedgerWidge
 import PropertyTimelineWidget from './Widgets/Properties/PropertyTimelineWidget.vue';
 import ValuationWidget from './Widgets/Properties/ValuationWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
+import OnboardingGuideHighlight from './ui/OnboardingGuideHighlight.vue';
+import { useOnboardingGuide } from '../composables/useOnboardingGuide';
 import Badge from './ui/Badge.vue';
 import LoadingSkeleton from './ui/LoadingSkeleton.vue';
 import ErrorState from './ui/ErrorState.vue';
@@ -133,6 +141,10 @@ const { t } = useI18n();
 
 const route = useRoute();
 const propertyId = Number(route.params.id);
+
+const tenancyGuide = useOnboardingGuide('tenancy');
+const ledgerGuide = useOnboardingGuide('ledger');
+const valuationGuide = useOnboardingGuide('valuation');
 
 const loading = ref(true);
 const error = ref('');
@@ -193,6 +205,7 @@ async function onCreateTransaction(payload: {
 }) {
   await createTransaction(propertyId, payload);
   await load();
+  ledgerGuide.clear();
 }
 
 async function onDeleteTransaction(id: number) {
@@ -228,6 +241,7 @@ function messageFrom(error: unknown): string | null {
 async function onCreateLease(payload: LeaseRequest) {
   await createLease(propertyId, payload);
   await load();
+  tenancyGuide.clear();
 }
 
 async function onAddEstimate(amount: number) {
@@ -238,5 +252,6 @@ async function onAddEstimate(amount: number) {
 async function onCreateValuation(payload: { valuedOn: string; value: number }) {
   await createValuation(propertyId, payload.valuedOn, payload.value);
   await load();
+  valuationGuide.clear();
 }
 </script>

@@ -47,8 +47,21 @@ namespace MoneyManager.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<OnboardingProgressDto>> Get(CancellationToken cancellationToken)
         {
+            // Two ids, not one flag: telling "exactly one property" apart from "two or more"
+            // needs a second row, and Take(2) still answers both without materialising a
+            // portfolio. SoleRentalPropertyId is what lets the checklist deep-link a landlord
+            // straight to the property a portfolio-wide step (tenancy/ledger/valuation) is
+            // missing, without a second round-trip to fetch the property list separately — it
+            // stays null the moment a second property exists, which is the point: guessing which
+            // of several properties is missing something is a worse answer than not guessing.
+            var propertyIds = await _context.RentalProperties
+                .Select(p => p.Id)
+                .Take(2)
+                .ToListAsync(cancellationToken);
+
             return new OnboardingProgressDto(
-                HasProperty: await _context.RentalProperties.AnyAsync(cancellationToken),
+                HasProperty: propertyIds.Count > 0,
+                SoleRentalPropertyId: propertyIds.Count == 1 ? propertyIds[0] : null,
                 HasLease: await _context.Leases.AnyAsync(cancellationToken),
                 HasTransaction: await _context.PropertyTransactions.AnyAsync(cancellationToken),
                 HasValuation: await _context.PropertyValuations.AnyAsync(cancellationToken),
@@ -67,6 +80,7 @@ namespace MoneyManager.Api.Controllers
     /// </summary>
     public record OnboardingProgressDto(
         bool HasProperty,
+        int? SoleRentalPropertyId,
         bool HasLease,
         bool HasTransaction,
         bool HasValuation,

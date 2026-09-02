@@ -371,8 +371,17 @@
     "dismiss": "Hide",
     "done": "Done",
     "todo": "To do",
+    "skipped": "Skipped",
     "go": "Go",
+    "decline": "Skip",
     "optional": "optional",
+    "guide": {
+      "property": "Fill in the form below to add your property.",
+      "tenancy": "Fill in the form below to record who is renting it.",
+      "ledger": "Record your first entry here — rent, a repair, anything else.",
+      "valuation": "Enter today's value here.",
+      "loan": "Fill in the form below to record the mortgage."
+    },
     "steps": {
       "property": {
         "title": "Add your first property",

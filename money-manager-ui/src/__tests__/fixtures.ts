@@ -267,6 +267,7 @@ export const upcomingEvents = [
  */
 export const onboardingProgress = {
   hasProperty: false,
+  soleRentalPropertyId: null,
   hasLease: false,
   hasTransaction: false,
   hasValuation: false,

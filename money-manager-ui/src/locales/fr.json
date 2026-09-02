@@ -371,8 +371,17 @@
     "dismiss": "Masquer",
     "done": "Fait",
     "todo": "À faire",
+    "skipped": "Ignoré",
     "go": "Ouvrir",
+    "decline": "Ignorer",
     "optional": "facultatif",
+    "guide": {
+      "property": "Remplissez le formulaire ci-dessous pour ajouter votre bien.",
+      "tenancy": "Remplissez le formulaire ci-dessous pour indiquer qui le loue.",
+      "ledger": "Saisissez ici votre première écriture — loyer, réparation ou autre.",
+      "valuation": "Indiquez ici la valeur actuelle.",
+      "loan": "Remplissez le formulaire ci-dessous pour enregistrer le prêt."
+    },
     "steps": {
       "property": {
         "title": "Ajoutez votre premier bien",

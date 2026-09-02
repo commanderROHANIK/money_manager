@@ -371,8 +371,17 @@
     "dismiss": "Elrejtés",
     "done": "Kész",
     "todo": "Teendő",
+    "skipped": "Kihagyva",
     "go": "Ugrás",
+    "decline": "Kihagyás",
     "optional": "nem kötelező",
+    "guide": {
+      "property": "Töltsd ki az alábbi űrlapot az ingatlanod felvételéhez.",
+      "tenancy": "Töltsd ki az alábbi űrlapot, hogy rögzítsd, ki bérli az ingatlant.",
+      "ledger": "Rögzítsd itt az első bevételt vagy kiadást.",
+      "valuation": "Add meg itt az ingatlan mai értékét.",
+      "loan": "Töltsd ki az alábbi űrlapot a jelzáloghitel rögzítéséhez."
+    },
     "steps": {
       "property": {
         "title": "Vedd fel az első ingatlanod",

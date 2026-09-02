@@ -371,8 +371,17 @@
     "dismiss": "Ausblenden",
     "done": "Erledigt",
     "todo": "Offen",
+    "skipped": "Übersprungen",
     "go": "Öffnen",
+    "decline": "Überspringen",
     "optional": "freiwillig",
+    "guide": {
+      "property": "Füllen Sie das folgende Formular aus, um Ihre Immobilie zu erfassen.",
+      "tenancy": "Füllen Sie das folgende Formular aus, um festzuhalten, wer sie mietet.",
+      "ledger": "Erfassen Sie hier Ihren ersten Eintrag — Miete, eine Reparatur oder etwas anderes.",
+      "valuation": "Geben Sie hier den heutigen Wert ein.",
+      "loan": "Füllen Sie das folgende Formular aus, um das Darlehen zu erfassen."
+    },
     "steps": {
       "property": {
         "title": "Erfassen Sie Ihre erste Immobilie",
