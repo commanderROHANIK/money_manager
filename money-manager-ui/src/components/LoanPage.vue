@@ -51,6 +51,9 @@ import NextDueRepaymentWidget from '../components/Widgets/Loans/NextDueRepayment
 import TopLoansWidget from '../components/Widgets/Loans/TopLoansWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
 import OnboardingGuideHighlight from './ui/OnboardingGuideHighlight.vue';
+import { useOnboardingGuide } from '../composables/useOnboardingGuide';
+
+const loanGuide = useOnboardingGuide('loan');
 
 const loans = ref<Loan[]>([]);
 
@@ -68,5 +71,6 @@ async function _deleteLoan(id: number) {
 async function _addLoan(payload: Omit<Loan, 'id'>) {
   await createLoan({ id: 0, ...payload });
   await load();
+  loanGuide.clear();
 }
 </script>

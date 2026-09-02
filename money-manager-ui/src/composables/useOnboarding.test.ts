@@ -27,6 +27,12 @@ vi.mock('../services/onboarding', () => ({
   fetchOnboardingProgress: () => fetchProgress(),
 }));
 
+let userId: string | null = null;
+
+vi.mock('../services/authService', () => ({
+  currentUserId: () => userId,
+}));
+
 const nothing: OnboardingProgress = {
   hasProperty: false,
   soleRentalPropertyId: null,
@@ -225,6 +231,7 @@ describe('useOnboarding', () => {
     localStorage.clear();
     fetchProgress.mockReset();
     fetchProgress.mockResolvedValue(nothing);
+    userId = null;
   });
 
   it('shows nothing until the server has answered', async () => {
@@ -289,6 +296,41 @@ describe('useOnboarding', () => {
     const next = await run();
 
     expect(next.steps.value.find((step) => step.id === 'valuation')?.declined).toBe(true);
+  });
+
+  it('namespaces dismissed/declined by the logged-in user, so a shared device cannot leak one account into another', async () => {
+    userId = 'alice';
+    const alice = await run();
+
+    alice.dismiss();
+    alice.decline('valuation');
+
+    expect(localStorage.getItem(`${ONBOARDING_DISMISSED_KEY}:alice`)).toBe('true');
+    expect(JSON.parse(localStorage.getItem(`${ONBOARDING_DECLINED_KEY}:alice`) ?? '[]')).toEqual([
+      'valuation',
+    ]);
+
+    // A different account on the same browser: neither the dismissal nor the decline carries
+    // over — this is the regression a bare, unnamespaced key would have produced, since a
+    // declined *required* step is treated as resolved and could otherwise hide Bob's checklist
+    // entirely despite him having done nothing.
+    userId = 'bob';
+    const bob = await run();
+
+    expect(bob.visible.value).toBe(true);
+    expect(bob.steps.value.find((step) => step.id === 'valuation')?.declined).toBe(false);
+
+    // Switching back to Alice still finds her own choices, unaffected by Bob's session in between.
+    // The panel stays dismissed — and dismissed short-circuits the fetch itself (see
+    // useOnboarding's onMounted), so this is read back from storage directly rather than
+    // through `steps`, which stays empty when nothing was ever fetched.
+    userId = 'alice';
+    const aliceAgain = await run();
+
+    expect(aliceAgain.visible.value).toBe(false);
+    expect(JSON.parse(localStorage.getItem(`${ONBOARDING_DECLINED_KEY}:alice`) ?? '[]')).toEqual([
+      'valuation',
+    ]);
   });
 });
 

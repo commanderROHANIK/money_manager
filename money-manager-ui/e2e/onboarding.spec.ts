@@ -111,6 +111,44 @@ test.describe('an account with nothing in it', () => {
     await expect(page.getByText('Fill in the form below to add your property.')).toBeVisible();
   });
 
+  test('completing a guided step clears its own guide, and unlocks the next one deep-linking to the property that now exists', async ({
+    page,
+  }) => {
+    await signIn(page);
+    await openDashboard(page);
+
+    const propertyRow = checklistRows(page).filter({ hasText: 'Add your first property' });
+
+    await propertyRow.getByRole('link', { name: 'Go', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/properties\?onboarding=property/);
+    await expect(page.getByText('Fill in the form below to add your property.')).toBeVisible();
+
+    await page.getByPlaceholder('Name', { exact: true }).fill('Onboarding Test Property');
+    await page.getByPlaceholder('Address', { exact: true }).fill('1 Test Street');
+    await page.getByRole('button', { name: 'Add property', exact: true }).click();
+
+    // The step this guide sent someone here for is done now, so the guide has nothing left to
+    // say: the `onboarding` param is dropped and the banner/highlight go with it. This is the
+    // fix for the bug where they stayed lit indefinitely after a successful guided action.
+    await expect(page).toHaveURL(/\/properties$/);
+    await expect(page.getByText('Fill in the form below to add your property.')).toHaveCount(0);
+
+    await openDashboard(page);
+
+    const tenancyRow = checklistRows(page).filter({ hasText: 'Record who is renting it' });
+
+    await tenancyRow.getByRole('link', { name: 'Go', exact: true }).click();
+
+    // Exactly one property exists now, so the portfolio-wide tenancy step — its form lives
+    // per-property, not on the list page — can deep-link straight to it rather than falling back
+    // to the plain list page the way it does with zero or several candidates.
+    await expect(page).toHaveURL(/\/properties\/\d+\?onboarding=tenancy/);
+    await expect(
+      page.getByText('Fill in the form below to record who is renting it.')
+    ).toBeVisible();
+  });
+
   test('can be dismissed, and stays dismissed', async ({ page }) => {
     await signIn(page);
     await openDashboard(page);

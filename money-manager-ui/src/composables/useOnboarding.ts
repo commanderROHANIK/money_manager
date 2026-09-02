@@ -1,5 +1,6 @@
 import { computed, onMounted, ref } from 'vue';
 import type { ComputedRef } from 'vue';
+import { currentUserId } from '../services/authService';
 import { featureFlags } from '../services/features';
 import type { FeatureName, Features } from '../services/features';
 import { fetchOnboardingProgress } from '../services/onboarding';
@@ -17,6 +18,21 @@ export const ONBOARDING_DISMISSED_KEY = 'onboarding-dismissed';
  * per-device preference, not progress — so it lives next to it rather than being derived.
  */
 export const ONBOARDING_DECLINED_KEY = 'onboarding-declined-steps';
+
+/**
+ * Namespaced by the logged-in user's id, the same way the flag itself is "a fact about a person
+ * on a device" — a bare key is a fact about a *device*, full stop, which on a shared machine
+ * means landlord B logging in after landlord A dismissed/declined steps inherits A's choices,
+ * including a declined *required* step reading as resolved and silently hiding B's own checklist.
+ * Falls back to the bare key with no user id to namespace by (logged out, or a malformed token) —
+ * the least surprising thing a browser with no identifiable user can do is behave as it always
+ * did, not invent a shared bucket of its own.
+ */
+function storageKey(base: string): string {
+  const userId = currentUserId();
+
+  return userId === null ? base : `${base}:${userId}`;
+}
 
 export interface OnboardingStep {
   id: string;
@@ -37,44 +53,50 @@ export interface OnboardingStep {
   optional: boolean;
 }
 
+/**
+ * What kind of guided target a step resolves to — see `resolveTo`. A field on the definition
+ * itself rather than an id check scattered across functions, so adding a step (or giving
+ * `bankAccount`/`holding` a real form once #63 lands) means changing one line in `DEFINITIONS`,
+ * not remembering to update a second, separate list somewhere else.
+ *
+ * <p><c>inline</c>: the add-form already lives on `basePath` itself — <c>property</c>,
+ * <c>loan</c>. <c>propertyScoped</c>: the form lives per-property
+ * (`PropertyDetailPage.vue`) even though what the step checks is portfolio-wide — <c>tenancy</c>,
+ * <c>ledger</c>, <c>valuation</c>. <c>none</c>: no working add-form to guide toward yet —
+ * <c>bankAccount</c>, <c>holding</c> (tracked separately in #63).</p>
+ */
+type GuideMode = 'inline' | 'propertyScoped' | 'none';
+
 interface StepDefinition extends Omit<OnboardingStep, 'done' | 'declined' | 'to'> {
   /** The page a plain (non-guided) visit lands on — unchanged from before guided routing existed. */
   basePath: string;
+  guideMode: GuideMode;
   /** `null` for the core property steps, which every deployment has. */
   feature: FeatureName | null;
   done: (progress: OnboardingProgress) => boolean;
 }
 
 /**
- * The three steps whose form lives per-property (`PropertyDetailPage.vue`) even though what they
- * check is portfolio-wide ("does any property have a lease/transaction/valuation"). Guiding to
- * "the" property only makes sense when there is exactly one candidate — see `resolveTo`.
- */
-const PROPERTY_SCOPED_STEPS = new Set(['tenancy', 'ledger', 'valuation']);
-
-/**
  * Where "Go" actually sends someone for a given step.
  *
- * <p><c>property</c> and <c>loan</c> already have their add-form inline on the page `basePath`
- * points at, so guiding there is unambiguous: land on the page, highlight the form. The three
- * property-scoped steps guide straight to the one property missing them when there is exactly
- * one candidate (`progress.soleRentalPropertyId`); with zero or several, which property to send
- * someone to is a guess this app does not make, so it falls back to the plain list page — the
- * same place "Go" has always pointed. <c>bankAccount</c>/<c>holding</c> have no working add-form
- * to guide toward yet (tracked separately), so they stay plain until that exists.</p>
+ * <p><c>inline</c> steps already have their add-form on the page `basePath` points at, so
+ * guiding there is unambiguous: land on the page, highlight the form. <c>propertyScoped</c>
+ * steps guide straight to the one property missing them when there is exactly one candidate
+ * (`progress.soleRentalPropertyId`); with zero or several, which property to send someone to is
+ * a guess this app does not make, so it falls back to the plain list page — the same place "Go"
+ * has always pointed. <c>none</c> stays plain, unconditionally.</p>
  */
-function resolveTo(id: string, basePath: string, progress: OnboardingProgress): string {
-  if (id === 'property' || id === 'loan') {
-    return `${basePath}?onboarding=${id}`;
+function resolveTo(id: string, basePath: string, guideMode: GuideMode, progress: OnboardingProgress): string {
+  switch (guideMode) {
+    case 'inline':
+      return `${basePath}?onboarding=${id}`;
+    case 'propertyScoped':
+      return progress.soleRentalPropertyId === null
+        ? basePath
+        : `/properties/${progress.soleRentalPropertyId}?onboarding=${id}`;
+    case 'none':
+      return basePath;
   }
-
-  if (PROPERTY_SCOPED_STEPS.has(id)) {
-    return progress.soleRentalPropertyId === null
-      ? basePath
-      : `/properties/${progress.soleRentalPropertyId}?onboarding=${id}`;
-  }
-
-  return basePath;
 }
 
 /**
@@ -87,13 +109,13 @@ function resolveTo(id: string, basePath: string, progress: OnboardingProgress): 
  * those sections are deliberately switched off and their endpoints answer 404.</p>
  */
 const DEFINITIONS: StepDefinition[] = [
-  { id: 'property', basePath: '/properties', optional: false, feature: null, done: (p) => p.hasProperty },
-  { id: 'tenancy', basePath: '/properties', optional: false, feature: null, done: (p) => p.hasLease },
-  { id: 'ledger', basePath: '/properties', optional: false, feature: null, done: (p) => p.hasTransaction },
-  { id: 'valuation', basePath: '/properties', optional: true, feature: null, done: (p) => p.hasValuation },
-  { id: 'bankAccount', basePath: '/accounts', optional: true, feature: 'banking', done: (p) => p.hasBankAccount },
-  { id: 'loan', basePath: '/loans', optional: true, feature: 'loans', done: (p) => p.hasLoan },
-  { id: 'holding', basePath: '/stocks', optional: true, feature: 'stocks', done: (p) => p.hasStock },
+  { id: 'property', basePath: '/properties', guideMode: 'inline', optional: false, feature: null, done: (p) => p.hasProperty },
+  { id: 'tenancy', basePath: '/properties', guideMode: 'propertyScoped', optional: false, feature: null, done: (p) => p.hasLease },
+  { id: 'ledger', basePath: '/properties', guideMode: 'propertyScoped', optional: false, feature: null, done: (p) => p.hasTransaction },
+  { id: 'valuation', basePath: '/properties', guideMode: 'propertyScoped', optional: true, feature: null, done: (p) => p.hasValuation },
+  { id: 'bankAccount', basePath: '/accounts', guideMode: 'none', optional: true, feature: 'banking', done: (p) => p.hasBankAccount },
+  { id: 'loan', basePath: '/loans', guideMode: 'inline', optional: true, feature: 'loans', done: (p) => p.hasLoan },
+  { id: 'holding', basePath: '/stocks', guideMode: 'none', optional: true, feature: 'stocks', done: (p) => p.hasStock },
 ];
 
 /** Exposed for the test that checks every step has a label in every locale. */
@@ -108,7 +130,7 @@ export function buildSteps(
     (definition) => definition.feature === null || features[definition.feature]
   ).map((definition) => ({
     id: definition.id,
-    to: resolveTo(definition.id, definition.basePath, progress),
+    to: resolveTo(definition.id, definition.basePath, definition.guideMode, progress),
     optional: definition.optional,
     done: definition.done(progress),
     declined: declinedIds.has(definition.id),
@@ -127,7 +149,7 @@ export function isChecklistNeeded(steps: OnboardingStep[]): boolean {
 
 function readDismissed(): boolean {
   try {
-    return localStorage.getItem(ONBOARDING_DISMISSED_KEY) === 'true';
+    return localStorage.getItem(storageKey(ONBOARDING_DISMISSED_KEY)) === 'true';
   } catch {
     // A browser with storage disabled should see the checklist, not a blank dashboard.
     return false;
@@ -136,7 +158,7 @@ function readDismissed(): boolean {
 
 function storeDismissed(): void {
   try {
-    localStorage.setItem(ONBOARDING_DISMISSED_KEY, 'true');
+    localStorage.setItem(storageKey(ONBOARDING_DISMISSED_KEY), 'true');
   } catch {
     // A session that cannot persist the choice should still honour it for this session.
   }
@@ -144,7 +166,7 @@ function storeDismissed(): void {
 
 function readDeclined(): Set<string> {
   try {
-    const raw = localStorage.getItem(ONBOARDING_DECLINED_KEY);
+    const raw = localStorage.getItem(storageKey(ONBOARDING_DECLINED_KEY));
     const ids: unknown = raw === null ? [] : JSON.parse(raw);
 
     return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : []);
@@ -156,7 +178,7 @@ function readDeclined(): Set<string> {
 
 function storeDeclined(ids: ReadonlySet<string>): void {
   try {
-    localStorage.setItem(ONBOARDING_DECLINED_KEY, JSON.stringify([...ids]));
+    localStorage.setItem(storageKey(ONBOARDING_DECLINED_KEY), JSON.stringify([...ids]));
   } catch {
     // A session that cannot persist the choice should still honour it for this session.
   }

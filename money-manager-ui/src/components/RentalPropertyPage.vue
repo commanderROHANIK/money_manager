@@ -67,6 +67,9 @@ import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSu
 import AddPropertyWidget from '../components/Widgets/Properties/AddPropertyWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
 import OnboardingGuideHighlight from './ui/OnboardingGuideHighlight.vue';
+import { useOnboardingGuide } from '../composables/useOnboardingGuide';
+
+const propertyGuide = useOnboardingGuide('property');
 
 const properties = ref<RentalProperty[]>([]);
 const portfolio = ref<PortfolioAnalytics | null>(null);
@@ -124,5 +127,6 @@ async function _addProperty(request: RentalPropertyRequest) {
 
   addFormKey.value += 1;
   await load();
+  propertyGuide.clear();
 }
 </script>

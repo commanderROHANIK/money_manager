@@ -22,7 +22,7 @@
           </div>
         </template>
         <template #trailing>
-          <Badge :variant="step.done ? 'primary' : 'neutral'">
+          <Badge :variant="step.done ? 'primary' : step.declined ? 'outline' : 'neutral'">
             {{ step.done ? t('onboarding.done') : step.declined ? t('onboarding.skipped') : t('onboarding.todo') }}
           </Badge>
           <template v-if="!step.done && !step.declined">

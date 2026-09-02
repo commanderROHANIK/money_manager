@@ -59,3 +59,31 @@ export function logout(): void {
 export function isLoggedIn(): boolean {
   return !!localStorage.getItem(TOKEN_STORAGE_KEY);
 }
+
+/**
+ * The user id from the stored JWT's `sub` claim (see `TokenProvider` on the API side), decoded
+ * client-side without a network round-trip. This is not a trust boundary — nothing
+ * security-sensitive is ever decided from it, the server still enforces its own tenant isolation
+ * on every request — it exists only to namespace per-device browser state (onboarding's
+ * dismissed/declined flags) so one browser profile shared by two accounts on the same machine
+ * cannot leak one user's choices into the other's.
+ */
+export function currentUserId(): string | null {
+  try {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!token) return null;
+
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded: unknown = JSON.parse(atob(base64));
+
+    return typeof decoded === 'object' && decoded !== null && typeof (decoded as { sub?: unknown }).sub === 'string'
+      ? (decoded as { sub: string }).sub
+      : null;
+  } catch {
+    // A malformed or absent token should read as "no user to namespace by", not throw.
+    return null;
+  }
+}

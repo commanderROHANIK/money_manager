@@ -20,7 +20,16 @@ vi.mock('./api', () => ({
   },
 }));
 
-const { login, logout, register, isLoggedIn, fetchCurrentUser } = await import('./authService');
+const { login, logout, register, isLoggedIn, fetchCurrentUser, currentUserId } =
+  await import('./authService');
+
+/** A syntactically real JWT — three base64url segments — with an arbitrary payload. */
+function makeToken(payload: Record<string, unknown>): string {
+  const base64url = (obj: Record<string, unknown>) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  return `${base64url({ alg: 'HS256', typ: 'JWT' })}.${base64url(payload)}.signature`;
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -99,5 +108,32 @@ describe('fetchCurrentUser', () => {
 
     await expect(fetchCurrentUser()).resolves.toMatchObject({ username: 'alice' });
     expect(get).toHaveBeenCalledWith('/auth/me');
+  });
+});
+
+describe('currentUserId', () => {
+  it('reads the sub claim out of the stored token, without a network call', () => {
+    localStorage.setItem('token', makeToken({ sub: '42' }));
+
+    expect(currentUserId()).toBe('42');
+    expect(get).not.toHaveBeenCalled();
+  });
+
+  it('is null with no token stored', () => {
+    expect(currentUserId()).toBeNull();
+  });
+
+  it('is null for a malformed token rather than throwing', () => {
+    // Whatever namespaces per-device onboarding state by user must not itself crash the
+    // dashboard on a corrupted token — it should just read as "no user to namespace by".
+    localStorage.setItem('token', 'not-a-jwt');
+
+    expect(currentUserId()).toBeNull();
+  });
+
+  it('is null when the payload carries no sub claim', () => {
+    localStorage.setItem('token', makeToken({ email: 'a@e.com' }));
+
+    expect(currentUserId()).toBeNull();
   });
 });
