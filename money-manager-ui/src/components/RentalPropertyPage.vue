@@ -37,12 +37,14 @@
     </BaseCard>
 
     <BaseCard class="col-span-1 xl:col-span-3">
-      <AddPropertyWidget
-        :key="addFormKey"
-        :errors="addErrors"
-        :error="addError"
-        @create="_addProperty"
-      />
+      <OnboardingGuideHighlight step-id="property">
+        <AddPropertyWidget
+          :key="addFormKey"
+          :errors="addErrors"
+          :error="addError"
+          @create="_addProperty"
+        />
+      </OnboardingGuideHighlight>
     </BaseCard>
   </div>
 </template>
@@ -64,6 +66,7 @@ import UnderpricedPropertiesWidget from '../components/Widgets/Properties/Underp
 import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSummaryWidget.vue';
 import AddPropertyWidget from '../components/Widgets/Properties/AddPropertyWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
+import OnboardingGuideHighlight from './ui/OnboardingGuideHighlight.vue';
 
 const properties = ref<RentalProperty[]>([]);
 const portfolio = ref<PortfolioAnalytics | null>(null);

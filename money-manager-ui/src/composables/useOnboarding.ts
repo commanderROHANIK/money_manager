@@ -12,11 +12,23 @@ import type { OnboardingProgress } from '../services/onboarding';
  */
 export const ONBOARDING_DISMISSED_KEY = 'onboarding-dismissed';
 
+/**
+ * "I don't want to do this one" is the same kind of fact as dismissing the whole panel — a
+ * per-device preference, not progress — so it lives next to it rather than being derived.
+ */
+export const ONBOARDING_DECLINED_KEY = 'onboarding-declined-steps';
+
 export interface OnboardingStep {
   id: string;
-  /** Where the step is actually done, so the checklist is a set of links rather than a lecture. */
+  /**
+   * Where "Go" actually sends someone. For a step with a guided target this carries
+   * `?onboarding=<id>`, which the destination page reads to scroll to and explain the relevant
+   * input — see `resolveTo`. Plain navigation (no param) when there is nothing to guide toward
+   * yet, or nothing unambiguous to guide toward.
+   */
   to: string;
   done: boolean;
+  declined: boolean;
   /**
    * Optional steps never hold the checklist open. A landlord who never records a valuation —
    * documented as optional, since purchase price is the stated fallback — must not be nagged
@@ -25,10 +37,44 @@ export interface OnboardingStep {
   optional: boolean;
 }
 
-interface StepDefinition extends Omit<OnboardingStep, 'done'> {
+interface StepDefinition extends Omit<OnboardingStep, 'done' | 'declined' | 'to'> {
+  /** The page a plain (non-guided) visit lands on — unchanged from before guided routing existed. */
+  basePath: string;
   /** `null` for the core property steps, which every deployment has. */
   feature: FeatureName | null;
   done: (progress: OnboardingProgress) => boolean;
+}
+
+/**
+ * The three steps whose form lives per-property (`PropertyDetailPage.vue`) even though what they
+ * check is portfolio-wide ("does any property have a lease/transaction/valuation"). Guiding to
+ * "the" property only makes sense when there is exactly one candidate — see `resolveTo`.
+ */
+const PROPERTY_SCOPED_STEPS = new Set(['tenancy', 'ledger', 'valuation']);
+
+/**
+ * Where "Go" actually sends someone for a given step.
+ *
+ * <p><c>property</c> and <c>loan</c> already have their add-form inline on the page `basePath`
+ * points at, so guiding there is unambiguous: land on the page, highlight the form. The three
+ * property-scoped steps guide straight to the one property missing them when there is exactly
+ * one candidate (`progress.soleRentalPropertyId`); with zero or several, which property to send
+ * someone to is a guess this app does not make, so it falls back to the plain list page — the
+ * same place "Go" has always pointed. <c>bankAccount</c>/<c>holding</c> have no working add-form
+ * to guide toward yet (tracked separately), so they stay plain until that exists.</p>
+ */
+function resolveTo(id: string, basePath: string, progress: OnboardingProgress): string {
+  if (id === 'property' || id === 'loan') {
+    return `${basePath}?onboarding=${id}`;
+  }
+
+  if (PROPERTY_SCOPED_STEPS.has(id)) {
+    return progress.soleRentalPropertyId === null
+      ? basePath
+      : `/properties/${progress.soleRentalPropertyId}?onboarding=${id}`;
+  }
+
+  return basePath;
 }
 
 /**
@@ -41,13 +87,13 @@ interface StepDefinition extends Omit<OnboardingStep, 'done'> {
  * those sections are deliberately switched off and their endpoints answer 404.</p>
  */
 const DEFINITIONS: StepDefinition[] = [
-  { id: 'property', to: '/properties', optional: false, feature: null, done: (p) => p.hasProperty },
-  { id: 'tenancy', to: '/properties', optional: false, feature: null, done: (p) => p.hasLease },
-  { id: 'ledger', to: '/properties', optional: false, feature: null, done: (p) => p.hasTransaction },
-  { id: 'valuation', to: '/properties', optional: true, feature: null, done: (p) => p.hasValuation },
-  { id: 'bankAccount', to: '/accounts', optional: true, feature: 'banking', done: (p) => p.hasBankAccount },
-  { id: 'loan', to: '/loans', optional: true, feature: 'loans', done: (p) => p.hasLoan },
-  { id: 'holding', to: '/stocks', optional: true, feature: 'stocks', done: (p) => p.hasStock },
+  { id: 'property', basePath: '/properties', optional: false, feature: null, done: (p) => p.hasProperty },
+  { id: 'tenancy', basePath: '/properties', optional: false, feature: null, done: (p) => p.hasLease },
+  { id: 'ledger', basePath: '/properties', optional: false, feature: null, done: (p) => p.hasTransaction },
+  { id: 'valuation', basePath: '/properties', optional: true, feature: null, done: (p) => p.hasValuation },
+  { id: 'bankAccount', basePath: '/accounts', optional: true, feature: 'banking', done: (p) => p.hasBankAccount },
+  { id: 'loan', basePath: '/loans', optional: true, feature: 'loans', done: (p) => p.hasLoan },
+  { id: 'holding', basePath: '/stocks', optional: true, feature: 'stocks', done: (p) => p.hasStock },
 ];
 
 /** Exposed for the test that checks every step has a label in every locale. */
@@ -55,24 +101,28 @@ export const STEP_IDS = DEFINITIONS.map((definition) => definition.id);
 
 export function buildSteps(
   progress: OnboardingProgress,
-  features: Readonly<Features>
+  features: Readonly<Features>,
+  declinedIds: ReadonlySet<string> = new Set()
 ): OnboardingStep[] {
   return DEFINITIONS.filter(
     (definition) => definition.feature === null || features[definition.feature]
   ).map((definition) => ({
     id: definition.id,
-    to: definition.to,
+    to: resolveTo(definition.id, definition.basePath, progress),
     optional: definition.optional,
     done: definition.done(progress),
+    declined: declinedIds.has(definition.id),
   }));
 }
 
 /**
- * Whether the checklist has anything left to say. Only the required steps count, so the panel
- * disappears on its own once the portfolio is set up rather than waiting to be dismissed.
+ * Whether the checklist has anything left to say. Only the required steps count, and a declined
+ * step counts as resolved the same as a done one — "I don't want to do this" closes the question
+ * as surely as doing it does, so the panel disappears on its own rather than staying stuck open
+ * on a required step nobody is going to complete.
  */
 export function isChecklistNeeded(steps: OnboardingStep[]): boolean {
-  return steps.some((step) => !step.optional && !step.done);
+  return steps.some((step) => !step.optional && !step.done && !step.declined);
 }
 
 function readDismissed(): boolean {
@@ -92,16 +142,38 @@ function storeDismissed(): void {
   }
 }
 
+function readDeclined(): Set<string> {
+  try {
+    const raw = localStorage.getItem(ONBOARDING_DECLINED_KEY);
+    const ids: unknown = raw === null ? [] : JSON.parse(raw);
+
+    return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : []);
+  } catch {
+    // Malformed or inaccessible storage should show every step, not hide them all as declined.
+    return new Set();
+  }
+}
+
+function storeDeclined(ids: ReadonlySet<string>): void {
+  try {
+    localStorage.setItem(ONBOARDING_DECLINED_KEY, JSON.stringify([...ids]));
+  } catch {
+    // A session that cannot persist the choice should still honour it for this session.
+  }
+}
+
 export function useOnboarding(): {
   steps: ComputedRef<OnboardingStep[]>;
   visible: ComputedRef<boolean>;
   dismiss: () => void;
+  decline: (stepId: string) => void;
 } {
   const progress = ref<OnboardingProgress | null>(null);
   const dismissed = ref(readDismissed());
+  const declined = ref(readDeclined());
 
   const steps = computed(() =>
-    progress.value === null ? [] : buildSteps(progress.value, featureFlags.value)
+    progress.value === null ? [] : buildSteps(progress.value, featureFlags.value, declined.value)
   );
 
   // Nothing renders until the answer is in. Showing a checklist of outstanding steps to an
@@ -131,5 +203,12 @@ export function useOnboarding(): {
     storeDismissed();
   }
 
-  return { steps, visible, dismiss };
+  function decline(stepId: string): void {
+    // Reassigned rather than mutated in place, matching `dismissed` above — plain and explicit
+    // rather than leaning on Vue's Set-proxy reactivity.
+    declined.value = new Set(declined.value).add(stepId);
+    storeDeclined(declined.value);
+  }
+
+  return { steps, visible, dismiss, decline };
 }

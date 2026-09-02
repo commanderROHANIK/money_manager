@@ -21,7 +21,9 @@
 
     <!-- Add Loan -->
     <BaseCard class="col-span-1 xl:col-span-3">
-      <AddLoanWidget @create="_addLoan" />
+      <OnboardingGuideHighlight step-id="loan">
+        <AddLoanWidget @create="_addLoan" />
+      </OnboardingGuideHighlight>
     </BaseCard>
 
     <!-- Bottom Row -->
@@ -48,6 +50,7 @@ import AddLoanWidget from '../components/Widgets/Loans/AddLoanWidget.vue';
 import NextDueRepaymentWidget from '../components/Widgets/Loans/NextDueRepaymentWidget.vue';
 import TopLoansWidget from '../components/Widgets/Loans/TopLoansWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
+import OnboardingGuideHighlight from './ui/OnboardingGuideHighlight.vue';
 
 const loans = ref<Loan[]>([]);
 

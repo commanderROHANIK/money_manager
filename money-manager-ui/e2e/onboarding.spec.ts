@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { openDashboard, signIn } from './helpers';
 
 /**
@@ -17,6 +17,20 @@ import { openDashboard, signIn } from './helpers';
 const EMPTY_BASE_URL = process.env.E2E_EMPTY_BASE_URL ?? 'http://localhost:8081';
 
 const CHECKLIST = 'Getting started';
+
+/**
+ * The checklist's step rows. Not `rowsUnder` from `./helpers`: that helper hops from a heading to
+ * its immediate parent, which works for a widget that renders its own `<h2>` as a direct sibling
+ * of the list (`PropertyListWidget`), but the checklist's title goes through `BaseCard`'s
+ * title-plus-actions wrapper, which is one level deeper than the list — so this needs two hops,
+ * not one.
+ */
+function checklistRows(page: Page) {
+  return page
+    .getByRole('heading', { name: CHECKLIST, exact: true })
+    .locator('xpath=../..')
+    .getByRole('listitem');
+}
 
 const CORE_STEPS = [
   'Add your first property',
@@ -52,6 +66,49 @@ test.describe('an account with nothing in it', () => {
     // Loans are on in this deployment, so the mortgage step is offered. Paired with the two
     // above so this reads as filtering rather than as the steps simply not existing.
     await expect(page.getByText('Record the mortgage', { exact: true })).toBeVisible();
+  });
+
+  test('a single step can be declined, and stays declined, without dismissing the panel', async ({
+    page,
+  }) => {
+    await signIn(page);
+    await openDashboard(page);
+
+    const mortgageRow = checklistRows(page).filter({ hasText: 'Record the mortgage' });
+
+    await mortgageRow.getByRole('button', { name: 'Skip', exact: true }).click();
+
+    // Declined reads like done — struck through, no more Go/Skip — but says "Skipped" rather than
+    // "Done", and the panel itself is still up: property/tenancy/ledger are still genuinely
+    // outstanding, and one optional step being declined must not read as the whole thing finished.
+    await expect(mortgageRow.getByText('Skipped', { exact: true })).toBeVisible();
+    await expect(mortgageRow.getByRole('button', { name: 'Skip', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: CHECKLIST, exact: true })).toBeVisible();
+
+    // Through a reload, same as dismissal — it is a fact about a person on a device, not progress.
+    await page.reload();
+    await openDashboard(page);
+
+    await expect(
+      checklistRows(page)
+        .filter({ hasText: 'Record the mortgage' })
+        .getByText('Skipped', { exact: true })
+    ).toBeVisible();
+  });
+
+  test('Go on a guided step lands on the target page with the form explained', async ({ page }) => {
+    await signIn(page);
+    await openDashboard(page);
+
+    const propertyRow = checklistRows(page).filter({ hasText: 'Add your first property' });
+
+    await propertyRow.getByRole('link', { name: 'Go', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/properties\?onboarding=property/);
+
+    // The guided explanation, not just a bare navigation to the same list page "Go" always
+    // pointed at — this is the whole claim under test.
+    await expect(page.getByText('Fill in the form below to add your property.')).toBeVisible();
   });
 
   test('can be dismissed, and stays dismissed', async ({ page }) => {

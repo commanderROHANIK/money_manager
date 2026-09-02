@@ -9,6 +9,12 @@ import { api } from './api';
  */
 export interface OnboardingProgress {
   hasProperty: boolean;
+  /**
+   * Set only when there is exactly one property — never a guess at which of several. That is
+   * what lets the checklist deep-link a portfolio-wide step (tenancy/ledger/valuation) straight
+   * to the property it is missing, without picking one out of several candidates.
+   */
+  soleRentalPropertyId: number | null;
   hasLease: boolean;
   hasTransaction: boolean;
   hasValuation: boolean;

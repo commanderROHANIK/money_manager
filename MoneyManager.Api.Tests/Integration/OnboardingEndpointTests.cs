@@ -82,6 +82,28 @@ public sealed class OnboardingEndpointTests
     }
 
     [Fact]
+    public async Task SoleRentalPropertyId_is_null_until_exactly_one_property_exists_then_null_again()
+    {
+        using var client = await AuthenticatedClientAsync("onboarding-sole-property");
+
+        // Nothing yet: no property to be the sole one.
+        Assert.True((await FetchAsync(client)).GetProperty("soleRentalPropertyId").ValueKind
+            is JsonValueKind.Null);
+
+        var firstId = await CreatePropertyAsync(client);
+
+        // Exactly one: this is the id the checklist can deep-link to unambiguously.
+        Assert.Equal(firstId, (await FetchAsync(client)).GetProperty("soleRentalPropertyId").GetInt32());
+
+        await CreatePropertyAsync(client);
+
+        // Two properties: guessing which one a portfolio-wide step is missing is worse than not
+        // guessing, so this goes back to null rather than picking either one.
+        Assert.True((await FetchAsync(client)).GetProperty("soleRentalPropertyId").ValueKind
+            is JsonValueKind.Null);
+    }
+
+    [Fact]
     public async Task Deleting_the_only_property_un_ticks_its_step()
     {
         using var client = await AuthenticatedClientAsync("onboarding-deleted");
