@@ -205,13 +205,30 @@ A change to… | needs a test in…
 a new widget | fixture props in `src/__tests__/fixtures.ts`, so the smoke suite mounts it
 `src/utils/` or `src/services/` | a colocated unit test
 `Data/DemoDataSeeder.cs` | `DemoDataSeederTests.cs` for the rows, `e2e/demo-portfolio.spec.ts` for what they render as
+anything a reader sees | a spec in `money-manager-ui/e2e/` — see below
+
+**A change to the UI, or to how any figure is displayed, needs a Playwright spec.** Not instead of
+the unit tests — as well as them. The reason is specific rather than procedural: a mounted-component
+test asserts against props you handed it, so it agrees with itself. It cannot tell you that the
+number reaching the screen came from the right place, that the locale was applied, that the widget
+was reachable from a real navigation, or that the figure survived the API, the calculator and the
+converter on its way out. Every defect this repository has actually shipped — a template referencing
+components it never imported, a plural separator swallowing half a sentence, six of eighteen months
+of rent reading as a year of arrears — was invisible until something rendered it in a browser.
 
 ### The end-to-end suite
 
 `money-manager-ui/e2e/` runs Playwright against a **running deployment image**, not against
-`dotnet run` plus a Vite dev server. It is one file today, covering what the demo seed promises:
-three properties, one vacant and one denominated in forint, a converted portfolio total that
-names the rate it used, and a valuation warning present on one property and absent on another.
+`dotnet run` plus a Vite dev server. Two files today: `demo-portfolio.spec.ts` covers what the
+demo seed promises — three properties, one vacant and one in forint, a converted total naming the
+rate it used, a valuation warning present on one property and absent on another — and
+`onboarding.spec.ts` covers the empty app.
+
+**It runs against two containers.** The seeded one on 8080, and a second on 8081 started with
+`Seed__IncludeDemoData=false`: the same account, nothing in it. Onboarding's claim is a contrast
+no single deployment can show, since "a new account sees the checklist" and "an established one
+does not" cannot both be true of one database. A spec asserting only the first would pass on a
+checklist that is always displayed.
 
 Running the image rather than the dev servers is the whole reason it earns its place. The
 container is where the two halves meet on one origin, and its failure modes are invisible to
@@ -227,6 +244,15 @@ docker run --rm --detach --name mm-e2e --publish 8080:8080 \
   --env 'ConnectionStrings__Default=Data Source=/tmp/e2e.db' \
   --env JwtSettings__SecretKey=e2e-only-signing-key-not-a-secret-0123456789 \
   --env Seed__Enabled=true --env Seed__Password=e2e-demo-password \
+  --env Features__AutomaticExchangeRates=false \
+  moneymanager:e2e
+
+docker run --rm --detach --name mm-e2e-empty --publish 8081:8080 \
+  --env ASPNETCORE_HTTP_PORTS=8080 \
+  --env 'ConnectionStrings__Default=Data Source=/tmp/e2e-empty.db' \
+  --env JwtSettings__SecretKey=e2e-only-signing-key-not-a-secret-0123456789 \
+  --env Seed__Enabled=true --env Seed__Password=e2e-demo-password \
+  --env Seed__IncludeDemoData=false \
   --env Features__AutomaticExchangeRates=false \
   moneymanager:e2e
 

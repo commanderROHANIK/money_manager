@@ -1,6 +1,11 @@
 <template>
 
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Onboarding checklist. Renders nothing once the required steps are done, so it is
+               mounted unconditionally rather than gated here — the decision is derived from the
+               landlord's own data and belongs with the data, not in the layout. -->
+          <OnboardingChecklist class="md:col-span-2 lg:col-span-3" />
+
           <!-- Total Balance Widget -->
           <TotalBalance v-if="featureFlags.banking" />
 
@@ -28,6 +33,7 @@
     import LoanSummary from './Widgets/Loans/LoanSummary.vue';
     import PropertySummary from './Widgets/Properties/PropertySummary.vue';
     import BankAccountsSummary from './Widgets/BankAccounts/BankAccountsSummary.vue';
+    import OnboardingChecklist from './Widgets/Onboarding/OnboardingChecklist.vue';
     import { featureFlags } from '../services/features';
 
     // v-if rather than v-show: a hidden widget still mounts, and mounting it fires the request

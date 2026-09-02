@@ -364,5 +364,44 @@
       "label": "Kreditsumme gesamt"
     },
     "confirmDelete": "„{name}“ löschen?"
+  },
+  "onboarding": {
+    "title": "Erste Schritte",
+    "intro": "Richten Sie diese ein, dann kann das Dashboard sagen, welche Immobilie schlechter abschneidet und um wie viel.",
+    "dismiss": "Ausblenden",
+    "done": "Erledigt",
+    "todo": "Offen",
+    "go": "Öffnen",
+    "optional": "freiwillig",
+    "steps": {
+      "property": {
+        "title": "Erfassen Sie Ihre erste Immobilie",
+        "hint": "Die Wohnung oder das Haus, das Sie vermieten."
+      },
+      "tenancy": {
+        "title": "Halten Sie fest, wer sie mietet",
+        "hint": "Das Mietverhältnis, die Miete und der Fälligkeitstag."
+      },
+      "ledger": {
+        "title": "Tragen Sie Einnahmen und Ausgaben ein",
+        "hint": "Miete, Darlehen, Reparaturen und alles Weitere im Kontobuch."
+      },
+      "valuation": {
+        "title": "Geben Sie den heutigen Wert an",
+        "hint": "Ohne ihn tritt der Kaufpreis an seine Stelle und die Wertsteigerung erscheint als null."
+      },
+      "bankAccount": {
+        "title": "Fügen Sie ein Bankkonto hinzu",
+        "hint": "Wo die Miete eingeht und die Rechnungen abgehen."
+      },
+      "loan": {
+        "title": "Erfassen Sie das Darlehen",
+        "hint": "Die Restschuld, damit die Rendite auf Ihr eigenes Kapital berechnet werden kann."
+      },
+      "holding": {
+        "title": "Fügen Sie eine Position hinzu",
+        "hint": "Alles, was Sie außerhalb von Immobilien besitzen."
+      }
+    }
   }
 }

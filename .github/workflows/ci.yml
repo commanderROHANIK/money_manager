@@ -99,10 +99,15 @@ jobs:
       #
       # Like the image build, this lives in the API job rather than a job of its own so the
       # required check names stay API and UI and branch protection never needs editing.
+      # Two containers, because the onboarding suite asserts a contrast a single deployment cannot
+      # show: a brand-new account sees the checklist, an established one sees no checklist at all.
+      # The second is the same image with Seed__IncludeDemoData off — the seeded account, and
+      # nothing in it. Asserting only the empty half would pass on a checklist that is always
+      # shown, which is the defect a reader would actually notice.
       - name: Start the deployment image
         env:
-          # Deliberately literal, not repository secrets. They configure a container that lives
-          # for the length of this job, holds nothing but fabricated demo records, and is not
+          # Deliberately literal, not repository secrets. They configure containers that live for
+          # the length of this job, hold nothing but fabricated demo records, and are not
           # reachable from outside the runner. Storing them as secrets would imply they protect
           # something, and would leave this file describing a run nobody can reproduce.
           SEED_PASSWORD: e2e-demo-password
@@ -119,22 +124,43 @@ jobs:
             --env "Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning" \
             moneymanager:ci
 
+          docker run --detach --name moneymanager-e2e-empty \
+            --publish 8081:8080 \
+            --env ASPNETCORE_HTTP_PORTS=8080 \
+            --env 'ConnectionStrings__Default=Data Source=/tmp/e2e-empty.db' \
+            --env "JwtSettings__SecretKey=$JWT_KEY" \
+            --env Seed__Enabled=true \
+            --env "Seed__Password=$SEED_PASSWORD" \
+            --env Seed__IncludeDemoData=false \
+            --env Features__AutomaticExchangeRates=false \
+            --env "Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning" \
+            moneymanager:ci
+
       # The suite fetches no rates: the flag above registers NoExchangeRateProvider, so there is
       # no HttpClient and no DNS lookup, the same posture ApiFactory takes for the API tests. The
       # seeded EUR/HUF rate is a manual row, so the converted total under test does not depend on
       # the runner being able to reach the ECB.
-      - name: Wait for the container to answer
+      - name: Wait for the containers to answer
         run: |
-          for _ in $(seq 1 60); do
-            if curl --fail --silent --show-error http://localhost:8080/health > /dev/null 2>&1; then
-              echo "Container is answering."
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "::error::The container never answered /health."
-          docker logs moneymanager-e2e
-          exit 1
+          wait_for() {
+            name="$1"
+            port="$2"
+
+            for _ in $(seq 1 60); do
+              if curl --fail --silent --show-error "http://localhost:$port/health" > /dev/null 2>&1; then
+                echo "$name is answering on $port."
+                return 0
+              fi
+              sleep 2
+            done
+
+            echo "::error::$name never answered /health on $port."
+            docker logs --tail 200 "$name"
+            return 1
+          }
+
+          wait_for moneymanager-e2e 8080
+          wait_for moneymanager-e2e-empty 8081
 
       - uses: actions/setup-node@v7
         with:
@@ -156,6 +182,7 @@ jobs:
         working-directory: money-manager-ui
         env:
           E2E_BASE_URL: http://localhost:8080
+          E2E_EMPTY_BASE_URL: http://localhost:8081
           E2E_PASSWORD: e2e-demo-password
         run: npm run test:e2e
 
@@ -167,7 +194,11 @@ jobs:
       # immediately above it, which is how a step meant to aid diagnosis ends up preventing it.
       - name: Container logs
         if: failure()
-        run: docker logs --tail 200 moneymanager-e2e
+        run: |
+          echo "----- seeded -----"
+          docker logs --tail 200 moneymanager-e2e
+          echo "----- empty -----"
+          docker logs --tail 200 moneymanager-e2e-empty
 
       - name: Upload the Playwright report
         if: failure()
