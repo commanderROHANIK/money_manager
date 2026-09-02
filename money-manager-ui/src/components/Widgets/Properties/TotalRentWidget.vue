@@ -1,40 +1,26 @@
 <template>
-  <StatCard :label="t('property.totalRent.label')" :value="formattedTotal">
-    <template v-if="mixed" #value>
-      {{ formattedTotal }}
-      <span class="block text-xs font-normal text-text-muted mt-1">
-        {{ t('property.totalRent.mixedCurrency') }}
-      </span>
-    </template>
-  </StatCard>
+  <StatCard :label="t('property.totalRent.label')" :value="formattedTotal" />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { RentalProperty } from '../../../models/models';
-import { formatMoney, sumSameCurrency } from '../../../utils/money';
+import type { PortfolioAnalytics } from '../../../models/models';
+import { formatMoney } from '../../../utils/money';
 import StatCard from '../../ui/StatCard.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const props = defineProps<{
-  properties: RentalProperty[];
-}>();
+const props = defineProps<{ portfolio: PortfolioAnalytics | null }>();
 
-// This read a non-existent `monthlyRent` field, so the widget showed 0 for every
-// portfolio and the type error broke the production build.
-const summed = computed(() =>
-  sumSameCurrency(
-    props.properties,
-    (p) => p.rentAmount,
-    (p) => p.currencyCode
-  )
-);
-
-const mixed = computed(() => summed.value.mixed);
-
-const formattedTotal = computed(() =>
-  formatMoney(summed.value.total, summed.value.currency)
-);
+// The portfolio's own converted total (CurrencyRollup.Sum on the backend) rather than a
+// client-side sum across whatever currencies the properties happen to be in — this used to add
+// raw amounts across currencies as if they were the same unit. Blank, not a wrong number, when a
+// rate is missing — matches CashVsInvestedWidget's own compact-tile convention; there is no room
+// here for the full "add the rate in Settings" disclosure a bigger card can afford.
+const formattedTotal = computed(() => {
+  const total = props.portfolio?.totalMonthlyRent;
+  if (total === null || total === undefined) return '—';
+  return formatMoney(total, props.portfolio?.currency ?? 'EUR');
+});
 </script>

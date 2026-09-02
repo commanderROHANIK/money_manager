@@ -141,8 +141,7 @@
       "empty": "Nothing recorded yet."
     },
     "totalRent": {
-      "label": "Total Monthly Rent",
-      "mixedCurrency": "Properties span multiple currencies — showing the unconverted sum."
+      "label": "Total Monthly Rent"
     },
     "summary": {
       "label": "Rental Properties",
