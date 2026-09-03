@@ -47,14 +47,26 @@ namespace MoneyManager.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<OnboardingProgressDto>> Get(CancellationToken cancellationToken)
         {
+            // Two rows is enough to tell "exactly one" from "more than one" without counting the
+            // whole table, which is what SolePropertyId needs below.
+            var propertyIds = await _context.RentalProperties
+                .OrderBy(p => p.Id)
+                .Select(p => p.Id)
+                .Take(2)
+                .ToListAsync(cancellationToken);
+
             return new OnboardingProgressDto(
-                HasProperty: await _context.RentalProperties.AnyAsync(cancellationToken),
+                HasProperty: propertyIds.Count > 0,
                 HasLease: await _context.Leases.AnyAsync(cancellationToken),
                 HasTransaction: await _context.PropertyTransactions.AnyAsync(cancellationToken),
                 HasValuation: await _context.PropertyValuations.AnyAsync(cancellationToken),
                 HasBankAccount: await _context.BankAccounts.AnyAsync(cancellationToken),
                 HasLoan: await _context.Loans.AnyAsync(cancellationToken),
-                HasStock: await _context.Stocks.AnyAsync(cancellationToken));
+                HasStock: await _context.Stocks.AnyAsync(cancellationToken),
+                // Only set when the landlord has exactly one property, so the checklist's guided
+                // "Go" can deep-link into it without a second round-trip and without guessing which
+                // property a 2+-property portfolio means.
+                SolePropertyId: propertyIds.Count == 1 ? propertyIds[0] : null);
         }
     }
 
@@ -72,5 +84,6 @@ namespace MoneyManager.Api.Controllers
         bool HasValuation,
         bool HasBankAccount,
         bool HasLoan,
-        bool HasStock);
+        bool HasStock,
+        int? SolePropertyId);
 }

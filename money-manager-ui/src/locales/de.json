@@ -372,7 +372,16 @@
     "done": "Erledigt",
     "todo": "Offen",
     "go": "Öffnen",
+    "skip": "Überspringen",
+    "skipped": "Übersprungen",
     "optional": "freiwillig",
+    "spotlight": {
+      "property": "Füllen Sie das Formular unten aus, um Ihre erste Immobilie hinzuzufügen.",
+      "tenancy": "Erfassen Sie das Mietverhältnis im Formular unten — wer mietet, die Miete und der Fälligkeitstag.",
+      "ledger": "Tragen Sie unten ein, was Sie erhalten und bezahlt haben.",
+      "valuation": "Geben Sie im Formular unten an, was diese Immobilie heute wert ist.",
+      "loan": "Erfassen Sie das Darlehen im Formular unten — was noch aussteht."
+    },
     "steps": {
       "property": {
         "title": "Erfassen Sie Ihre erste Immobilie",

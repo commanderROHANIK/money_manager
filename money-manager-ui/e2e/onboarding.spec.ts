@@ -71,6 +71,58 @@ test.describe('an account with nothing in it', () => {
 
     await expect(page.getByRole('heading', { name: CHECKLIST, exact: true })).toHaveCount(0);
   });
+
+  test('can decline a single step, which is marked skipped without hiding the rest', async ({ page }) => {
+    await signIn(page);
+    await openDashboard(page);
+
+    const propertyRow = page
+      .getByText('Add your first property', { exact: true })
+      .locator('xpath=ancestor::li');
+
+    await propertyRow.getByRole('button', { name: 'Skip', exact: true }).click();
+
+    await expect(propertyRow.getByText('Skipped', { exact: true })).toBeVisible();
+    // Property's own Go/Skip are gone once declined, but the panel stays up: tenancy and the
+    // ledger are still required and neither done nor declined.
+    await expect(propertyRow.getByRole('link', { name: 'Go', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: CHECKLIST, exact: true })).toBeVisible();
+  });
+
+  test('guided Go on an inline step deep-links to its form and highlights it', async ({ page }) => {
+    await signIn(page);
+    await openDashboard(page);
+
+    const propertyRow = page
+      .getByText('Add your first property', { exact: true })
+      .locator('xpath=ancestor::li');
+
+    await propertyRow.getByRole('link', { name: 'Go', exact: true }).click();
+
+    await expect(page).toHaveURL(/\/properties\?onboarding=property/);
+    await expect(
+      page.getByText('Fill in the form below to add your first property.', { exact: true })
+    ).toBeVisible();
+  });
+
+  test('guided Go on a per-property step falls back to a plain link with no property to deep-link to', async ({
+    page,
+  }) => {
+    await signIn(page);
+    await openDashboard(page);
+
+    const tenancyRow = page
+      .getByText('Record who is renting it', { exact: true })
+      .locator('xpath=ancestor::li');
+
+    await tenancyRow.getByRole('link', { name: 'Go', exact: true }).click();
+
+    // The contrast with the inline case above: no candidate property exists yet, so this is
+    // exactly the plain navigation the checklist always did — no onboarding query on the URL and
+    // no spotlight banner on the destination page.
+    await expect(page).toHaveURL(/\/properties$/);
+    await expect(page.getByText('Record the tenancy in the form below', { exact: false })).toHaveCount(0);
+  });
 });
 
 test.describe('an established portfolio', () => {

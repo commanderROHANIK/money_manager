@@ -13,6 +13,7 @@ import hu from '../locales/hu.json';
 import {
   buildSteps,
   isChecklistNeeded,
+  ONBOARDING_DECLINED_KEY,
   ONBOARDING_DISMISSED_KEY,
   STEP_IDS,
   useOnboarding,
@@ -34,6 +35,7 @@ const nothing: OnboardingProgress = {
   hasBankAccount: false,
   hasLoan: false,
   hasStock: false,
+  solePropertyId: null,
 };
 
 /** The MVP posture: banking and stocks deliberately switched off. */
@@ -126,9 +128,59 @@ describe('isChecklistNeeded', () => {
       hasBankAccount: true,
       hasLoan: true,
       hasStock: true,
+      solePropertyId: 1,
     };
 
     expect(isChecklistNeeded(buildSteps(established, everything))).toBe(false);
+  });
+
+  it('treats a declined required step as resolved, same as done', () => {
+    const declined = buildSteps(nothing, mvp, new Set(['property']));
+
+    expect(declined.find((step) => step.id === 'property')?.declined).toBe(true);
+    // Still outstanding: declining one required step must not resolve the others.
+    expect(isChecklistNeeded(declined)).toBe(true);
+
+    const allDeclined = buildSteps(nothing, mvp, new Set(['property', 'tenancy', 'ledger']));
+
+    expect(isChecklistNeeded(allDeclined)).toBe(false);
+  });
+});
+
+describe('guided routing', () => {
+  it('deep-links inline steps straight to their form, with the step id on the query', () => {
+    const steps = buildSteps(nothing, mvp);
+
+    expect(steps.find((step) => step.id === 'property')?.goTo).toEqual({
+      path: '/properties',
+      query: { onboarding: 'property' },
+    });
+    expect(steps.find((step) => step.id === 'loan')?.goTo).toEqual({
+      path: '/loans',
+      query: { onboarding: 'loan' },
+    });
+  });
+
+  it('deep-links a per-property step to the sole property when there is exactly one', () => {
+    const steps = buildSteps({ ...nothing, solePropertyId: 42 }, mvp);
+
+    expect(steps.find((step) => step.id === 'tenancy')?.goTo).toEqual({
+      path: '/properties/42',
+      query: { onboarding: 'tenancy' },
+    });
+  });
+
+  it('falls back to the plain list page when the sole property is ambiguous', () => {
+    const steps = buildSteps({ ...nothing, solePropertyId: null }, mvp);
+
+    expect(steps.find((step) => step.id === 'tenancy')?.goTo).toEqual({ path: '/properties' });
+  });
+
+  it('never guides a step with no form to highlight yet', () => {
+    const steps = buildSteps(nothing, everything);
+
+    expect(steps.find((step) => step.id === 'bankAccount')?.goTo).toEqual({ path: '/accounts' });
+    expect(steps.find((step) => step.id === 'holding')?.goTo).toEqual({ path: '/stocks' });
   });
 });
 
@@ -206,6 +258,35 @@ describe('useOnboarding', () => {
 
     // Survives a reload: dismissal is a fact about a person on a device, which is why it is in
     // storage rather than in the schema.
+    const next = await run();
+
+    expect(next.visible.value).toBe(false);
+  });
+
+  it('declines a single step without hiding the others', async () => {
+    const { steps, visible, decline } = await run();
+
+    decline('property');
+
+    expect(steps.value.find((step) => step.id === 'property')?.declined).toBe(true);
+    expect(steps.value.find((step) => step.id === 'tenancy')?.declined).toBe(false);
+    // Tenancy and ledger are still outstanding and required, so the panel stays up.
+    expect(visible.value).toBe(true);
+  });
+
+  it('hides the panel once every required step is done or declined, and remembers the decline', async () => {
+    fetchProgress.mockResolvedValue({ ...nothing, hasProperty: true });
+    const { visible, decline } = await run();
+
+    decline('tenancy');
+    decline('ledger');
+
+    expect(visible.value).toBe(false);
+    expect(JSON.parse(localStorage.getItem(ONBOARDING_DECLINED_KEY) ?? '[]')).toEqual([
+      'tenancy',
+      'ledger',
+    ]);
+
     const next = await run();
 
     expect(next.visible.value).toBe(false);

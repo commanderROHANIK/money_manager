@@ -55,10 +55,20 @@
       </BaseCard>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <BaseCard>
+        <BaseCard ref="tenancyCard" :class="{ 'ring-2 ring-primary-strong': isActive('tenancy') }">
+          <p v-if="isActive('tenancy')" class="mb-3 text-sm text-primary-strong">
+            {{ t('onboarding.spotlight.tenancy') }}
+          </p>
           <TenancyWidget :leases="leases" @create="onCreateLease" />
         </BaseCard>
-        <BaseCard class="xl:col-span-2">
+        <BaseCard
+          ref="ledgerCard"
+          class="xl:col-span-2"
+          :class="{ 'ring-2 ring-primary-strong': isActive('ledger') }"
+        >
+          <p v-if="isActive('ledger')" class="mb-3 text-sm text-primary-strong">
+            {{ t('onboarding.spotlight.ledger') }}
+          </p>
           <TransactionLedgerWidget
             :transactions="transactions"
             @create="onCreateTransaction"
@@ -68,7 +78,10 @@
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <BaseCard>
+        <BaseCard ref="valuationCard" :class="{ 'ring-2 ring-primary-strong': isActive('valuation') }">
+          <p v-if="isActive('valuation')" class="mb-3 text-sm text-primary-strong">
+            {{ t('onboarding.spotlight.valuation') }}
+          </p>
           <ValuationWidget
             :valuations="valuations"
             :currency-code="property.currencyCode"
@@ -84,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { nextTick, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import type {
   Lease,
@@ -128,11 +141,17 @@ import Badge from './ui/Badge.vue';
 import LoadingSkeleton from './ui/LoadingSkeleton.vue';
 import ErrorState from './ui/ErrorState.vue';
 import { useI18n } from 'vue-i18n';
+import { useOnboardingSpotlight } from '../composables/useOnboardingSpotlight';
 
 const { t } = useI18n();
 
 const route = useRoute();
 const propertyId = Number(route.params.id);
+
+const { isActive, clear } = useOnboardingSpotlight(['tenancy', 'ledger', 'valuation']);
+const tenancyCard = ref<InstanceType<typeof BaseCard> | null>(null);
+const ledgerCard = ref<InstanceType<typeof BaseCard> | null>(null);
+const valuationCard = ref<InstanceType<typeof BaseCard> | null>(null);
 
 const loading = ref(true);
 const error = ref('');
@@ -181,7 +200,20 @@ async function load() {
   }
 }
 
-onMounted(load);
+onMounted(async () => {
+  await load();
+  await nextTick();
+
+  const target = isActive('tenancy')
+    ? tenancyCard.value
+    : isActive('ledger')
+      ? ledgerCard.value
+      : isActive('valuation')
+        ? valuationCard.value
+        : null;
+
+  target?.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 
 // Anything that changes the ledger changes the metrics, so the page reloads rather than
 // trying to recompute the figures client-side and risk disagreeing with the server.
@@ -192,6 +224,7 @@ async function onCreateTransaction(payload: {
   description: string;
 }) {
   await createTransaction(propertyId, payload);
+  if (isActive('ledger')) clear();
   await load();
 }
 
@@ -227,6 +260,7 @@ function messageFrom(error: unknown): string | null {
 
 async function onCreateLease(payload: LeaseRequest) {
   await createLease(propertyId, payload);
+  if (isActive('tenancy')) clear();
   await load();
 }
 
@@ -237,6 +271,7 @@ async function onAddEstimate(amount: number) {
 
 async function onCreateValuation(payload: { valuedOn: string; value: number }) {
   await createValuation(propertyId, payload.valuedOn, payload.value);
+  if (isActive('valuation')) clear();
   await load();
 }
 </script>
