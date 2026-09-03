@@ -91,9 +91,12 @@ function resolveTo(id: string, basePath: string, guideMode: GuideMode, progress:
     case 'inline':
       return `${basePath}?onboarding=${id}`;
     case 'propertyScoped':
+      // basePath, not a hardcoded '/properties': every propertyScoped step happens to use that
+      // basePath today, which is what let this drift without anything noticing. A future step
+      // with a different basePath would otherwise route to the wrong URL silently.
       return progress.soleRentalPropertyId === null
         ? basePath
-        : `/properties/${progress.soleRentalPropertyId}?onboarding=${id}`;
+        : `${basePath}/${progress.soleRentalPropertyId}?onboarding=${id}`;
     case 'none':
       return basePath;
   }
@@ -147,41 +150,71 @@ export function isChecklistNeeded(steps: OnboardingStep[]): boolean {
   return steps.some((step) => !step.optional && !step.done && !step.declined);
 }
 
-function readDismissed(): boolean {
+/**
+ * Reads a per-user-namespaced value, migrating a legacy bare-key value into the namespaced slot
+ * the first time it's read.
+ *
+ * <p>Before per-user namespacing existed, this was the only key — so anyone who already
+ * dismissed the panel or declined a step has their answer sitting under the bare key today.
+ * Reading only the namespaced key would silently forget it. Migrating unconditionally would
+ * reopen the exact cross-account leak namespacing exists to close, for good, forever.</p>
+ *
+ * <p>The middle ground: claim the legacy value for whichever user reads it first, then delete
+ * it, so it cannot also leak to a second, different user afterward. This bounds the pre-existing
+ * leak (every future login on a shared device inherited whichever value was last written) to at
+ * most one more login, rather than leaving it open indefinitely — while not discarding a
+ * preference someone already set. Reasonable for a per-device UI preference, not a security
+ * boundary (see `currentUserId`).</p>
+ */
+function readNamespaced(base: string): string | null {
   try {
-    return localStorage.getItem(storageKey(ONBOARDING_DISMISSED_KEY)) === 'true';
+    const namespacedKey = storageKey(base);
+    const direct = localStorage.getItem(namespacedKey);
+    if (direct !== null) return direct;
+
+    const legacy = localStorage.getItem(base);
+    if (legacy === null) return null;
+
+    localStorage.setItem(namespacedKey, legacy);
+    localStorage.removeItem(base);
+    return legacy;
   } catch {
-    // A browser with storage disabled should see the checklist, not a blank dashboard.
-    return false;
+    return null;
   }
 }
 
-function storeDismissed(): void {
+function writeNamespaced(base: string, value: string): void {
   try {
-    localStorage.setItem(storageKey(ONBOARDING_DISMISSED_KEY), 'true');
+    localStorage.setItem(storageKey(base), value);
   } catch {
     // A session that cannot persist the choice should still honour it for this session.
   }
 }
 
+function readDismissed(): boolean {
+  // A browser with storage disabled (readNamespaced returns null) should see the checklist, not
+  // a blank dashboard.
+  return readNamespaced(ONBOARDING_DISMISSED_KEY) === 'true';
+}
+
+function storeDismissed(): void {
+  writeNamespaced(ONBOARDING_DISMISSED_KEY, 'true');
+}
+
 function readDeclined(): Set<string> {
   try {
-    const raw = localStorage.getItem(storageKey(ONBOARDING_DECLINED_KEY));
+    const raw = readNamespaced(ONBOARDING_DECLINED_KEY);
     const ids: unknown = raw === null ? [] : JSON.parse(raw);
 
     return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : []);
   } catch {
-    // Malformed or inaccessible storage should show every step, not hide them all as declined.
+    // Malformed storage should show every step, not hide them all as declined.
     return new Set();
   }
 }
 
 function storeDeclined(ids: ReadonlySet<string>): void {
-  try {
-    localStorage.setItem(storageKey(ONBOARDING_DECLINED_KEY), JSON.stringify([...ids]));
-  } catch {
-    // A session that cannot persist the choice should still honour it for this session.
-  }
+  writeNamespaced(ONBOARDING_DECLINED_KEY, JSON.stringify([...ids]));
 }
 
 export function useOnboarding(): {
@@ -226,10 +259,15 @@ export function useOnboarding(): {
   }
 
   function decline(stepId: string): void {
+    // Merged against a fresh read from storage, not this instance's own `declined.value` — two
+    // tabs on the same account each hold their own snapshot from whenever they mounted, and
+    // merging against a stale one would silently overwrite whatever the other tab just declined.
     // Reassigned rather than mutated in place, matching `dismissed` above — plain and explicit
     // rather than leaning on Vue's Set-proxy reactivity.
-    declined.value = new Set(declined.value).add(stepId);
-    storeDeclined(declined.value);
+    const current = readDeclined();
+    current.add(stepId);
+    declined.value = current;
+    storeDeclined(current);
   }
 
   return { steps, visible, dismiss, decline };
