@@ -224,7 +224,7 @@ async function onCreateTransaction(payload: {
   description: string;
 }) {
   await createTransaction(propertyId, payload);
-  clear();
+  if (isActive('ledger')) clear();
   await load();
 }
 
@@ -260,7 +260,7 @@ function messageFrom(error: unknown): string | null {
 
 async function onCreateLease(payload: LeaseRequest) {
   await createLease(propertyId, payload);
-  clear();
+  if (isActive('tenancy')) clear();
   await load();
 }
 
@@ -271,7 +271,7 @@ async function onAddEstimate(amount: number) {
 
 async function onCreateValuation(payload: { valuedOn: string; value: number }) {
   await createValuation(propertyId, payload.valuedOn, payload.value);
-  clear();
+  if (isActive('valuation')) clear();
   await load();
 }
 </script>
