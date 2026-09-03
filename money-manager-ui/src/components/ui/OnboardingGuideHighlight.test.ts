@@ -16,10 +16,13 @@ let query: Record<string, string> = {};
 beforeEach(() => setLocale('en'));
 afterEach(() => setLocale(DEFAULT_LOCALE));
 
-// Same approach as Menu.test.ts: a route is all this needs, not a real router.
+// Not just useRoute, unlike Menu.test.ts: useOnboardingGuide also calls useRouter() (for
+// clear()), which none of these three cases exercise today — but leaving it as the real
+// implementation would mean a future test that does exercise clear() hits an unmocked router
+// with no provider, rather than a deliberate stub.
 vi.mock('vue-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('vue-router')>();
-  return { ...actual, useRoute: () => ({ query }) };
+  return { ...actual, useRoute: () => ({ query }), useRouter: () => ({ replace: vi.fn() }) };
 });
 
 function mountWith(stepId: string) {

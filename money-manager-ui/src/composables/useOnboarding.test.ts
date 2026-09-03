@@ -332,6 +332,51 @@ describe('useOnboarding', () => {
       'valuation',
     ]);
   });
+
+  it('migrates a pre-namespacing bare-key value to the namespaced slot, once, for whoever reads it first', async () => {
+    // Written before per-user namespacing existed, so it sits under the bare key exactly as a
+    // real upgraded install would have it.
+    localStorage.setItem(ONBOARDING_DISMISSED_KEY, 'true');
+    localStorage.setItem(ONBOARDING_DECLINED_KEY, JSON.stringify(['valuation']));
+
+    userId = 'alice';
+    const alice = await run();
+
+    // Alice inherits the pre-existing dismissal rather than seeing the panel reappear — dismissed
+    // short-circuits the fetch itself (see useOnboarding's onMounted), so `steps` stays empty and
+    // the declined value is checked from storage directly, same as the namespacing test above.
+    expect(alice.visible.value).toBe(false);
+    // ...and reading it moved it under her own key rather than leaving it readable by anyone else.
+    expect(localStorage.getItem(`${ONBOARDING_DISMISSED_KEY}:alice`)).toBe('true');
+    expect(JSON.parse(localStorage.getItem(`${ONBOARDING_DECLINED_KEY}:alice`) ?? '[]')).toEqual([
+      'valuation',
+    ]);
+    expect(localStorage.getItem(ONBOARDING_DISMISSED_KEY)).toBeNull();
+    expect(localStorage.getItem(ONBOARDING_DECLINED_KEY)).toBeNull();
+
+    // The bare key is gone, so a second account on the same device does not also inherit it —
+    // the leak this migration exists to bound to at most one login, not leave open indefinitely.
+    userId = 'bob';
+    const bob = await run();
+
+    expect(bob.visible.value).toBe(true);
+  });
+
+  it('merges a decline against the latest storage rather than a stale in-memory snapshot, so a second tab cannot clobber the first', async () => {
+    const tabA = await run();
+    const tabB = await run();
+
+    tabA.decline('valuation');
+    // tabB mounted before tabA's decline landed in storage, so its own `declined` ref is still
+    // empty here — the scenario the fix targets is exactly this: a decline issued from that
+    // stale state must not overwrite what tabA already wrote.
+    tabB.decline('bankAccount');
+
+    expect(JSON.parse(localStorage.getItem(ONBOARDING_DECLINED_KEY) ?? '[]').sort()).toEqual([
+      'bankAccount',
+      'valuation',
+    ]);
+  });
 });
 
 describe('step labels', () => {
