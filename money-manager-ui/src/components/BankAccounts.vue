@@ -15,12 +15,13 @@
           </template>
           <template #subtitle>
             <p class="text-xs text-text-muted">
-              {{ account.accountType }} • <span class="tabular-nums">{{ formatCurrency(account.balance) }}</span>
+              {{ account.accountType }} • <span class="tabular-nums">{{ formatMoney(account.balance, account.currencyCode) }}</span>
             </p>
           </template>
           <template #trailing>
             <button
               class="text-danger hover:text-danger/70 transition"
+              :aria-label="t('bankAccount.delete', { name: account.accountName })"
               @click="deleteAccount(account.id)"
             >
               ➖
@@ -35,12 +36,13 @@
       <BankAccountPieChart :accounts="sortedAccounts" />
     </BaseCard>
 
-    <!-- Add Modal (Placeholder) -->
+    <!-- Add Modal -->
     <div v-if="showAddModal" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div class="bg-surface border border-border rounded-lg shadow-card p-6 w-96">
-        <h3 class="font-heading text-lg font-bold mb-4">Add Bank Account</h3>
-        <!-- Form fields go here -->
-        <BaseButton @click="showAddModal = false">Close</BaseButton>
+        <AddBankAccountWidget @create="_addAccount" />
+        <BaseButton variant="secondary" class="mt-3" block @click="showAddModal = false">
+          {{ t('bankAccount.close') }}
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -48,32 +50,41 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { fetchBankAccounts, deleteBankAccount } from '../services/api';
+import { useI18n } from 'vue-i18n';
+import { fetchBankAccounts, createBankAccount, deleteBankAccount } from '../services/api';
 import type { BankAccount } from '../models/models';
+import { formatMoney } from '../utils/money';
 import TotalBalanceWidget from '../components/Widgets/BankAccounts/TotalBalance.vue';
-import BankAccountPieChart from '../components/Widgets/BankAccounts/BankAccountPieChart.vue'; // You’ll create this
+import BankAccountPieChart from '../components/Widgets/BankAccounts/BankAccountPieChart.vue';
+import AddBankAccountWidget from '../components/Widgets/BankAccounts/AddBankAccountWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
 import BaseButton from './ui/BaseButton.vue';
 import ListRow from './ui/ListRow.vue';
 
+const { t } = useI18n();
+
 const bankAccounts = ref<BankAccount[]>([]);
 const showAddModal = ref(false);
 
-onMounted(async () => {
+async function load() {
   bankAccounts.value = await fetchBankAccounts();
-});
-
-async function deleteAccount(id: number) {
-  await deleteBankAccount(id);
-  bankAccounts.value = bankAccounts.value.filter(acc => acc.id !== id);
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('hu-HU', {
-    style: 'currency',
-    currency: 'HUF',
-    maximumFractionDigits: 0,
-  }).format(amount);
+onMounted(load);
+
+async function deleteAccount(id: number) {
+  try {
+    await deleteBankAccount(id);
+    await load();
+  } catch (error) {
+    console.error('Failed to delete bank account:', error);
+  }
+}
+
+async function _addAccount(payload: Omit<BankAccount, 'id'>) {
+  await createBankAccount({ id: 0, ...payload });
+  await load();
+  showAddModal.value = false;
 }
 
 const sortedAccounts = computed(() => {

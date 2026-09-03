@@ -23,15 +23,20 @@
       <DividendIncomeWidget />
     </div>
 
+    <!-- Add Holding -->
+    <BaseCard>
+      <AddStockWidget @create="_addStock" />
+    </BaseCard>
+
     <!-- Holdings Table -->
     <div>
-      <HoldingsListWidget />
+      <HoldingsListWidget :key="holdingsVersion" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Import placeholder or implemented widgets
+import { ref } from 'vue';
 import TotalPortfolioValueWidget from '../components/Widgets/Stocks/TotalPortfolioValueWidget.vue';
 import CashVsInvestedWidget from './Widgets/Stocks/CashVsInvestedWidget.vue';
 import { featureFlags } from '../services/features';
@@ -40,8 +45,18 @@ import SectorDistributionPieWidget from '../components/Widgets/Stocks/SectorDist
 import TopGainersAndLosersWidget from '../components/Widgets/Stocks/TopGainersAndLosersWidget.vue';
 import DividendIncomeWidget from '../components/Widgets/Stocks/DividendIncomeWidget.vue';
 import HoldingsListWidget from '../components/Widgets/Stocks/HoldingsListWidget.vue';
-</script>
+import AddStockWidget from './Widgets/Stocks/AddStockWidget.vue';
+import BaseCard from './ui/BaseCard.vue';
+import { createStock } from '../services/api';
+import type { Stock } from '../models/models';
 
-<style scoped>
-/* Optional: custom styles here */
-</style>
+// HoldingsListWidget fetches and deletes its own holdings and has no exposed refetch, so a
+// create here — the one action it cannot see itself — forces a fresh mount to pick it up.
+// Delete stays entirely inside the widget, same as it already owns its own fetch.
+const holdingsVersion = ref(0);
+
+async function _addStock(payload: Omit<Stock, 'id'>) {
+  await createStock({ id: 0, ...payload });
+  holdingsVersion.value++;
+}
+</script>

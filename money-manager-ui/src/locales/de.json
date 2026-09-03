@@ -365,6 +365,34 @@
     },
     "confirmDelete": "„{name}“ löschen?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Bankkonto hinzufügen",
+      "accountName": "Kontobezeichnung",
+      "bankName": "Bankname",
+      "accountNumber": "Kontonummer",
+      "accountType": "Kontotyp",
+      "accountTypeHint": "z. B. Girokonto, Sparkonto.",
+      "balance": "Kontostand",
+      "currencyHint": "Währung, in der dieses Konto geführt wird.",
+      "submit": "Konto hinzufügen"
+    },
+    "close": "Schließen",
+    "delete": "{name} entfernen"
+  },
+  "stock": {
+    "add": {
+      "title": "Position hinzufügen",
+      "ticker": "Tickersymbol",
+      "sharesOwned": "Gehaltene Anteile",
+      "purchasePrice": "Kaufpreis",
+      "currentPrice": "Aktueller Preis",
+      "purchaseDateHint": "Datum des Kaufs.",
+      "currencyHint": "Währung, in der diese Position geführt wird.",
+      "submit": "Position hinzufügen"
+    },
+    "delete": "{ticker} entfernen"
+  },
   "onboarding": {
     "title": "Erste Schritte",
     "intro": "Richten Sie diese ein, dann kann das Dashboard sagen, welche Immobilie schlechter abschneidet und um wie viel.",

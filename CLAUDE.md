@@ -219,10 +219,11 @@ of rent reading as a year of arrears — was invisible until something rendered 
 ### The end-to-end suite
 
 `money-manager-ui/e2e/` runs Playwright against a **running deployment image**, not against
-`dotnet run` plus a Vite dev server. Two files today: `demo-portfolio.spec.ts` covers what the
+`dotnet run` plus a Vite dev server. Three files today: `demo-portfolio.spec.ts` covers what the
 demo seed promises — three properties, one vacant and one in forint, a converted total naming the
-rate it used, a valuation warning present on one property and absent on another — and
-`onboarding.spec.ts` covers the empty app.
+rate it used, a valuation warning present on one property and absent on another —
+`onboarding.spec.ts` covers the empty app, and `bank-accounts-and-stocks.spec.ts` covers the
+add/list/delete flow for the two sections the demo seed deliberately leaves empty.
 
 **It runs against two containers.** The seeded one on 8080, and a second on 8081 started with
 `Seed__IncludeDemoData=false`: the same account, nothing in it. Onboarding's claim is a contrast
@@ -245,6 +246,7 @@ docker run --rm --detach --name mm-e2e --publish 8080:8080 \
   --env JwtSettings__SecretKey=e2e-only-signing-key-not-a-secret-0123456789 \
   --env Seed__Enabled=true --env Seed__Password=e2e-demo-password \
   --env Features__AutomaticExchangeRates=false \
+  --env Features__Banking=true --env Features__Stocks=true \
   moneymanager:e2e
 
 docker run --rm --detach --name mm-e2e-empty --publish 8081:8080 \
@@ -273,6 +275,13 @@ Three things about it are deliberate:
 - **`retries: 0`.** A retry turns "the demo is intermittently broken" into a green check, and an
   intermittently broken demo is what this suite exists to report. If a spec is flaky, the flake
   is the finding.
+- **The seeded container turns Banking and Stocks on, unlike production.** The demo seed is
+  deliberately rental-only and stays that way — nothing about the seeded rows changes. But
+  `bank-accounts-and-stocks.spec.ts` needs those two sections reachable to add and delete
+  through them, and the router redirects away from `/accounts` and `/stocks` while their flags
+  are off. Flipping them only for this e2e container, not for the real deployment's env, keeps
+  the demo's actual feature posture a separate decision from what the suite needs to exercise a
+  form.
 
 The suite fetches no rates — `Features__AutomaticExchangeRates=false` registers
 `NoExchangeRateProvider`, the same posture `ApiFactory` takes — so the converted total under test

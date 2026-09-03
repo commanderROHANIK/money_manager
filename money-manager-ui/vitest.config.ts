@@ -31,7 +31,15 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 76.85 / 74.33 / 74.45 / 76.73, after the onboarding checklist.
+      // Last measured 79.03 / 76.49 / 77.88 / 78.68, after the bank-account and holding
+      // add-forms (#63). All four floors move — statements 76 -> 78, branches 74 -> 75,
+      // functions 74 -> 76, lines 76 -> 77 — each a point or so under measured reality, the
+      // same margin the earlier floors carried. Functions moves the most (+3.88 measured)
+      // because the new widgets and the delete/error paths added to BankAccounts.vue and
+      // HoldingsListWidget.vue arrived with their own tests rather than only the free smoke-test
+      // mount.
+      //
+      // Before that: 76.85 / 74.33 / 74.45 / 76.73, after the onboarding checklist.
       //
       // Functions moves 73 -> 74, and it is the only one that moves. It gained 1.19 — the largest
       // single jump these floors have seen — because the feature arrived as two pure functions
@@ -129,10 +137,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 76,
-        branches: 74,
-        functions: 74,
-        lines: 76,
+        statements: 78,
+        branches: 75,
+        functions: 76,
+        lines: 77,
       },
     },
   },

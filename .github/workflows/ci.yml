@@ -121,6 +121,7 @@ jobs:
             --env Seed__Enabled=true \
             --env "Seed__Password=$SEED_PASSWORD" \
             --env Features__AutomaticExchangeRates=false \
+            --env Features__Banking=true --env Features__Stocks=true \
             --env "Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning" \
             moneymanager:ci
 
