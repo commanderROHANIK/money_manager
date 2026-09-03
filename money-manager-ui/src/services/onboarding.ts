@@ -15,6 +15,8 @@ export interface OnboardingProgress {
   hasBankAccount: boolean;
   hasLoan: boolean;
   hasStock: boolean;
+  /** Set only when there is exactly one property, so a guided "Go" can deep-link to it. */
+  solePropertyId: number | null;
 }
 
 export async function fetchOnboardingProgress(): Promise<OnboardingProgress> {
