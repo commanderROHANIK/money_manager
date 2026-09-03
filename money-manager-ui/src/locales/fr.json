@@ -365,6 +365,34 @@
     },
     "confirmDelete": "Supprimer « {name} » ?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Ajouter un compte bancaire",
+      "accountName": "Nom du compte",
+      "bankName": "Nom de la banque",
+      "accountNumber": "Numéro de compte",
+      "accountType": "Type de compte",
+      "accountTypeHint": "p. ex. Compte courant, Compte épargne.",
+      "balance": "Solde",
+      "currencyHint": "Devise dans laquelle ce compte est libellé.",
+      "submit": "Ajouter le compte"
+    },
+    "close": "Fermer",
+    "delete": "Supprimer {name}"
+  },
+  "stock": {
+    "add": {
+      "title": "Ajouter une position",
+      "ticker": "Symbole",
+      "sharesOwned": "Actions détenues",
+      "purchasePrice": "Prix d'achat",
+      "currentPrice": "Prix actuel",
+      "purchaseDateHint": "Date d'achat des actions.",
+      "currencyHint": "Devise dans laquelle cette position est libellée.",
+      "submit": "Ajouter la position"
+    },
+    "delete": "Supprimer {ticker}"
+  },
   "onboarding": {
     "title": "Premiers pas",
     "intro": "Renseignez ces éléments et le tableau de bord pourra dire quel bien sous-performe, et de combien.",

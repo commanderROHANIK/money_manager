@@ -365,6 +365,34 @@
     },
     "confirmDelete": "Delete \"{name}\"?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Add a bank account",
+      "accountName": "Account name",
+      "bankName": "Bank name",
+      "accountNumber": "Account number",
+      "accountType": "Account type",
+      "accountTypeHint": "e.g. Checking, Savings.",
+      "balance": "Balance",
+      "currencyHint": "Currency this account is denominated in.",
+      "submit": "Add account"
+    },
+    "close": "Close",
+    "delete": "Remove {name}"
+  },
+  "stock": {
+    "add": {
+      "title": "Add a holding",
+      "ticker": "Ticker",
+      "sharesOwned": "Shares owned",
+      "purchasePrice": "Purchase price",
+      "currentPrice": "Current price",
+      "purchaseDateHint": "Date the shares were bought.",
+      "currencyHint": "Currency this holding is denominated in.",
+      "submit": "Add holding"
+    },
+    "delete": "Remove {ticker}"
+  },
   "onboarding": {
     "title": "Getting started",
     "intro": "Set these up and the dashboard can start telling you which property is underperforming, and by how much.",

@@ -365,6 +365,34 @@
     },
     "confirmDelete": "Törlöd a(z) „{name}” hitelt?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Bankszámla hozzáadása",
+      "accountName": "Számla neve",
+      "bankName": "Bank neve",
+      "accountNumber": "Számlaszám",
+      "accountType": "Számla típusa",
+      "accountTypeHint": "pl. Folyószámla, Megtakarítási számla.",
+      "balance": "Egyenleg",
+      "currencyHint": "A számla pénzneme.",
+      "submit": "Számla hozzáadása"
+    },
+    "close": "Bezárás",
+    "delete": "{name} eltávolítása"
+  },
+  "stock": {
+    "add": {
+      "title": "Részvény hozzáadása",
+      "ticker": "Ticker",
+      "sharesOwned": "Birtokolt darabszám",
+      "purchasePrice": "Vételár",
+      "currentPrice": "Jelenlegi ár",
+      "purchaseDateHint": "A vásárlás dátuma.",
+      "currencyHint": "A részvény pénzneme.",
+      "submit": "Részvény hozzáadása"
+    },
+    "delete": "{ticker} eltávolítása"
+  },
   "onboarding": {
     "title": "Első lépések",
     "intro": "Állítsd be ezeket, és az irányítópult meg tudja mondani, melyik ingatlan teljesít gyengén, és mennyivel.",
