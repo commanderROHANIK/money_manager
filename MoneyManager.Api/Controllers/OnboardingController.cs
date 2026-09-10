@@ -43,6 +43,18 @@ namespace MoneyManager.Api.Controllers
         /// Seven existence checks, which SQLite answers as <c>EXISTS</c> without materialising a
         /// row. Cheap enough to run on every dashboard load, and the checklist stops asking once
         /// the landlord has finished — see the widget, which unmounts itself.
+        ///
+        /// <para>
+        /// Sequential rather than <c>Task.WhenAll</c>'d, deliberately: <c>_context</c> is one
+        /// scoped <see cref="MoneyManagerDbContext"/> instance, and EF Core does not allow
+        /// concurrent operations on a single context — running these in parallel as written
+        /// would throw at the second request, not silently misbehave. Making them genuinely
+        /// parallel would mean a pooled <c>IDbContextFactory</c> and a separate context per
+        /// query, which is a bigger change to make for eight sub-millisecond SQLite <c>EXISTS</c>
+        /// checks against a table already scoped to one user by the query filter — not worth the
+        /// added surface (and the tenant-isolation risk of wiring <see cref="ICurrentUser"/> into
+        /// a second, ad-hoc context by hand) for this endpoint.
+        /// </para>
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<OnboardingProgressDto>> Get(CancellationToken cancellationToken)
