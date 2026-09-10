@@ -15,11 +15,22 @@ import { signIn } from './helpers';
  * <p>Each section is add-then-delete, not just add: a form that can create a row but never lets
  * it be removed again fails the moment someone adds a test entry to try it out, and
  * `HoldingsListWidget` had no delete affordance at all before this issue.</p>
+ *
+ * <p>Both sections share a single sign-in rather than each getting its own: `AuthController` is
+ * rate-limited at 10 requests per IP per minute (`Program.cs`'s "auth" policy, deliberately —
+ * see CLAUDE.md), and this suite already spends 9 of those 10 on `demo-portfolio.spec.ts` and
+ * onboarding's "an established portfolio" case against this same seeded container. A second
+ * `signIn` here would be the 11th call inside that window and get 429'd, which surfaces as the
+ * *next* test hanging at `/login` rather than as a failure here — worth the sharing rather than
+ * the two independent logins this would otherwise read most naturally as.</p>
  */
 
-test.describe('bank accounts', () => {
-  test('adds an account, shows it in its own currency, and removes it again', async ({ page }) => {
+test.describe('bank accounts and stock holdings', () => {
+  test('adds an account and a holding, shows each in its own currency, and removes both again', async ({
+    page,
+  }) => {
     await signIn(page);
+
     await page.goto('/accounts');
 
     await page.getByRole('button', { name: '+ Add Account', exact: true }).click();
@@ -42,12 +53,7 @@ test.describe('bank accounts', () => {
     await page.getByRole('button', { name: 'Remove E2E checking' }).click();
 
     await expect(page.getByText('E2E checking - E2E Bank', { exact: true })).toHaveCount(0);
-  });
-});
 
-test.describe('stock holdings', () => {
-  test('adds a holding, shows it in its own currency, and removes it again', async ({ page }) => {
-    await signIn(page);
     await page.goto('/stocks');
 
     await page.getByPlaceholder('Ticker', { exact: true }).fill('E2E');
