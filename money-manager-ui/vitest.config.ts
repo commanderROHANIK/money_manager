@@ -31,7 +31,20 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // PLACEHOLDER_COMMENT
+      // Last measured 80.22 / 77.13 / 79.35 / 80.08, merging the bank-account and holding
+      // add-forms (#63) with the onboarding decline + guided walkthrough (#62), which landed on
+      // main while #63 was in review. All four floors move — statements 77 -> 79, branches
+      // 74 -> 76, functions 75 -> 78, lines 77 -> 79 — each a point or so under measured
+      // reality, the same margin the earlier floors carried. Functions moves the most again,
+      // for the same reason both contributing changes moved it on their own: the new
+      // bank-account/stock widgets and the guided-walkthrough routing both arrived with their
+      // own tests rather than relying only on the free smoke-test mount.
+      //
+      // Before that (on #63 alone, before merging with #62): 79.03 / 76.49 / 77.88 / 78.68.
+      //
+      // Before that (on #62 alone): 77.95 / 74.87 / 76.32 / 77.85, after the onboarding decline
+      // + guided walkthrough. Statements and lines moved 76 -> 77 and functions 74 -> 75, each a
+      // point under measured reality, the same margin these floors have carried before.
       //
       // Before that: 76.85 / 74.33 / 74.45 / 76.73, after the onboarding checklist.
       //
@@ -131,10 +144,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 70,
-        branches: 70,
-        functions: 70,
-        lines: 70,
+        statements: 79,
+        branches: 76,
+        functions: 78,
+        lines: 79,
       },
     },
   },

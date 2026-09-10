@@ -10,7 +10,7 @@
         :placeholder="t('stock.add.sharesOwned')"
         type="number"
         min="0"
-        step="any"
+        step="1"
         required
       />
 
