@@ -31,7 +31,17 @@ export default defineConfig({
       //
       // Raise these as part of any change that raises real coverage. That is the ratchet.
       //
-      // Last measured 76.85 / 74.33 / 74.45 / 76.73, after the onboarding checklist.
+      // Last measured 77.95 / 74.87 / 76.32 / 77.85, after the onboarding decline + guided
+      // walkthrough (#62). Statements and lines move 76 -> 77 and functions 74 -> 75, each a
+      // point under measured reality, the same margin these floors have carried before.
+      //
+      // Functions gained the most — 1.87 — because the guided routing arrived as pure data
+      // (`guidedTarget`/`buildSteps` in `useOnboarding.ts`) with a table of cases against it,
+      // the same shape that moved this metric the most last time too. Branches stays at 74: it
+      // measures 74.87, a gain of about half a point over the previous run, which is within the
+      // rounding these floors are written to absorb rather than a real jump to ratchet on.
+      //
+      // Before that: 76.85 / 74.33 / 74.45 / 76.73, after the onboarding checklist.
       //
       // Functions moves 73 -> 74, and it is the only one that moves. It gained 1.19 — the largest
       // single jump these floors have seen — because the feature arrived as two pure functions
@@ -129,10 +139,10 @@ export default defineConfig({
       // Before that: 69.2 / 68.1 / 69.5 / 69.0, when the multi-currency rollup work brought the
       // two bank-balance widgets, the settings page and the exchange-rate service under test.
       thresholds: {
-        statements: 76,
+        statements: 77,
         branches: 74,
-        functions: 74,
-        lines: 76,
+        functions: 75,
+        lines: 77,
       },
     },
   },

@@ -273,4 +273,5 @@ export const onboardingProgress = {
   hasBankAccount: false,
   hasLoan: false,
   hasStock: false,
+  solePropertyId: null,
 };

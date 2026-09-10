@@ -372,7 +372,16 @@
     "done": "Done",
     "todo": "To do",
     "go": "Go",
+    "skip": "Skip",
+    "skipped": "Skipped",
     "optional": "optional",
+    "spotlight": {
+      "property": "Fill in the form below to add your first property.",
+      "tenancy": "Record the tenancy in the form below — who is renting it, the rent, and the day it falls due.",
+      "ledger": "Enter what you've received and paid in the ledger below.",
+      "valuation": "Say what this property is worth today in the form below.",
+      "loan": "Record the mortgage in the form below — what's still owed."
+    },
     "steps": {
       "property": {
         "title": "Add your first property",

@@ -36,7 +36,14 @@
       />
     </BaseCard>
 
-    <BaseCard class="col-span-1 xl:col-span-3">
+    <BaseCard
+      ref="addPropertyCard"
+      class="col-span-1 xl:col-span-3"
+      :class="{ 'ring-2 ring-primary-strong': isActive('property') }"
+    >
+      <p v-if="isActive('property')" class="mb-3 text-sm text-primary-strong">
+        {{ t('onboarding.spotlight.property') }}
+      </p>
       <AddPropertyWidget
         :key="addFormKey"
         :errors="addErrors"
@@ -48,11 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { extractApiError, fetchRentalProperties, deleteRentalProperty } from '../services/api';
 import { createProperty, fetchArrears, fetchPortfolioAnalytics } from '../services/propertyApi';
 import type { RentalPropertyRequest } from '../services/propertyApi';
 import type { PortfolioAnalytics, PropertyArrears, RentalProperty } from '../models/models';
+import { useOnboardingSpotlight } from '../composables/useOnboardingSpotlight';
 
 // Widgets
 import TotalRentWidget from '../components/Widgets/Properties/TotalRentWidget.vue';
@@ -64,6 +73,10 @@ import UnderpricedPropertiesWidget from '../components/Widgets/Properties/Underp
 import PortfolioSummaryWidget from '../components/Widgets/Properties/PortfolioSummaryWidget.vue';
 import AddPropertyWidget from '../components/Widgets/Properties/AddPropertyWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
+
+const { t } = useI18n();
+const { isActive, clear } = useOnboardingSpotlight(['property']);
+const addPropertyCard = ref<InstanceType<typeof BaseCard> | null>(null);
 
 const properties = ref<RentalProperty[]>([]);
 const portfolio = ref<PortfolioAnalytics | null>(null);
@@ -85,7 +98,14 @@ async function load() {
   ]);
 }
 
-onMounted(load);
+onMounted(async () => {
+  await load();
+
+  if (isActive('property')) {
+    await nextTick();
+    addPropertyCard.value?.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
 
 async function _deleteProperty(id: number) {
   await deleteRentalProperty(id);
@@ -120,6 +140,7 @@ async function _addProperty(request: RentalPropertyRequest) {
   }
 
   addFormKey.value += 1;
+  clear();
   await load();
 }
 </script>
