@@ -141,8 +141,7 @@
       "empty": "Rien d'enregistré pour l'instant."
     },
     "totalRent": {
-      "label": "Loyer mensuel total",
-      "mixedCurrency": "Les biens sont libellés en plusieurs devises — somme non convertie."
+      "label": "Loyer mensuel total"
     },
     "summary": {
       "label": "Biens locatifs",

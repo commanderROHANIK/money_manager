@@ -82,4 +82,25 @@ describe('SettingsPage', () => {
     expect(calls.updateSettings).toBe(1);
     expect(calls.fetchRates).toBe(2);
   });
+
+  it('does not remount the rate list for its own actions', async () => {
+    // Regression test: ExchangeRatesWidget used to be wired so that its own actions (not just
+    // CurrencySettingsWidget's) bumped SettingsPage's remount key. Since the widget already
+    // re-fetches itself after saving, that remount was pure waste — a second, redundant fetch —
+    // and worse, it wiped the widget's own local state (the add-rate form, including the "use
+    // the live rate" checkbox) back to defaults right after a successful action, which is what
+    // read as "I checked it and it un-checked itself."
+    const wrapper = mount(SettingsPage);
+    await settle();
+
+    expect(calls.fetchRates).toBe(1);
+
+    await wrapper.find('input[type="number"]').setValue(400);
+    await wrapper.find('form').trigger('submit');
+    await settle();
+
+    // One fetch from the widget's own load() after saving — not a second one from a remount
+    // that was never supposed to happen for the rates widget's own actions.
+    expect(calls.fetchRates).toBe(2);
+  });
 });

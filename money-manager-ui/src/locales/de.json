@@ -141,8 +141,7 @@
       "empty": "Noch nichts erfasst."
     },
     "totalRent": {
-      "label": "Monatsmiete gesamt",
-      "mixedCurrency": "Die Immobilien haben verschiedene Währungen — die Summe ist nicht umgerechnet."
+      "label": "Monatsmiete gesamt"
     },
     "summary": {
       "label": "Mietobjekte",

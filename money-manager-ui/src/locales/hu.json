@@ -141,8 +141,7 @@
       "empty": "Még nincs rögzített esemény."
     },
     "totalRent": {
-      "label": "Havi bérleti díj összesen",
-      "mixedCurrency": "Az ingatlanok több pénznemben vannak — az összeg átváltás nélkül szerepel."
+      "label": "Havi bérleti díj összesen"
     },
     "summary": {
       "label": "Bérbe adott ingatlanok",

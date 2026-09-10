@@ -3,7 +3,7 @@ import type { UpcomingEvent } from '../models/models';
 import type { BankAccount, BankBalanceSummary } from '../models/models';
 import type { Loan } from '../models/models';
 import type { RentalProperty } from '../models/models';
-import type { Stock } from '../models/models';
+import type { Stock, StockValueSummary } from '../models/models';
 
 export const TOKEN_STORAGE_KEY = 'token';
 
@@ -197,6 +197,17 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
 
   export async function fetchStocks(): Promise<Stock[]> {
     const response = await api.get<Stock[]>('/Stocks');
+    return response.data;
+  }
+
+  /**
+   * The stocks equivalent of `fetchBankAccountsTotalBalance`: the whole summary rather than a
+   * bare number, since a bare number could not say what currency it was in. Sums
+   * `sharesOwned * currentPrice` across currencies at the owner's own rates, and reports the
+   * per-currency breakdown plus a null headline when no rate could produce one.
+   */
+  export async function fetchStocksTotalValue(): Promise<StockValueSummary> {
+    const response = await api.get<StockValueSummary>('/Stocks/summary/total-value');
     return response.data;
   }
 
