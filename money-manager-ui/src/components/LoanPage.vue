@@ -20,7 +20,14 @@
     </BaseCard>
 
     <!-- Add Loan -->
-    <BaseCard class="col-span-1 xl:col-span-3">
+    <BaseCard
+      ref="addLoanCard"
+      class="col-span-1 xl:col-span-3"
+      :class="{ 'ring-2 ring-primary-strong': isActive('loan') }"
+    >
+      <p v-if="isActive('loan')" class="mb-3 text-sm text-primary-strong">
+        {{ t('onboarding.spotlight.loan') }}
+      </p>
       <AddLoanWidget @create="_addLoan" />
     </BaseCard>
 
@@ -35,9 +42,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { fetchLoans, createLoan, deleteLoan } from '../services/api';
 import type { Loan } from '../models/models';
+import { useOnboardingSpotlight } from '../composables/useOnboardingSpotlight';
 
 // Widgets
 import TotalLoanAmountWidget from '../components/Widgets/Loans/TotalLoanAmountWidget.vue';
@@ -49,13 +58,24 @@ import NextDueRepaymentWidget from '../components/Widgets/Loans/NextDueRepayment
 import TopLoansWidget from '../components/Widgets/Loans/TopLoansWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
 
+const { t } = useI18n();
+const { isActive, clear } = useOnboardingSpotlight(['loan']);
+const addLoanCard = ref<InstanceType<typeof BaseCard> | null>(null);
+
 const loans = ref<Loan[]>([]);
 
 async function load() {
   loans.value = await fetchLoans();
 }
 
-onMounted(load);
+onMounted(async () => {
+  await load();
+
+  if (isActive('loan')) {
+    await nextTick();
+    addLoanCard.value?.$el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
 
 async function _deleteLoan(id: number) {
   await deleteLoan(id);
@@ -64,6 +84,7 @@ async function _deleteLoan(id: number) {
 
 async function _addLoan(payload: Omit<Loan, 'id'>) {
   await createLoan({ id: 0, ...payload });
+  clear();
   await load();
 }
 </script>

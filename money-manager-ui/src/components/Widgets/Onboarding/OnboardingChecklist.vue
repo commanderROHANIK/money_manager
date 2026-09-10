@@ -11,7 +11,15 @@
     <ul>
       <ListRow v-for="step in steps" :key="step.id">
         <template #title>
-          <span :class="step.done ? 'text-text-muted line-through' : 'font-medium'">
+          <span
+            :class="
+              step.done
+                ? 'text-text-muted line-through'
+                : step.declined
+                  ? 'text-text-muted italic'
+                  : 'font-medium'
+            "
+          >
             {{ t(`onboarding.steps.${step.id}.title`) }}
           </span>
         </template>
@@ -23,15 +31,23 @@
         </template>
         <template #trailing>
           <Badge :variant="step.done ? 'primary' : 'neutral'">
-            {{ step.done ? t('onboarding.done') : t('onboarding.todo') }}
+            {{ step.done ? t('onboarding.done') : step.declined ? t('onboarding.skipped') : t('onboarding.todo') }}
           </Badge>
-          <router-link
-            v-if="!step.done"
-            :to="step.to"
-            class="text-sm text-primary-strong hover:underline whitespace-nowrap"
-          >
-            {{ t('onboarding.go') }}
-          </router-link>
+          <template v-if="!step.done && !step.declined">
+            <router-link
+              :to="step.goTo"
+              class="text-sm text-primary-strong hover:underline whitespace-nowrap"
+            >
+              {{ t('onboarding.go') }}
+            </router-link>
+            <button
+              type="button"
+              class="text-sm text-text-muted hover:text-text whitespace-nowrap"
+              @click="decline(step.id)"
+            >
+              {{ t('onboarding.skip') }}
+            </button>
+          </template>
         </template>
       </ListRow>
     </ul>
@@ -57,5 +73,5 @@ import ListRow from '../../ui/ListRow.vue';
 import { useOnboarding } from '../../../composables/useOnboarding';
 
 const { t } = useI18n();
-const { steps, visible, dismiss } = useOnboarding();
+const { steps, visible, dismiss, decline } = useOnboarding();
 </script>
