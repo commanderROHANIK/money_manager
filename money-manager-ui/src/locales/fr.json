@@ -141,8 +141,7 @@
       "empty": "Rien d'enregistré pour l'instant."
     },
     "totalRent": {
-      "label": "Loyer mensuel total",
-      "mixedCurrency": "Les biens sont libellés en plusieurs devises — somme non convertie."
+      "label": "Loyer mensuel total"
     },
     "summary": {
       "label": "Biens locatifs",
@@ -400,7 +399,16 @@
     "done": "Fait",
     "todo": "À faire",
     "go": "Ouvrir",
+    "skip": "Ignorer",
+    "skipped": "Ignoré",
     "optional": "facultatif",
+    "spotlight": {
+      "property": "Remplissez le formulaire ci-dessous pour ajouter votre premier bien.",
+      "tenancy": "Enregistrez le bail dans le formulaire ci-dessous — qui loue, le loyer et le jour d'échéance.",
+      "ledger": "Saisissez ci-dessous ce que vous avez perçu et payé.",
+      "valuation": "Indiquez dans le formulaire ci-dessous la valeur actuelle de ce bien.",
+      "loan": "Enregistrez le prêt dans le formulaire ci-dessous — ce qu'il reste à rembourser."
+    },
     "steps": {
       "property": {
         "title": "Ajoutez votre premier bien",

@@ -141,8 +141,7 @@
       "empty": "Még nincs rögzített esemény."
     },
     "totalRent": {
-      "label": "Havi bérleti díj összesen",
-      "mixedCurrency": "Az ingatlanok több pénznemben vannak — az összeg átváltás nélkül szerepel."
+      "label": "Havi bérleti díj összesen"
     },
     "summary": {
       "label": "Bérbe adott ingatlanok",
@@ -400,7 +399,16 @@
     "done": "Kész",
     "todo": "Teendő",
     "go": "Ugrás",
+    "skip": "Kihagyás",
+    "skipped": "Kihagyva",
     "optional": "nem kötelező",
+    "spotlight": {
+      "property": "Töltsd ki az alábbi űrlapot az első ingatlanod felvételéhez.",
+      "tenancy": "Rögzítsd a bérleti jogviszonyt az alábbi űrlapon — ki bérli, mennyi a bérleti díj, és mikor esedékes.",
+      "ledger": "Vezesd fel az alábbi tételek közé, amit kaptál és fizettél.",
+      "valuation": "Add meg az alábbi űrlapon, mennyit ér ma ez az ingatlan.",
+      "loan": "Rögzítsd a jelzáloghitelt az alábbi űrlapon — mennyi van még hátra."
+    },
     "steps": {
       "property": {
         "title": "Vedd fel az első ingatlanod",

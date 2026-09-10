@@ -306,7 +306,10 @@ namespace MoneyManager.Api.Controllers
         decimal? TotalInvested,
         decimal? TotalCurrentValue,
         decimal? TotalEquity,
+        decimal? TotalMonthlyRent,
         decimal? TotalMonthlyCashFlow,
+        // Underpriced properties only — a property already let above market contributes nothing
+        // here, never a negative offset. See the comment above where this is assembled, in From.
         decimal? TotalAnnualRentUplift,
         decimal? PortfolioRoi,
         string BaseCurrency,
@@ -322,7 +325,7 @@ namespace MoneyManager.Api.Controllers
             if (metrics.Count == 0)
             {
                 return new PortfolioAnalyticsDto(
-                    metrics, 0, null, false, null, null, null, null, null, null,
+                    metrics, 0, null, false, null, null, null, null, null, null, null,
                     rollup.BaseCurrency, false, [], [], []);
             }
 
@@ -334,6 +337,19 @@ namespace MoneyManager.Api.Controllers
             var invested = Total(metrics, m => m.CashInvested, rollup, target);
             var equity = Total(metrics, m => m.Equity, rollup, target);
             var netCashFlow = Total(metrics, m => m.CumulativeNetCashFlow, rollup, target);
+
+            // Underpriced properties only, not a net across the whole portfolio: a property
+            // already let above market contributes a negative AnnualRentUplift, and folding that
+            // in would answer "how much extra rent, net of the ones doing better than market" —
+            // a different, less useful question than the one this figure names, and one that
+            // could shrink or hide the opportunity the underpriced-properties widget exists to
+            // surface. Matches that widget's own filter (rentGapPercent/annualRentUplift > 0)
+            // exactly, so the headline total always agrees with the list under it.
+            var underpricedRentUplift = Total(
+                metrics.Where(m => (m.AnnualRentUplift ?? 0m) > 0m).ToList(),
+                m => m.AnnualRentUplift,
+                rollup,
+                target);
 
             // ROI is a ratio, so it is recomputed from converted components rather than being
             // converted itself — multiplying a percentage by an exchange rate is nonsense. A
@@ -358,8 +374,9 @@ namespace MoneyManager.Api.Controllers
                 invested.Amount,
                 Total(metrics, m => m.CurrentValue, rollup, target).Amount,
                 equity.Amount,
+                Total(metrics, m => m.ContractedMonthlyRent, rollup, target).Amount,
                 Total(metrics, m => m.MonthlyCashFlow, rollup, target).Amount,
-                Total(metrics, m => m.AnnualRentUplift, rollup, target).Amount,
+                underpricedRentUplift.Amount,
                 roi,
                 rollup.BaseCurrency,
                 converted,

@@ -12,8 +12,9 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
-import { fetchStocks } from '../../../services/api';
-import { formatMoney, sumSameCurrency } from '../../../utils/money';
+import { fetchStocksTotalValue } from '../../../services/api';
+import { formatMoney } from '../../../utils/money';
+import type { StockValueSummary } from '../../../models/models';
 
 /**
  * There is no dividend data in the schema, so this is a flat assumption rather than a
@@ -22,23 +23,24 @@ import { formatMoney, sumSameCurrency } from '../../../utils/money';
  */
 const ASSUMED_YIELD = 0.02;
 
-const annualDividend = ref(0);
-const currency = ref('EUR');
+const summary = ref<StockValueSummary | null>(null);
 
 onMounted(async () => {
   try {
-    const stocks = await fetchStocks();
-    const summed = sumSameCurrency(
-      stocks,
-      (s) => s.currentPrice * s.sharesOwned,
-      (s) => s.currencyCode
-    );
-    annualDividend.value = summed.total * ASSUMED_YIELD;
-    currency.value = summed.currency;
+    summary.value = await fetchStocksTotalValue();
   } catch (error) {
-    console.error('Failed to load stocks:', error);
+    console.error('Failed to load stock value:', error);
   }
 });
 
-const formattedDividend = computed(() => formatMoney(annualDividend.value, currency.value));
+// The portfolio's own converted total (CurrencyRollup.Sum on the backend) rather than a
+// client-side sum across whatever currencies the holdings happen to be in — this used to add raw
+// amounts across currencies as if they were the same unit. Blank when a rate is missing, same as
+// the total it is built from: an estimate multiplied by an unconvertible figure is still
+// unconvertible.
+const formattedDividend = computed(() => {
+  const total = summary.value?.totalValue;
+  if (total === null || total === undefined) return '—';
+  return formatMoney(total * ASSUMED_YIELD, summary.value?.currency ?? 'EUR');
+});
 </script>

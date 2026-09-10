@@ -16,6 +16,7 @@ const established: OnboardingProgress = {
   hasBankAccount: false,
   hasLoan: true,
   hasStock: false,
+  solePropertyId: 7,
 };
 
 async function load(respond: () => Promise<OnboardingProgress>) {
