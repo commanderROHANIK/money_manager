@@ -141,8 +141,7 @@
       "empty": "Még nincs rögzített esemény."
     },
     "totalRent": {
-      "label": "Havi bérleti díj összesen",
-      "mixedCurrency": "Az ingatlanok több pénznemben vannak — az összeg átváltás nélkül szerepel."
+      "label": "Havi bérleti díj összesen"
     },
     "summary": {
       "label": "Bérbe adott ingatlanok",
@@ -365,6 +364,34 @@
     },
     "confirmDelete": "Törlöd a(z) „{name}” hitelt?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Bankszámla hozzáadása",
+      "accountName": "Számla neve",
+      "bankName": "Bank neve",
+      "accountNumber": "Számlaszám",
+      "accountType": "Számla típusa",
+      "accountTypeHint": "pl. Folyószámla, Megtakarítási számla.",
+      "balance": "Egyenleg",
+      "currencyHint": "A számla pénzneme.",
+      "submit": "Számla hozzáadása"
+    },
+    "close": "Bezárás",
+    "delete": "{name} eltávolítása"
+  },
+  "stock": {
+    "add": {
+      "title": "Részvény hozzáadása",
+      "ticker": "Ticker",
+      "sharesOwned": "Birtokolt darabszám",
+      "purchasePrice": "Vételár",
+      "currentPrice": "Jelenlegi ár",
+      "purchaseDateHint": "A vásárlás dátuma.",
+      "currencyHint": "A részvény pénzneme.",
+      "submit": "Részvény hozzáadása"
+    },
+    "delete": "{ticker} eltávolítása"
+  },
   "onboarding": {
     "title": "Első lépések",
     "intro": "Állítsd be ezeket, és az irányítópult meg tudja mondani, melyik ingatlan teljesít gyengén, és mennyivel.",
@@ -372,7 +399,16 @@
     "done": "Kész",
     "todo": "Teendő",
     "go": "Ugrás",
+    "skip": "Kihagyás",
+    "skipped": "Kihagyva",
     "optional": "nem kötelező",
+    "spotlight": {
+      "property": "Töltsd ki az alábbi űrlapot az első ingatlanod felvételéhez.",
+      "tenancy": "Rögzítsd a bérleti jogviszonyt az alábbi űrlapon — ki bérli, mennyi a bérleti díj, és mikor esedékes.",
+      "ledger": "Vezesd fel az alábbi tételek közé, amit kaptál és fizettél.",
+      "valuation": "Add meg az alábbi űrlapon, mennyit ér ma ez az ingatlan.",
+      "loan": "Rögzítsd a jelzáloghitelt az alábbi űrlapon — mennyi van még hátra."
+    },
     "steps": {
       "property": {
         "title": "Vedd fel az első ingatlanod",

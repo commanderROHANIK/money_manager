@@ -129,4 +129,20 @@ test.describe('the seeded demo portfolio', () => {
     // the user set, which is an invariant violation and not a cosmetic difference.
     await expect(portfolio).toContainText('rate you entered');
   });
+
+  test('the total monthly rent figure is a real converted number, not blank or a raw cross-currency sum', async ({
+    page,
+  }) => {
+    // Total Rent used to add HUF and EUR rent amounts together as if the same unit — a real,
+    // shipping bug this asserts against directly, on the same two-currency seed the test above
+    // covers. Not blank either: the seeded manual rate is what turns "cannot be known" into a
+    // real figure, same as the portfolio summary above.
+    await signIn(page);
+    await page.goto('/properties');
+
+    const tile = page.getByText('Total Monthly Rent', { exact: true }).locator('xpath=..');
+
+    await expect(tile).not.toContainText('—');
+    await expect(tile).toContainText(/[€$£]|\bFt\b/);
+  });
 });

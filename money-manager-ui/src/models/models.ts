@@ -320,6 +320,7 @@ export interface PortfolioAnalytics {
     totalInvested: number | null;
     totalCurrentValue: number | null;
     totalEquity: number | null;
+    totalMonthlyRent: number | null;
     totalMonthlyCashFlow: number | null;
     totalAnnualRentUplift: number | null;
     portfolioRoi: number | null;
@@ -342,6 +343,19 @@ export interface CurrencyTotal {
  */
 export interface BankBalanceSummary {
     totalBalance: number | null;
+    currency: string;
+    mixedCurrency: boolean;
+    converted: boolean;
+    baseCurrency: string;
+    byCurrency: CurrencyTotal[];
+    missingRates: CurrencyPair[];
+    appliedRates: AppliedRate[];
+    warnings: MetricWarning[];
+}
+
+/** The stocks equivalent of `BankBalanceSummary` — same shape, same rules. */
+export interface StockValueSummary {
+    totalValue: number | null;
     currency: string;
     mixedCurrency: boolean;
     converted: boolean;

@@ -114,6 +114,26 @@ public sealed class OnboardingEndpointTests
     }
 
     [Fact]
+    public async Task Sole_property_id_is_null_until_exactly_one_property_exists()
+    {
+        using var client = await AuthenticatedClientAsync("onboarding-sole");
+
+        // No property at all: nothing to deep-link to.
+        Assert.True((await FetchAsync(client)).GetProperty("solePropertyId").ValueKind == JsonValueKind.Null);
+
+        var firstId = await CreatePropertyAsync(client);
+
+        var withOne = await FetchAsync(client);
+        Assert.Equal(firstId, withOne.GetProperty("solePropertyId").GetInt32());
+
+        // A second property makes the guided "Go" ambiguous again.
+        await CreatePropertyAsync(client);
+
+        var withTwo = await FetchAsync(client);
+        Assert.True(withTwo.GetProperty("solePropertyId").ValueKind == JsonValueKind.Null);
+    }
+
+    [Fact]
     public async Task Progress_requires_authentication()
     {
         using var client = _factory.CreateIsolatedClient();

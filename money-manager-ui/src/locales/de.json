@@ -141,8 +141,7 @@
       "empty": "Noch nichts erfasst."
     },
     "totalRent": {
-      "label": "Monatsmiete gesamt",
-      "mixedCurrency": "Die Immobilien haben verschiedene Währungen — die Summe ist nicht umgerechnet."
+      "label": "Monatsmiete gesamt"
     },
     "summary": {
       "label": "Mietobjekte",
@@ -365,6 +364,34 @@
     },
     "confirmDelete": "„{name}“ löschen?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Bankkonto hinzufügen",
+      "accountName": "Kontobezeichnung",
+      "bankName": "Bankname",
+      "accountNumber": "Kontonummer",
+      "accountType": "Kontotyp",
+      "accountTypeHint": "z. B. Girokonto, Sparkonto.",
+      "balance": "Kontostand",
+      "currencyHint": "Währung, in der dieses Konto geführt wird.",
+      "submit": "Konto hinzufügen"
+    },
+    "close": "Schließen",
+    "delete": "{name} entfernen"
+  },
+  "stock": {
+    "add": {
+      "title": "Position hinzufügen",
+      "ticker": "Tickersymbol",
+      "sharesOwned": "Gehaltene Anteile",
+      "purchasePrice": "Kaufpreis",
+      "currentPrice": "Aktueller Preis",
+      "purchaseDateHint": "Datum des Kaufs.",
+      "currencyHint": "Währung, in der diese Position geführt wird.",
+      "submit": "Position hinzufügen"
+    },
+    "delete": "{ticker} entfernen"
+  },
   "onboarding": {
     "title": "Erste Schritte",
     "intro": "Richten Sie diese ein, dann kann das Dashboard sagen, welche Immobilie schlechter abschneidet und um wie viel.",
@@ -372,7 +399,16 @@
     "done": "Erledigt",
     "todo": "Offen",
     "go": "Öffnen",
+    "skip": "Überspringen",
+    "skipped": "Übersprungen",
     "optional": "freiwillig",
+    "spotlight": {
+      "property": "Füllen Sie das Formular unten aus, um Ihre erste Immobilie hinzuzufügen.",
+      "tenancy": "Erfassen Sie das Mietverhältnis im Formular unten — wer mietet, die Miete und der Fälligkeitstag.",
+      "ledger": "Tragen Sie unten ein, was Sie erhalten und bezahlt haben.",
+      "valuation": "Geben Sie im Formular unten an, was diese Immobilie heute wert ist.",
+      "loan": "Erfassen Sie das Darlehen im Formular unten — was noch aussteht."
+    },
     "steps": {
       "property": {
         "title": "Erfassen Sie Ihre erste Immobilie",

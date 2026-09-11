@@ -25,9 +25,10 @@ export default defineConfig({
   // spec collected by vitest fails in a way that reads like a broken component.
   testMatch: '**/*.spec.ts',
 
-  // One worker against one container holding one SQLite file. These specs only read, so parallel
-  // execution would be safe today — but the first spec that writes would make it unsafe silently,
-  // and finding that out through a flake is worse than the ~10s this costs.
+  // One worker against one container holding one SQLite file. `bank-accounts-and-stocks.spec.ts`
+  // writes (adds and deletes real rows), so parallel execution is not just slower here but
+  // unsafe — a second spec reading the account list mid-write would see a row that is about to
+  // be renamed out from under it. Serial execution is what makes that a non-issue.
   fullyParallel: false,
   workers: 1,
 

@@ -141,8 +141,7 @@
       "empty": "Nothing recorded yet."
     },
     "totalRent": {
-      "label": "Total Monthly Rent",
-      "mixedCurrency": "Properties span multiple currencies — showing the unconverted sum."
+      "label": "Total Monthly Rent"
     },
     "summary": {
       "label": "Rental Properties",
@@ -365,6 +364,34 @@
     },
     "confirmDelete": "Delete \"{name}\"?"
   },
+  "bankAccount": {
+    "add": {
+      "title": "Add a bank account",
+      "accountName": "Account name",
+      "bankName": "Bank name",
+      "accountNumber": "Account number",
+      "accountType": "Account type",
+      "accountTypeHint": "e.g. Checking, Savings.",
+      "balance": "Balance",
+      "currencyHint": "Currency this account is denominated in.",
+      "submit": "Add account"
+    },
+    "close": "Close",
+    "delete": "Remove {name}"
+  },
+  "stock": {
+    "add": {
+      "title": "Add a holding",
+      "ticker": "Ticker",
+      "sharesOwned": "Shares owned",
+      "purchasePrice": "Purchase price",
+      "currentPrice": "Current price",
+      "purchaseDateHint": "Date the shares were bought.",
+      "currencyHint": "Currency this holding is denominated in.",
+      "submit": "Add holding"
+    },
+    "delete": "Remove {ticker}"
+  },
   "onboarding": {
     "title": "Getting started",
     "intro": "Set these up and the dashboard can start telling you which property is underperforming, and by how much.",
@@ -372,7 +399,16 @@
     "done": "Done",
     "todo": "To do",
     "go": "Go",
+    "skip": "Skip",
+    "skipped": "Skipped",
     "optional": "optional",
+    "spotlight": {
+      "property": "Fill in the form below to add your first property.",
+      "tenancy": "Record the tenancy in the form below — who is renting it, the rent, and the day it falls due.",
+      "ledger": "Enter what you've received and paid in the ledger below.",
+      "valuation": "Say what this property is worth today in the form below.",
+      "loan": "Record the mortgage in the form below — what's still owed."
+    },
     "steps": {
       "property": {
         "title": "Add your first property",
