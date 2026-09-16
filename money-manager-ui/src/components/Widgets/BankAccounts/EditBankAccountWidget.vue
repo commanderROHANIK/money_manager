@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import { reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { BankAccount } from '../../../models/models';
 import { CURRENCIES } from '../../../utils/currencies';
@@ -58,14 +58,6 @@ function fromAccount(account: BankAccount) {
 }
 
 const form = reactive(fromAccount(props.account));
-
-// The list row a modal was opened from can itself change id (e.g. the parent re-fetches while
-// the modal is open), so the form tracks whichever account it was handed rather than only
-// seeding itself once at mount.
-watch(
-  () => props.account,
-  (account) => Object.assign(form, fromAccount(account)),
-);
 
 function submit() {
   emit('update', { id: props.account.id, ...form });

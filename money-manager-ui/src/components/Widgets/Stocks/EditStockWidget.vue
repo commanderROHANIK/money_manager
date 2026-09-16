@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import { reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Stock } from '../../../models/models';
 import { CURRENCIES } from '../../../utils/currencies';
@@ -75,13 +75,6 @@ function fromStock(stock: Stock) {
 }
 
 const form = reactive(fromStock(props.stock));
-
-// Mirrors EditBankAccountWidget: re-seed if the caller hands this a different holding while it
-// is already mounted, rather than only reading props.stock once at creation.
-watch(
-  () => props.stock,
-  (stock) => Object.assign(form, fromStock(stock)),
-);
 
 function submit() {
   emit('update', { id: props.stock.id, ...form });
