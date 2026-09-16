@@ -16,7 +16,6 @@
         v-model.number="form.balance"
         :placeholder="t('bankAccount.add.balance')"
         type="number"
-        min="0"
         step="0.01"
         required
       />

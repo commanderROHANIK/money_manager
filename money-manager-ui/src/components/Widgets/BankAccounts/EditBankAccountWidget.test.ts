@@ -52,4 +52,23 @@ describe('EditBankAccountWidget', () => {
       currencyCode: 'HUF',
     });
   });
+
+  /**
+   * BankAccountsController's BankAccountRequest.Balance is deliberately not restricted to
+   * non-negative (an overdraft is ordinary, a credit card balance is negative by definition), so
+   * a `min="0"` on this input would let the browser's native constraint validation silently
+   * block the one edit that needs to reach a negative balance.
+   */
+  it('lets the balance go negative, so an overdrawn account can be corrected', async () => {
+    const wrapper = mount(EditBankAccountWidget, { props: { account } });
+
+    const balanceInput = wrapper.findAll('input')[4];
+    expect(balanceInput.attributes('min')).toBeUndefined();
+
+    await balanceInput.setValue('-250');
+    await wrapper.find('form').trigger('submit');
+
+    const updated = wrapper.emitted('update');
+    expect(updated?.[0][0]).toMatchObject({ balance: -250 });
+  });
 });
