@@ -19,12 +19,14 @@ vi.mock('vue-chartjs', async () => {
 
 const fetchBankAccounts = vi.fn();
 const createBankAccount = vi.fn();
+const updateBankAccount = vi.fn();
 const deleteBankAccount = vi.fn();
 
 vi.mock('../services/api', () => ({
   fetchBankAccounts: () => fetchBankAccounts(),
   fetchBankAccountsTotalBalance: () => Promise.resolve(bankBalanceSummary),
   createBankAccount: (payload: unknown) => createBankAccount(payload),
+  updateBankAccount: (id: number, payload: unknown) => updateBankAccount(id, payload),
   deleteBankAccount: (id: number) => deleteBankAccount(id),
 }));
 
@@ -32,6 +34,7 @@ beforeEach(() => {
   setLocale('en');
   fetchBankAccounts.mockReset().mockResolvedValue(bankAccounts);
   createBankAccount.mockReset().mockResolvedValue(bankAccounts[0]);
+  updateBankAccount.mockReset().mockResolvedValue(undefined);
   deleteBankAccount.mockReset().mockResolvedValue(undefined);
 });
 
@@ -93,5 +96,31 @@ describe('BankAccounts', () => {
     expect(fetchBankAccounts).toHaveBeenCalledTimes(2);
     // The modal closes on success rather than staying open over the freshly reloaded list.
     expect(wrapper.text()).not.toContain('Add a bank account');
+  });
+
+  it('edits an account through the modal, sends it to the PUT endpoint, refetches, and closes', async () => {
+    const wrapper = mount(BankAccounts);
+    await flushPromises();
+
+    const editButton = wrapper.find(`[aria-label="Edit ${bankAccounts[0].accountName}"]`);
+    expect(editButton.exists()).toBe(true);
+    await editButton.trigger('click');
+
+    const inputs = wrapper.findAll('input');
+    await inputs[4].setValue('999999');
+
+    const updated = { ...bankAccounts[0], balance: 999999 };
+    fetchBankAccounts.mockResolvedValue([updated, ...bankAccounts.slice(1)]);
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(updateBankAccount).toHaveBeenCalledWith(
+      bankAccounts[0].id,
+      expect.objectContaining({ id: bankAccounts[0].id, balance: 999999 })
+    );
+    expect(fetchBankAccounts).toHaveBeenCalledTimes(2);
+    // The modal closes on success rather than staying open over the freshly reloaded list.
+    expect(wrapper.text()).not.toContain('Edit bank account');
   });
 });

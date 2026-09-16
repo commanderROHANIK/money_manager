@@ -20,6 +20,13 @@
           </template>
           <template #trailing>
             <button
+              class="text-text-muted hover:text-text transition"
+              :aria-label="t('bankAccount.edit.open', { name: account.accountName })"
+              @click="editingAccount = account"
+            >
+              ✏️
+            </button>
+            <button
               class="text-danger hover:text-danger/70 transition"
               :aria-label="t('bankAccount.delete', { name: account.accountName })"
               @click="deleteAccount(account.id)"
@@ -45,18 +52,29 @@
         </BaseButton>
       </div>
     </div>
+
+    <!-- Edit Modal -->
+    <div v-if="editingAccount" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+      <div class="bg-surface border border-border rounded-lg shadow-card p-6 w-96">
+        <EditBankAccountWidget :account="editingAccount" @update="_updateAccount" />
+        <BaseButton variant="secondary" class="mt-3" block @click="editingAccount = null">
+          {{ t('bankAccount.close') }}
+        </BaseButton>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { fetchBankAccounts, createBankAccount, deleteBankAccount } from '../services/api';
+import { fetchBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from '../services/api';
 import type { BankAccount } from '../models/models';
 import { formatMoney } from '../utils/money';
 import TotalBalanceWidget from '../components/Widgets/BankAccounts/TotalBalance.vue';
 import BankAccountPieChart from '../components/Widgets/BankAccounts/BankAccountPieChart.vue';
 import AddBankAccountWidget from '../components/Widgets/BankAccounts/AddBankAccountWidget.vue';
+import EditBankAccountWidget from '../components/Widgets/BankAccounts/EditBankAccountWidget.vue';
 import BaseCard from './ui/BaseCard.vue';
 import BaseButton from './ui/BaseButton.vue';
 import ListRow from './ui/ListRow.vue';
@@ -65,6 +83,7 @@ const { t } = useI18n();
 
 const bankAccounts = ref<BankAccount[]>([]);
 const showAddModal = ref(false);
+const editingAccount = ref<BankAccount | null>(null);
 
 async function load() {
   bankAccounts.value = await fetchBankAccounts();
@@ -85,6 +104,16 @@ async function _addAccount(payload: Omit<BankAccount, 'id'>) {
   await createBankAccount({ id: 0, ...payload });
   await load();
   showAddModal.value = false;
+}
+
+async function _updateAccount(payload: BankAccount) {
+  try {
+    await updateBankAccount(payload.id, payload);
+    await load();
+    editingAccount.value = null;
+  } catch (error) {
+    console.error('Failed to update bank account:', error);
+  }
 }
 
 const sortedAccounts = computed(() => {

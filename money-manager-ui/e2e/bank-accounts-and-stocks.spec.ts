@@ -12,9 +12,11 @@ import { signIn } from './helpers';
  * `/accounts` and `/stocks` while their flags are off, so reaching either form needs them
  * reachable for the length of this run.</p>
  *
- * <p>Each section is add-then-delete, not just add: a form that can create a row but never lets
- * it be removed again fails the moment someone adds a test entry to try it out, and
- * `HoldingsListWidget` had no delete affordance at all before this issue.</p>
+ * <p>Each section is add-then-edit-then-delete: a form that can create a row but never lets it
+ * be removed again fails the moment someone adds a test entry to try it out, and
+ * `HoldingsListWidget` had no delete affordance at all before this issue. Issue #77 added the
+ * edit round trip in between — both `PUT` endpoints already existed, but nothing in the UI
+ * reached them, so fixing a typo'd balance or ticker meant deleting and re-adding the row.</p>
  *
  * <p>Both sections share a single sign-in rather than each getting its own: `AuthController` is
  * rate-limited at 10 requests per IP per minute (`Program.cs`'s "auth" policy, deliberately —
@@ -50,6 +52,16 @@ test.describe('bank accounts and stock holdings', () => {
     await expect(page.getByText('E2E checking - E2E Bank', { exact: true })).toBeVisible();
     await expect(page.getByText('$1,234', { exact: false })).toBeVisible();
 
+    // Editing must go through the same PUT the add-form's POST landed next to, and the list
+    // must reflect the new balance without a manual refresh — this is the round trip #77 added.
+    await page.getByRole('button', { name: 'Edit E2E checking' }).click();
+    await page.getByPlaceholder('Balance', { exact: true }).fill('4321');
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+
+    await expect(page.getByText('Edit bank account', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('$4,321', { exact: false })).toBeVisible();
+    await expect(page.getByText('$1,234', { exact: false })).toHaveCount(0);
+
     await page.getByRole('button', { name: 'Remove E2E checking' }).click();
 
     await expect(page.getByText('E2E checking - E2E Bank', { exact: true })).toHaveCount(0);
@@ -67,6 +79,15 @@ test.describe('bank accounts and stock holdings', () => {
 
     await expect(page.getByText('E2E', { exact: true })).toBeVisible();
     await expect(page.getByText('£120', { exact: false })).toBeVisible();
+
+    // Same round trip as the bank account above, through HoldingsListWidget's own PUT.
+    await page.getByRole('button', { name: 'Edit E2E', exact: true }).click();
+    await page.getByPlaceholder('Current price', { exact: true }).fill('150');
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+
+    await expect(page.getByText('Edit holding', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('£150', { exact: false })).toBeVisible();
+    await expect(page.getByText('£120', { exact: false })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Remove E2E' }).click();
 

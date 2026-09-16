@@ -12,16 +12,19 @@ import HoldingsListWidget from './HoldingsListWidget.vue';
 import { stocks } from '../../../__tests__/fixtures';
 
 const fetchStocks = vi.fn();
+const updateStock = vi.fn();
 const deleteStock = vi.fn();
 
 vi.mock('../../../services/api', () => ({
   fetchStocks: () => fetchStocks(),
+  updateStock: (id: number, payload: unknown) => updateStock(id, payload),
   deleteStock: (id: number) => deleteStock(id),
 }));
 
 beforeEach(() => {
   setLocale('en');
   fetchStocks.mockReset().mockResolvedValue(stocks);
+  updateStock.mockReset().mockResolvedValue(undefined);
   deleteStock.mockReset().mockResolvedValue(undefined);
 });
 
@@ -72,5 +75,35 @@ describe('HoldingsListWidget', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain(stocks[0].ticker);
+  });
+
+  it('gives the edit control an accessible name naming the ticker', async () => {
+    const wrapper = mount(HoldingsListWidget);
+    await flushPromises();
+
+    expect(wrapper.find(`[aria-label="Edit ${stocks[0].ticker}"]`).exists()).toBe(true);
+  });
+
+  it('edits a holding through the modal, sends it to the PUT endpoint, refetches, and closes', async () => {
+    const wrapper = mount(HoldingsListWidget);
+    await flushPromises();
+
+    await wrapper.find(`[aria-label="Edit ${stocks[0].ticker}"]`).trigger('click');
+
+    const inputs = wrapper.findAll('input');
+    await inputs[3].setValue('310');
+
+    const updated = { ...stocks[0], currentPrice: 310 };
+    fetchStocks.mockResolvedValue([updated, ...stocks.slice(1)]);
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+
+    expect(updateStock).toHaveBeenCalledWith(
+      stocks[0].id,
+      expect.objectContaining({ id: stocks[0].id, currentPrice: 310 })
+    );
+    expect(fetchStocks).toHaveBeenCalledTimes(2);
+    expect(wrapper.text()).not.toContain('Edit holding');
   });
 });
