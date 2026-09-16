@@ -44,7 +44,13 @@
     </BaseCard>
 
     <!-- Add Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+    <div
+      v-if="showAddModal"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="t('bankAccount.add.title')"
+      class="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+    >
       <div class="bg-surface border border-border rounded-lg shadow-card p-6 w-96">
         <AddBankAccountWidget @create="_addAccount" />
         <BaseButton variant="secondary" class="mt-3" block @click="showAddModal = false">
@@ -54,7 +60,13 @@
     </div>
 
     <!-- Edit Modal -->
-    <div v-if="editingAccount" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+    <div
+      v-if="editingAccount"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="t('bankAccount.edit.title')"
+      class="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+    >
       <div class="bg-surface border border-border rounded-lg shadow-card p-6 w-96">
         <EditBankAccountWidget :account="editingAccount" @update="_updateAccount" />
         <BaseButton variant="secondary" class="mt-3" block @click="editingAccount = null">

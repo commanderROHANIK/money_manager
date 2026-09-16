@@ -54,9 +54,12 @@ test.describe('bank accounts and stock holdings', () => {
 
     // Editing must go through the same PUT the add-form's POST landed next to, and the list
     // must reflect the new balance without a manual refresh — this is the round trip #77 added.
+    // Scoped to the dialog: StockPage keeps its own add-form permanently on screen, so an
+    // unscoped placeholder lookup during a stock edit below would resolve two elements.
     await page.getByRole('button', { name: 'Edit E2E checking' }).click();
-    await page.getByPlaceholder('Balance', { exact: true }).fill('4321');
-    await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+    const editAccountDialog = page.getByRole('dialog', { name: 'Edit bank account' });
+    await editAccountDialog.getByPlaceholder('Balance', { exact: true }).fill('4321');
+    await editAccountDialog.getByRole('button', { name: 'Save changes', exact: true }).click();
 
     await expect(page.getByText('Edit bank account', { exact: true })).toHaveCount(0);
     await expect(page.getByText('$4,321', { exact: false })).toBeVisible();
@@ -80,10 +83,13 @@ test.describe('bank accounts and stock holdings', () => {
     await expect(page.getByText('E2E', { exact: true })).toBeVisible();
     await expect(page.getByText('£120', { exact: false })).toBeVisible();
 
-    // Same round trip as the bank account above, through HoldingsListWidget's own PUT.
+    // Same round trip as the bank account above, through HoldingsListWidget's own PUT. Scoped
+    // to the dialog: AddStockWidget's own "Current price" input is still on screen behind the
+    // modal, so an unscoped lookup resolves two elements.
     await page.getByRole('button', { name: 'Edit E2E', exact: true }).click();
-    await page.getByPlaceholder('Current price', { exact: true }).fill('150');
-    await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+    const editStockDialog = page.getByRole('dialog', { name: 'Edit holding' });
+    await editStockDialog.getByPlaceholder('Current price', { exact: true }).fill('150');
+    await editStockDialog.getByRole('button', { name: 'Save changes', exact: true }).click();
 
     await expect(page.getByText('Edit holding', { exact: true })).toHaveCount(0);
     await expect(page.getByText('£150', { exact: false })).toBeVisible();

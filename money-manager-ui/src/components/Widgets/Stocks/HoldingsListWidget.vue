@@ -51,7 +51,13 @@
   </ul>
 
   <!-- Edit Modal -->
-  <div v-if="editingStock" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+  <div
+    v-if="editingStock"
+    role="dialog"
+    aria-modal="true"
+    :aria-label="t('stock.edit.title')"
+    class="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+  >
     <div class="bg-surface border border-border rounded-lg shadow-card p-6 w-96">
       <EditStockWidget :stock="editingStock" @update="_updateStock" />
       <BaseButton variant="secondary" class="mt-3" block @click="editingStock = null">
