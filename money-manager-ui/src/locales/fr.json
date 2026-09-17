@@ -376,6 +376,11 @@
       "currencyHint": "Devise dans laquelle ce compte est libellé.",
       "submit": "Ajouter le compte"
     },
+    "edit": {
+      "title": "Modifier le compte bancaire",
+      "submit": "Enregistrer les modifications",
+      "open": "Modifier {name}"
+    },
     "close": "Fermer",
     "delete": "Supprimer {name}"
   },
@@ -390,6 +395,12 @@
       "currencyHint": "Devise dans laquelle cette position est libellée.",
       "submit": "Ajouter la position"
     },
+    "edit": {
+      "title": "Modifier la position",
+      "submit": "Enregistrer les modifications",
+      "open": "Modifier {ticker}"
+    },
+    "close": "Fermer",
     "delete": "Supprimer {ticker}"
   },
   "onboarding": {

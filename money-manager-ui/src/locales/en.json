@@ -376,6 +376,11 @@
       "currencyHint": "Currency this account is denominated in.",
       "submit": "Add account"
     },
+    "edit": {
+      "title": "Edit bank account",
+      "submit": "Save changes",
+      "open": "Edit {name}"
+    },
     "close": "Close",
     "delete": "Remove {name}"
   },
@@ -390,6 +395,12 @@
       "currencyHint": "Currency this holding is denominated in.",
       "submit": "Add holding"
     },
+    "edit": {
+      "title": "Edit holding",
+      "submit": "Save changes",
+      "open": "Edit {ticker}"
+    },
+    "close": "Close",
     "delete": "Remove {ticker}"
   },
   "onboarding": {

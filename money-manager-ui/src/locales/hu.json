@@ -376,6 +376,11 @@
       "currencyHint": "A számla pénzneme.",
       "submit": "Számla hozzáadása"
     },
+    "edit": {
+      "title": "Bankszámla szerkesztése",
+      "submit": "Változtatások mentése",
+      "open": "{name} szerkesztése"
+    },
     "close": "Bezárás",
     "delete": "{name} eltávolítása"
   },
@@ -390,6 +395,12 @@
       "currencyHint": "A részvény pénzneme.",
       "submit": "Részvény hozzáadása"
     },
+    "edit": {
+      "title": "Részvény szerkesztése",
+      "submit": "Változtatások mentése",
+      "open": "{ticker} szerkesztése"
+    },
+    "close": "Bezárás",
     "delete": "{ticker} eltávolítása"
   },
   "onboarding": {
