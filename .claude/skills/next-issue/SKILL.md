@@ -6,8 +6,10 @@ allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 arguments: [issue_number]
 ---
 
-Issue: `$issue_number` (if empty, run `gh issue list --state open --json number,title,createdAt` and pick
-the oldest).
+Issue: `$issue_number` (if empty, run `gh issue list --state open --json number,title,createdAt,labels`,
+drop any issue carrying the `needs-design` label — those are intentionally excluded from unattended
+pickup because they're still being scoped out with the user in conversation, not yet a spec an agent
+can implement confidently — and pick the oldest of what's left).
 
 1. `gh issue view <number>` to read the full issue body, not just the title.
 2. Create a **fresh branch per issue**: `claude/issue-<number>-<short-slug>`, off current `main` — do not
