@@ -376,6 +376,11 @@
       "currencyHint": "Währung, in der dieses Konto geführt wird.",
       "submit": "Konto hinzufügen"
     },
+    "edit": {
+      "title": "Bankkonto bearbeiten",
+      "submit": "Änderungen speichern",
+      "open": "{name} bearbeiten"
+    },
     "close": "Schließen",
     "delete": "{name} entfernen"
   },
@@ -390,6 +395,12 @@
       "currencyHint": "Währung, in der diese Position geführt wird.",
       "submit": "Position hinzufügen"
     },
+    "edit": {
+      "title": "Position bearbeiten",
+      "submit": "Änderungen speichern",
+      "open": "{ticker} bearbeiten"
+    },
+    "close": "Schließen",
     "delete": "{ticker} entfernen"
   },
   "onboarding": {
