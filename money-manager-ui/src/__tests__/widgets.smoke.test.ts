@@ -114,6 +114,8 @@ const widgets = import.meta.glob('../components/Widgets/**/*.vue', { eager: true
 // Props for widgets that take them; the rest load through the mocked services above.
 const props: Record<string, Record<string, unknown>> = {
   BankAccountPieChart: { accounts: f.bankAccounts },
+  EditBankAccountWidget: { account: f.bankAccounts[0] },
+  EditStockWidget: { stock: f.stocks[0] },
   PastEventsWidget: { events: f.upcomingEvents },
   LoanListWidget: { loans: f.loans },
   LoanStatusPieWidget: { loans: f.loans },
