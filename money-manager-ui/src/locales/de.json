@@ -170,6 +170,7 @@
     "valuations": {
       "title": "Bewertungen",
       "subtitle": "Eigenkapital und Wertzuwachs werden am jüngsten Wert hier gemessen.",
+      "valuedOn": "Bewertet am",
       "valuePlaceholder": "Wert",
       "add": "Hinzufügen",
       "empty": "Nichts erfasst — als aktueller Wert dient der Kaufpreis."
@@ -245,6 +246,7 @@
       "sinceUntil": "Seit {start} bis {end}",
       "vacant": "Leerstand — derzeit läuft kein Mietverhältnis.",
       "tenantName": "Name des Mieters",
+      "startDate": "Beginndatum",
       "endOptional": "Ende (optional)",
       "monthlyRent": "Monatsmiete",
       "dueDay": "Fälligkeitstag",
@@ -254,15 +256,19 @@
       "title": "Immobilie anlegen",
       "subtitle": "Kaufpreis und Kaufdatum sind die Bezugsgrößen jeder Renditezahl — auch ein ungefährer Wert ist besser als keiner.",
       "name": "Name",
+      "propertyType": "Immobilientyp",
       "address": "Adresse",
       "city": "Stadt",
       "purchasePrice": "Kaufpreis",
+      "currency": "Währung",
       "size": "Fläche (m²)",
       "bedrooms": "Schlafzimmer",
       "submit": "Immobilie anlegen"
     },
     "ledger": {
       "title": "Buchungen",
+      "date": "Datum",
+      "category": "Kategorie",
       "amount": "Betrag",
       "note": "Notiz",
       "record": "Erfassen",
@@ -336,6 +342,7 @@
       "interestRate": "Zinssatz (%)",
       "interestRateHint": "Jahreszins, z. B. 4,5 für 4,5 %.",
       "dueDateHint": "Geplantes Datum der vollständigen Rückzahlung.",
+      "currency": "Währung",
       "currencyHint": "Währung, in der dieser Kredit geführt wird.",
       "paidOffLabel": "Abbezahlt",
       "paidOffHint": "Ankreuzen, wenn dieser Kredit bereits vollständig getilgt ist.",
@@ -375,6 +382,7 @@
       "accountType": "Kontotyp",
       "accountTypeHint": "z. B. Girokonto, Sparkonto.",
       "balance": "Kontostand",
+      "currency": "Währung",
       "currencyHint": "Währung, in der dieses Konto geführt wird.",
       "submit": "Konto hinzufügen"
     },
@@ -393,7 +401,9 @@
       "sharesOwned": "Gehaltene Anteile",
       "purchasePrice": "Kaufpreis",
       "currentPrice": "Aktueller Preis",
+      "purchaseDate": "Kaufdatum",
       "purchaseDateHint": "Datum des Kaufs.",
+      "currency": "Währung",
       "currencyHint": "Währung, in der diese Position geführt wird.",
       "submit": "Position hinzufügen"
     },

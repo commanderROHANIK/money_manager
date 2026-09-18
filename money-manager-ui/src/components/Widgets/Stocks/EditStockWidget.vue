@@ -3,10 +3,16 @@
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('stock.edit.title') }}</h2>
 
     <form class="space-y-3" @submit.prevent="submit">
-      <BaseInput v-model.trim="form.ticker" :placeholder="t('stock.add.ticker')" required />
+      <BaseInput
+        v-model.trim="form.ticker"
+        :label="t('stock.add.ticker')"
+        :placeholder="t('stock.add.ticker')"
+        required
+      />
 
       <BaseInput
         v-model.number="form.sharesOwned"
+        :label="t('stock.add.sharesOwned')"
         :placeholder="t('stock.add.sharesOwned')"
         type="number"
         min="0"
@@ -16,6 +22,7 @@
 
       <BaseInput
         v-model.number="form.purchasePrice"
+        :label="t('stock.add.purchasePrice')"
         :placeholder="t('stock.add.purchasePrice')"
         type="number"
         min="0"
@@ -25,6 +32,7 @@
 
       <BaseInput
         v-model.number="form.currentPrice"
+        :label="t('stock.add.currentPrice')"
         :placeholder="t('stock.add.currentPrice')"
         type="number"
         min="0"
@@ -33,12 +41,12 @@
       />
 
       <div>
-        <BaseInput v-model="form.purchaseDate" type="date" required />
+        <BaseInput v-model="form.purchaseDate" type="date" :label="t('stock.add.purchaseDate')" required />
         <p class="text-xs text-text-muted mt-1">{{ t('stock.add.purchaseDateHint') }}</p>
       </div>
 
       <div>
-        <BaseSelect v-model="form.currencyCode">
+        <BaseSelect v-model="form.currencyCode" :label="t('stock.add.currency')">
           <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
         </BaseSelect>
         <p class="text-xs text-text-muted mt-1">{{ t('stock.add.currencyHint') }}</p>

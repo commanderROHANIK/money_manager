@@ -58,6 +58,15 @@ test.describe('bank accounts and stock holdings', () => {
     // unscoped placeholder lookup during a stock edit below would resolve two elements.
     await page.getByRole('button', { name: 'Edit E2E checking' }).click();
     const editAccountDialog = page.getByRole('dialog', { name: 'Edit bank account' });
+
+    // Issue #86: every field in this dialog is prefilled from the account being edited, so the
+    // native placeholder — which disappears the instant a field has a value — was these fields'
+    // only explanation and was invisible for the entire time the dialog is open. `label` is the
+    // persistent fix; assert it renders rather than assuming, since BaseInput's root `<label>`
+    // makes `getByLabel` resolve once the `label` prop is populated.
+    await expect(editAccountDialog.getByLabel('Account name', { exact: true })).toBeVisible();
+    await expect(editAccountDialog.getByLabel('Balance', { exact: true })).toBeVisible();
+
     await editAccountDialog.getByPlaceholder('Balance', { exact: true }).fill('4321');
     await editAccountDialog.getByRole('button', { name: 'Save changes', exact: true }).click();
 
@@ -88,6 +97,12 @@ test.describe('bank accounts and stock holdings', () => {
     // modal, so an unscoped lookup resolves two elements.
     await page.getByRole('button', { name: 'Edit E2E', exact: true }).click();
     const editStockDialog = page.getByRole('dialog', { name: 'Edit holding' });
+
+    // Same as the bank account dialog above: EditStockWidget's fields are all prefilled from the
+    // holding being edited (issue #86).
+    await expect(editStockDialog.getByLabel('Ticker', { exact: true })).toBeVisible();
+    await expect(editStockDialog.getByLabel('Current price', { exact: true })).toBeVisible();
+
     await editStockDialog.getByPlaceholder('Current price', { exact: true }).fill('150');
     await editStockDialog.getByRole('button', { name: 'Save changes', exact: true }).click();
 

@@ -3,17 +3,38 @@
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('bankAccount.edit.title') }}</h2>
 
     <form class="space-y-3" @submit.prevent="submit">
-      <BaseInput v-model.trim="form.accountName" :placeholder="t('bankAccount.add.accountName')" required />
-      <BaseInput v-model.trim="form.bankName" :placeholder="t('bankAccount.add.bankName')" required />
-      <BaseInput v-model.trim="form.accountNumber" :placeholder="t('bankAccount.add.accountNumber')" required />
+      <BaseInput
+        v-model.trim="form.accountName"
+        :label="t('bankAccount.add.accountName')"
+        :placeholder="t('bankAccount.add.accountName')"
+        required
+      />
+      <BaseInput
+        v-model.trim="form.bankName"
+        :label="t('bankAccount.add.bankName')"
+        :placeholder="t('bankAccount.add.bankName')"
+        required
+      />
+      <BaseInput
+        v-model.trim="form.accountNumber"
+        :label="t('bankAccount.add.accountNumber')"
+        :placeholder="t('bankAccount.add.accountNumber')"
+        required
+      />
 
       <div>
-        <BaseInput v-model.trim="form.accountType" :placeholder="t('bankAccount.add.accountType')" required />
+        <BaseInput
+          v-model.trim="form.accountType"
+          :label="t('bankAccount.add.accountType')"
+          :placeholder="t('bankAccount.add.accountType')"
+          required
+        />
         <p class="text-xs text-text-muted mt-1">{{ t('bankAccount.add.accountTypeHint') }}</p>
       </div>
 
       <BaseInput
         v-model.number="form.balance"
+        :label="t('bankAccount.add.balance')"
         :placeholder="t('bankAccount.add.balance')"
         type="number"
         step="0.01"
@@ -21,7 +42,7 @@
       />
 
       <div>
-        <BaseSelect v-model="form.currencyCode">
+        <BaseSelect v-model="form.currencyCode" :label="t('bankAccount.add.currency')">
           <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
         </BaseSelect>
         <p class="text-xs text-text-muted mt-1">{{ t('bankAccount.add.currencyHint') }}</p>
