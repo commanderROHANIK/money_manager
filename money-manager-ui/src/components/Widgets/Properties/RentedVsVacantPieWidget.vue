@@ -1,5 +1,8 @@
 <template>
-  <PieChart :segments="segments" />
+  <div>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentedVsVacant.title') }}</h2>
+    <PieChart :segments="segments" />
+  </div>
 </template>
 
 <script setup lang="ts">

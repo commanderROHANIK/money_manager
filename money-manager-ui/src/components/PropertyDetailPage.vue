@@ -39,7 +39,7 @@
         <BaseCard>
           <RentVsMarketWidget :metrics="metrics" @add-estimate="onAddEstimate" />
         </BaseCard>
-        <BaseCard class="xl:col-span-2" :title="t('property.rentOverTime.title')">
+        <BaseCard class="xl:col-span-2">
           <RentOverTimeChartWidget :history="rentHistory" :currency-code="property.currencyCode" />
         </BaseCard>
       </div>

@@ -10,7 +10,7 @@
       <TotalRentWidget :portfolio="portfolio" />
     </BaseCard>
 
-    <BaseCard class="col-span-1" :title="t('property.rentedVsVacant.title')">
+    <BaseCard class="col-span-1">
       <RentedVsVacantPieWidget :properties="properties" />
     </BaseCard>
 

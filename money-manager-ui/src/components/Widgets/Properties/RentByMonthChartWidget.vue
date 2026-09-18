@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentByMonth.title') }}</h2>
     <div v-if="hasData" class="h-[280px]">
       <Bar :data="chartData" :options="chartOptions" />
     </div>

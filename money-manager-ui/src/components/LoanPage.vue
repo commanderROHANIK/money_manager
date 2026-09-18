@@ -5,12 +5,12 @@
       <TotalLoanAmountWidget :loans="loans" />
     </BaseCard>
 
-    <BaseCard class="col-span-1 xl:col-span-1" :title="t('loan.status.title')">
+    <BaseCard class="col-span-1 xl:col-span-1">
       <LoanStatusPieWidget :loans="loans" />
     </BaseCard>
 
     <!-- Monthly Repayment Chart -->
-    <BaseCard class="col-span-1 xl:col-span-1" :title="t('loan.monthlyRepayment.title')">
+    <BaseCard class="col-span-1 xl:col-span-1">
       <MonthlyRepaymentChartWidget :accounts="loans" />
     </BaseCard>
 
