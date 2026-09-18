@@ -233,6 +233,8 @@
       "capRateHint": "nettó bevétel ÷ érték",
       "cashOnCash": "Készpénzhozam",
       "cashOnCashHint": "a ténylegesen befektetett pénz hozama",
+      "irr": "Belső megtérülési ráta",
+      "irrHint": "figyelembe veszi, mikor mozgott a pénz, nem csak az összegeket",
       "occupancy": "Kihasználtság",
       "occupancyHint": "{years} éve tulajdonban"
     },

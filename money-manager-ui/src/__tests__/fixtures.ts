@@ -47,7 +47,7 @@ const metric = (over: Record<string, unknown>) => ({
   monthlyCashFlow: 43333, grossYield: 0.046, netYield: 0.036, capRate: 0.036, cashOnCashReturn: 0.028,
   currentValue: 74000000, equity: 49200000, appreciation: 12000000, appreciationPercent: 0.194,
   cumulativeNetCashFlow: 1840000, totalReturn: 13840000, totalRoi: 0.223, annualizedRoi: 0.034,
-  yearsHeld: 6.3, occupancyRate: 0.94, marketMonthlyRent: 285000, contractedMonthlyRent: 240000,
+  irr: 0.041, yearsHeld: 6.3, occupancyRate: 0.94, marketMonthlyRent: 285000, contractedMonthlyRent: 240000,
   rentGapPercent: 0.158, annualRentUplift: 540000, warnings: [],
   ...over,
 });
@@ -81,7 +81,7 @@ export const propertyMetricsUnknown = {
   monthlyCashFlow: null, grossYield: null, netYield: null, capRate: null, cashOnCashReturn: null,
   currentValue: null, equity: null, appreciation: null, appreciationPercent: null,
   cumulativeNetCashFlow: null, totalReturn: null, totalRoi: null, annualizedRoi: null,
-  yearsHeld: null, occupancyRate: null, marketMonthlyRent: null, contractedMonthlyRent: null,
+  irr: null, yearsHeld: null, occupancyRate: null, marketMonthlyRent: null, contractedMonthlyRent: null,
   rentGapPercent: null, annualRentUplift: null,
   warnings: [
     { code: 'no_valuation', message: 'No valuation on record, and no purchase price to fall back on.' },

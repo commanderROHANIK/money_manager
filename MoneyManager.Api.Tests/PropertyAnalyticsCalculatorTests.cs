@@ -362,4 +362,90 @@ public class PropertyAnalyticsCalculatorTests
         Assert.Equal(baseline.AnnualOperatingExpenses, improved.AnnualOperatingExpenses);
         Assert.Equal(baseline.NetOperatingIncome, improved.NetOperatingIncome);
     }
+
+    // ---------------------------------------------------------------
+    // Internal rate of return
+    // ---------------------------------------------------------------
+
+    [Fact]
+    public void Irr_is_null_when_there_is_no_valuation_to_anchor_a_terminal_value()
+    {
+        var metrics = PropertyAnalyticsCalculator.Compute(
+            BaselineInput() with { CurrentValuation = null });
+
+        Assert.Null(metrics.Irr);
+        Assert.Contains(metrics.Warnings, w => w.Code == "IrrNoValuation");
+    }
+
+    /// <summary>
+    /// Two properties invest the same 150,000 (100,000 down, 50,000 of capital improvement) and
+    /// end up with the same 200,000 equity two years later, so their <see cref="PropertyMetrics.AnnualizedRoi"/>
+    /// — which only looks at the start and end balances — reads identically for both. They differ
+    /// only in when the 50,000 was spent: the day after purchase for one, seventeen months in for
+    /// the other. Deferring an outflow is strictly better for the investor at any positive rate of
+    /// return (NPV of the deferred scenario, discounted at the other's own solving rate, is
+    /// positive by construction), so the later spender must show the higher IRR. This is the
+    /// exact distinction IRR exists to draw and AnnualizedRoi cannot.
+    /// </summary>
+    [Fact]
+    public void Irr_accounts_for_the_timing_of_capital_spend_unlike_the_annualized_return()
+    {
+        var purchased = new DateTime(2022, 1, 1);
+        var asOf = new DateTime(2024, 1, 1);
+
+        PropertyAnalyticsInput ScenarioWithCapitalSpendOn(DateTime capitalSpendDate) => new()
+        {
+            PropertyId = 1,
+            PropertyName = "Timing Test",
+            CurrencyCode = "EUR",
+            PurchasePrice = 100_000m,
+            PurchaseDate = purchased,
+            CurrentValuation = 200_000m,
+            ValuationDate = asOf,
+            Transactions =
+            [
+                new LedgerEntry(capitalSpendDate, 50_000m, TransactionCategory.CapitalImprovement),
+            ],
+            AsOf = asOf,
+        };
+
+        var earlySpend = PropertyAnalyticsCalculator.Compute(
+            ScenarioWithCapitalSpendOn(purchased.AddDays(1)));
+        var lateSpend = PropertyAnalyticsCalculator.Compute(
+            ScenarioWithCapitalSpendOn(new DateTime(2023, 6, 1)));
+
+        // Same totals, same start and end balances, same AnnualizedRoi either way.
+        Assert.Equal(earlySpend.TotalInvested, lateSpend.TotalInvested);
+        Assert.Equal(earlySpend.Equity, lateSpend.Equity);
+        Assert.Equal(earlySpend.AnnualizedRoi, lateSpend.AnnualizedRoi);
+
+        Assert.NotNull(earlySpend.Irr);
+        Assert.NotNull(lateSpend.Irr);
+        Assert.True(lateSpend.Irr!.Value > earlySpend.Irr!.Value,
+            "keeping the 50,000 invested for longer before spending it should show a higher IRR");
+    }
+
+    // Studio bought 2022-01-01 for 100,000, no mortgage, no other cash flows.
+    // Valued at 125,440 on 2024-01-01, evaluated as of 2024-01-01.
+    // 2022 and 2023 are both 365-day years, so the gap is exactly 730 days = 2.0000 years.
+    // (1 + r)^2 = 125,440 / 100,000 = 1.2544, so r = 1.2544^0.5 - 1 = 1.12 - 1 = 0.12.
+    [Fact]
+    public void Irr_matches_the_worked_example_for_a_single_lump_sum_investment()
+    {
+        var input = new PropertyAnalyticsInput
+        {
+            PropertyId = 1,
+            PropertyName = "Studio",
+            CurrencyCode = "EUR",
+            PurchasePrice = 100_000m,
+            PurchaseDate = new DateTime(2022, 1, 1),
+            CurrentValuation = 125_440m,
+            ValuationDate = new DateTime(2024, 1, 1),
+            AsOf = new DateTime(2024, 1, 1),
+        };
+
+        var metrics = PropertyAnalyticsCalculator.Compute(input);
+
+        Assert.Equal(0.1200m, metrics.Irr);
+    }
 }
