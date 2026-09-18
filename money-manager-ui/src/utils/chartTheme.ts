@@ -41,6 +41,19 @@ function token(name: string): string {
   return hex;
 }
 
+// Unlike `token()`, this skips the canvas readback — a font-family string isn't a color, and
+// piping it through `toHex` would mangle it into whatever the canvas painted with its #000000
+// fallback.
+function rawToken(name: string): string {
+  const cacheKey = `raw:${name}`;
+  const cached = cache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  cache.set(cacheKey, raw);
+  return raw;
+}
+
 // Token values are cached because resolving one costs a getComputedStyle plus a canvas readback.
 // A theme switch (the dark-mode follow-up) has to clear the cache and rebuild any live charts —
 // Chart.js copies these colors into its own config when the dataset is built.
@@ -65,9 +78,12 @@ export const chartColors = {
 
 // Canvas text has no CSS cascade, so the type scale's body font (see the design-system doc)
 // has to be handed to Chart.js explicitly — every legend, tooltip and axis tick would otherwise
-// render in the browser's generic sans-serif instead of Inter.
+// render in the browser's generic sans-serif instead of Inter. Read live off `--font-sans`
+// (src/style.css) rather than duplicating the literal, so the two can't drift apart.
 export const chartFonts = {
-  body: "'Inter', ui-sans-serif, system-ui, sans-serif",
+  get body() {
+    return rawToken('--font-sans') || "'Inter', ui-sans-serif, system-ui, sans-serif";
+  },
 };
 
 // Categorical palette for charts with more series than primary/accent/danger cover

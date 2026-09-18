@@ -41,7 +41,9 @@ beforeEach(() => {
     .spyOn(HTMLCanvasElement.prototype, 'getContext')
     .mockReturnValue(null as unknown as RenderingContext);
 
-  getPropertyValue = vi.fn((name: string) => `resolved(${name})`);
+  getPropertyValue = vi.fn((name: string) =>
+    name === '--font-sans' ? "'Inter', ui-sans-serif, system-ui, sans-serif" : `resolved(${name})`,
+  );
   computedStyle = vi
     .spyOn(window, 'getComputedStyle')
     .mockReturnValue({ getPropertyValue } as unknown as CSSStyleDeclaration);
