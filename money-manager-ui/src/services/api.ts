@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { UpcomingEvent } from '../models/models';
 import type { BankAccount, BankBalanceSummary } from '../models/models';
-import type { Loan } from '../models/models';
+import type { Loan, LoanAmountSummary } from '../models/models';
 import type { RentalProperty } from '../models/models';
 import type { Stock, StockValueSummary } from '../models/models';
 
@@ -161,6 +161,17 @@ export async function deleteUpcomingEvent(id: number): Promise<void> {
 
   export async function fetchLoans(): Promise<Loan[]> {
     const response = await api.get<Loan[]>('/Loans');
+    return response.data;
+  }
+
+  /**
+   * The loans equivalent of `fetchBankAccountsTotalBalance`: the whole summary rather than a
+   * bare number, since a bare number could not say what currency it was in. Sums `loanAmount`
+   * across currencies at the owner's own rates, and reports the per-currency breakdown plus a
+   * null headline when no rate could produce one.
+   */
+  export async function fetchLoansTotalAmount(): Promise<LoanAmountSummary> {
+    const response = await api.get<LoanAmountSummary>('/Loans/summary/total-amount');
     return response.data;
   }
 

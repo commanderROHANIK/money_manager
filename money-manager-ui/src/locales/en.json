@@ -350,7 +350,8 @@
       "empty": "No data available."
     },
     "monthlyRepayment": {
-      "title": "Monthly Repayments"
+      "title": "Monthly Repayments",
+      "total": "Total"
     },
     "summary": {
       "label": "Loans",
@@ -387,7 +388,8 @@
       "open": "Edit {name}"
     },
     "close": "Close",
-    "delete": "Remove {name}"
+    "delete": "Remove {name}",
+    "total": "Total"
   },
   "stock": {
     "add": {

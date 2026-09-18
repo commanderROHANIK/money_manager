@@ -1,7 +1,11 @@
 <template>
   <div>
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentedVsVacant.title') }}</h2>
-    <PieChart :segments="segments" />
+    <PieChart :segments="segments">
+      <template #center>
+        <span class="font-heading text-xl font-extrabold tabular-nums">{{ properties.length }}</span>
+      </template>
+    </PieChart>
   </div>
 </template>
 

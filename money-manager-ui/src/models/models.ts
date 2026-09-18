@@ -367,6 +367,19 @@ export interface StockValueSummary {
     warnings: MetricWarning[];
 }
 
+/** The loans equivalent of `BankBalanceSummary` — same shape, same rules. */
+export interface LoanAmountSummary {
+    totalAmount: number | null;
+    currency: string;
+    mixedCurrency: boolean;
+    converted: boolean;
+    baseCurrency: string;
+    byCurrency: CurrencyTotal[];
+    missingRates: CurrencyPair[];
+    appliedRates: AppliedRate[];
+    warnings: MetricWarning[];
+}
+
 /**
  * Where a rate came from, and therefore what the figure it produced can honestly claim about
  * itself. Mirrors `ExchangeRateSource` on the API.

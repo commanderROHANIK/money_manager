@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { pieChartSlices, pieChartGradient } from './pieChart';
+import { pieChartSlices, pieChartRing } from './pieChart';
+
+const DEFAULT_RADIUS = 38;
+const DEFAULT_GAP = 14;
+const circumference = (radius: number) => 2 * Math.PI * radius;
+
+function arcLength(dashArray: string): number {
+  return Number(dashArray.split(' ')[0]);
+}
 
 describe('pieChartSlices', () => {
   it('filters out zero-value segments', () => {
@@ -37,39 +45,88 @@ describe('pieChartSlices', () => {
   });
 });
 
-describe('pieChartGradient', () => {
-  it('builds a single 0%-100% stop for one slice', () => {
+describe('pieChartRing', () => {
+  it('gives a single slice the full circumference with no gap', () => {
     const slices = pieChartSlices([{ label: 'Only', value: 42, color: '#123456' }]);
+    const ring = pieChartRing(slices);
 
-    expect(pieChartGradient(slices)).toBe('conic-gradient(#123456 0% 100%)');
+    expect(ring.segments).toHaveLength(1);
+    expect(ring.segments[0].dashOffset).toBeCloseTo(0, 2);
+    expect(arcLength(ring.segments[0].dashArray)).toBeCloseTo(circumference(DEFAULT_RADIUS), 2);
   });
 
-  it('chains cumulative stops across slices, not per-slice widths', () => {
-    // 55/25/20, in the design system mockup's own proportions.
+  it('gives two equal slices equal arc lengths, chaining the second off the first', () => {
+    const slices = pieChartSlices([
+      { label: 'A', value: 1, color: 'a' },
+      { label: 'B', value: 1, color: 'b' },
+    ]);
+    const ring = pieChartRing(slices);
+    const [first, second] = ring.segments;
+
+    expect(arcLength(first.dashArray)).toBeCloseTo(arcLength(second.dashArray), 2);
+    expect(second.dashOffset).toBeCloseTo(-(arcLength(first.dashArray) + DEFAULT_GAP), 2);
+  });
+
+  it('preserves the mockup ratios (55/25/20) after gap subtraction', () => {
+    // The design system mockup's own proportions — Checking 55%, Savings 25%, Investing 20%.
     const slices = pieChartSlices([
       { label: 'Checking', value: 55, color: 'primary' },
       { label: 'Savings', value: 25, color: 'accent' },
       { label: 'Investing', value: 20, color: 'neutral' },
     ]);
+    const [checking, savings, investing] = pieChartRing(slices).segments;
 
-    expect(pieChartGradient(slices)).toBe(
-      'conic-gradient(primary 0% 55%, accent 55% 80%, neutral 80% 100%)'
-    );
+    expect(arcLength(checking.dashArray) / arcLength(savings.dashArray)).toBeCloseTo(55 / 25, 2);
+    expect(arcLength(savings.dashArray) / arcLength(investing.dashArray)).toBeCloseTo(25 / 20, 2);
   });
 
-  it('does not lose a slice to rounding when values do not split evenly', () => {
+  it('returns no segments for no data, without NaN or Infinity leaking into circumference', () => {
+    const ring = pieChartRing([]);
+
+    expect(ring.segments).toEqual([]);
+    expect(Number.isFinite(ring.circumference)).toBe(true);
+    expect(ring.circumference).toBeGreaterThan(0);
+  });
+
+  it('degenerates back to abutting arcs when gapLength is 0', () => {
     const slices = pieChartSlices([
       { label: 'A', value: 1, color: 'a' },
       { label: 'B', value: 1, color: 'b' },
       { label: 'C', value: 1, color: 'c' },
     ]);
+    const ring = pieChartRing(slices, { gapLength: 0 });
+    const total = ring.segments.reduce((sum, segment) => sum + arcLength(segment.dashArray), 0);
 
-    // Three exact thirds: rounded to a clean 4 decimals rather than left as repeating floats,
-    // and the final stop is forced to exactly 100% rather than whatever the drift rounds to.
-    expect(pieChartGradient(slices)).toBe('conic-gradient(a 0% 33.3333%, b 33.3333% 66.6667%, c 66.6667% 100%)');
+    expect(total).toBeCloseTo(ring.circumference, 2);
   });
 
-  it('renders transparent rather than an empty gradient() call for no data', () => {
-    expect(pieChartGradient([])).toBe('transparent');
+  it('scales the circumference with a custom radius, without changing relative proportions', () => {
+    const slices = pieChartSlices([
+      { label: 'Checking', value: 55, color: 'primary' },
+      { label: 'Savings', value: 25, color: 'accent' },
+      { label: 'Investing', value: 20, color: 'neutral' },
+    ]);
+    const small = pieChartRing(slices, { radius: 10 });
+
+    expect(small.circumference).toBeCloseTo(circumference(10), 2);
+    expect(arcLength(small.segments[0].dashArray) / arcLength(small.segments[1].dashArray)).toBeCloseTo(55 / 25, 2);
+  });
+
+  it('does not lose a slice to rounding when values do not split evenly, and closes back to the circumference', () => {
+    const slices = pieChartSlices([
+      { label: 'A', value: 1, color: 'a' },
+      { label: 'B', value: 1, color: 'b' },
+      { label: 'C', value: 1, color: 'c' },
+    ]);
+    const ring = pieChartRing(slices);
+
+    for (const segment of ring.segments) {
+      expect(arcLength(segment.dashArray)).toBeGreaterThan(0);
+      expect(arcLength(segment.dashArray)).toBeCloseTo(arcLength(ring.segments[0].dashArray), 2);
+    }
+
+    const last = ring.segments[ring.segments.length - 1];
+    const closesAt = -last.dashOffset + arcLength(last.dashArray) + DEFAULT_GAP;
+    expect(closesAt).toBeCloseTo(ring.circumference, 2);
   });
 });

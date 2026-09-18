@@ -2,7 +2,7 @@
   <div class="p-4 grid grid-cols-1 xl:grid-cols-3 gap-4">
     <!-- Top Row -->
     <BaseCard class="col-span-1 xl:col-span-1">
-      <TotalLoanAmountWidget :loans="loans" />
+      <TotalLoanAmountWidget />
     </BaseCard>
 
     <BaseCard class="col-span-1 xl:col-span-1">

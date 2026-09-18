@@ -1,7 +1,11 @@
 <template>
   <div>
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('loan.status.title') }}</h2>
-    <PieChart v-if="loans.length" :segments="segments" />
+    <PieChart v-if="loans.length" :segments="segments">
+      <template #center>
+        <span class="font-heading text-xl font-extrabold tabular-nums">{{ loans.length }}</span>
+      </template>
+    </PieChart>
     <p v-else class="text-text-muted text-center text-sm">{{ t('loan.status.empty') }}</p>
   </div>
 </template>
