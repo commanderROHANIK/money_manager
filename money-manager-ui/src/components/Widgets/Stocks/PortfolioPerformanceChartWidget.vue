@@ -58,11 +58,12 @@ const data = computed<ChartData<'line'>>(() => {
 
 const options: ChartOptions<'line'> = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: 'bottom',
       labels: {
-        font: { size: 14, family: chartFonts.body }
+        font: { family: chartFonts.body }
       }
     },
     tooltip: {
@@ -90,7 +91,7 @@ const options: ChartOptions<'line'> = {
 <template>
   <div>
     <div v-if="loading" class="text-sm text-text-muted">Loading...</div>
-    <div v-else>
+    <div v-else class="h-[280px]">
       <Line :data="data" :options="options" />
     </div>
   </div>

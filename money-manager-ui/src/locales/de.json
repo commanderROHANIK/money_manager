@@ -349,6 +349,9 @@
       "title": "Kreditstatus",
       "empty": "Keine Daten vorhanden."
     },
+    "monthlyRepayment": {
+      "title": "Monatliche Raten"
+    },
     "summary": {
       "label": "Kredite",
       "activePaidOff": "{active} aktiv · {paidOff} abbezahlt"

@@ -13,8 +13,12 @@
 
     <!-- Second row: Charts -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <PortfolioPerformanceChartWidget />
-      <SectorDistributionPieWidget />
+      <BaseCard title="Portfolio Performance">
+        <PortfolioPerformanceChartWidget />
+      </BaseCard>
+      <BaseCard title="Sector Distribution">
+        <SectorDistributionPieWidget />
+      </BaseCard>
     </div>
 
     <!-- Third row: Gainers/Losers + Dividends -->

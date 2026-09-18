@@ -1,19 +1,19 @@
+<template>
+  <div>
+    <div v-if="loading" class="text-sm text-text-muted">Loading...</div>
+    <div v-else-if="!hasData">
+      <p class="text-center text-sm text-text-muted">No data available to display sector distribution.</p>
+    </div>
+    <PieChart v-else :segments="segments" />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { Pie } from 'vue-chartjs';
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
 import { fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
-import type { ChartData, ChartOptions } from 'chart.js';
-import { chartColors, chartCategoricalPalette, chartFonts } from '../../../utils/chartTheme';
-
-ChartJS.register(Title, Tooltip, Legend, ArcElement);
+import { chartCategoricalPalette } from '../../../utils/chartTheme';
+import PieChart from '../../ui/PieChart.vue';
 
 const stocks = ref<Stock[]>([]);
 const loading = ref(true);
@@ -48,57 +48,12 @@ const sectorDistribution = computed(() => {
 
 const hasData = computed(() => Object.keys(sectorDistribution.value).length > 0);
 
-const chartData = computed<ChartData<'pie'>>(() => {
-  const labels = Object.keys(sectorDistribution.value);
-  const data = Object.values(sectorDistribution.value);
-
-  const colors = chartCategoricalPalette();
-
-  return {
-    labels,
-    datasets: [
-      {
-        data,
-        backgroundColor: colors.slice(0, labels.length),
-        borderColor: chartColors.surface,
-        borderWidth: 1
-      }
-    ]
-  };
+const segments = computed(() => {
+  const palette = chartCategoricalPalette();
+  return Object.entries(sectorDistribution.value).map(([label, value], index) => ({
+    label,
+    value,
+    color: palette[index % palette.length],
+  }));
 });
-
-const chartOptions: ChartOptions<'pie'> = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'bottom',
-      labels: {
-        font: { size: 14, family: chartFonts.body }
-      }
-    },
-    tooltip: {
-      titleFont: { family: chartFonts.body },
-      bodyFont: { family: chartFonts.body },
-      callbacks: {
-        label: (context) => {
-          const label = context.label || '';
-          const value = context.parsed || 0;
-          return `${label}: ${value.toFixed(0)} Ft`;
-        }
-      }
-    }
-  }
-};
 </script>
-
-<template>
-  <div>
-    <div v-if="loading" class="text-sm text-text-muted">Loading...</div>
-    <div v-else-if="!hasData">
-      <p class="text-center text-sm text-text-muted">No data available to display sector distribution.</p>
-    </div>
-    <div v-else>
-      <Pie :data="chartData" :options="chartOptions" />
-    </div>
-  </div>
-</template>

@@ -349,6 +349,9 @@
       "title": "Hitelek állapota",
       "empty": "Nincs megjeleníthető adat."
     },
+    "monthlyRepayment": {
+      "title": "Havi törlesztések"
+    },
     "summary": {
       "label": "Hitelek",
       "activePaidOff": "{active} aktív · {paidOff} kifizetve"

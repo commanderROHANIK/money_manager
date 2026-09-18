@@ -4,6 +4,9 @@
  * test and be invisible to Playwright too, since there is no DOM text node to inspect. Capturing
  * the `options` object each chart component actually receives is the only way to catch that, so
  * this stubs `vue-chartjs` itself (rather than mocking chartTheme) and reads the real options.
+ *
+ * Only 3 widgets are left on Chart.js after the pie/donut widgets moved to `PieChart.vue`'s
+ * CSS conic-gradient — see `src/utils/pieChart.test.ts` for those.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
@@ -33,14 +36,9 @@ vi.mock('../../services/api', async () => {
   return { fetchStocks: () => Promise.resolve(f.stocks) };
 });
 
-const { default: BankAccountPieChart } = await import('./BankAccounts/BankAccountPieChart.vue');
-const { default: MonthlyRepaymentChartWidget } = await import('./Loans/MonthlyRepaymentChartWidget.vue');
-const { default: LoanStatusPieWidget } = await import('./Loans/LoanStatusPieWidget.vue');
 const { default: RentByMonthChartWidget } = await import('./Properties/RentByMonthChartWidget.vue');
-const { default: RentedVsVacantPieWidget } = await import('./Properties/RentedVsVacantPieWidget.vue');
 const { default: RentOverTimeChartWidget } = await import('./Properties/RentOverTimeChartWidget.vue');
 const { default: PortfolioPerformanceChartWidget } = await import('./Stocks/PortfolioPerformanceChartWidget.vue');
-const { default: SectorDistributionPieWidget } = await import('./Stocks/SectorDistributionPieWidget.vue');
 
 /** Every `family` value Chart.js would actually see, wherever in the options tree it sits. */
 function fontFamilies(options: unknown): string[] {
@@ -49,9 +47,6 @@ function fontFamilies(options: unknown): string[] {
 
 describe('chart widgets set a font family on every text-producing option', () => {
   it.each([
-    ['BankAccountPieChart', () => mount(BankAccountPieChart, { props: { accounts: f.bankAccounts } })],
-    ['MonthlyRepaymentChartWidget', () => mount(MonthlyRepaymentChartWidget, { props: { accounts: f.loans } })],
-    ['LoanStatusPieWidget', () => mount(LoanStatusPieWidget, { props: { loans: f.loans } })],
     [
       'RentByMonthChartWidget',
       () =>
@@ -62,7 +57,6 @@ describe('chart widgets set a font family on every text-producing option', () =>
           },
         }),
     ],
-    ['RentedVsVacantPieWidget', () => mount(RentedVsVacantPieWidget, { props: { properties: f.properties } })],
     [
       'RentOverTimeChartWidget',
       () => mount(RentOverTimeChartWidget, { props: { history: f.rentHistory, currencyCode: 'HUF' } }),
@@ -83,12 +77,9 @@ describe('chart widgets set a font family on every text-producing option', () =>
     wrapper.unmount();
   });
 
-  it.each([
-    ['PortfolioPerformanceChartWidget', () => mount(PortfolioPerformanceChartWidget)],
-    ['SectorDistributionPieWidget', () => mount(SectorDistributionPieWidget)],
-  ])('%s hands Chart.js a non-empty font family once its fetch resolves', async (_name, mountWidget) => {
+  it('PortfolioPerformanceChartWidget hands Chart.js a non-empty font family once its fetch resolves', async () => {
     received.length = 0;
-    const wrapper = mountWidget();
+    const wrapper = mount(PortfolioPerformanceChartWidget);
     await new Promise((resolve) => setTimeout(resolve, 0));
     await nextTick();
 

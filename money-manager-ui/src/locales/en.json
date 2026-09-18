@@ -349,6 +349,9 @@
       "title": "Loan Status",
       "empty": "No data available."
     },
+    "monthlyRepayment": {
+      "title": "Monthly Repayments"
+    },
     "summary": {
       "label": "Loans",
       "activePaidOff": "{active} active · {paidOff} paid off"

@@ -1,70 +1,23 @@
+<template>
+  <PieChart :segments="segments" />
+</template>
+
 <script setup lang="ts">
-import { Pie } from 'vue-chartjs';
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
-import type {
-  ChartData,
-  ChartOptions
-} from 'chart.js';
 import { computed } from 'vue';
 import type { BankAccount } from '../../../models/models';
-import { chartCategoricalPalette, chartColors, chartFonts } from '../../../utils/chartTheme';
-
-ChartJS.register(Title, Tooltip, Legend, ArcElement);
+import { chartCategoricalPalette } from '../../../utils/chartTheme';
+import PieChart from '../../ui/PieChart.vue';
 
 const props = defineProps<{
-  accounts: BankAccount[]
+  accounts: BankAccount[];
 }>();
 
-// Chart Data
-const data = computed<ChartData<'pie'>>(() => {
+const segments = computed(() => {
   const palette = chartCategoricalPalette();
-  return {
-    labels: props.accounts.map(acc => acc.accountName),
-    datasets: [
-      {
-        data: props.accounts.map(acc => acc.balance),
-        backgroundColor: props.accounts.map((_, i) => palette[i % palette.length]),
-        borderWidth: 2,
-        borderColor: chartColors.surface
-      }
-    ]
-  };
+  return props.accounts.map((account, index) => ({
+    label: account.accountName,
+    value: account.balance,
+    color: palette[index % palette.length],
+  }));
 });
-
-// Chart Options
-const options: ChartOptions<'pie'> = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'bottom',
-      labels: {
-        font: { size: 14, family: chartFonts.body }
-      }
-    },
-    tooltip: {
-      titleFont: { family: chartFonts.body },
-      bodyFont: { family: chartFonts.body },
-      callbacks: {
-        label: function (context) {
-          const label = context.label || '';
-          const value = context.formattedValue || '';
-          return `${label}: ${value} Ft`;
-        }
-      }
-    }
-  },
-  cutout: '78%' // Makes it a donut shape
-};
 </script>
-
-<template>
-  <div>
-    <Pie :data="data" :options="options" />
-  </div>
-</template>

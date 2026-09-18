@@ -349,6 +349,9 @@
       "title": "État des prêts",
       "empty": "Aucune donnée disponible."
     },
+    "monthlyRepayment": {
+      "title": "Remboursements mensuels"
+    },
     "summary": {
       "label": "Prêts",
       "activePaidOff": "{active} en cours · {paidOff} remboursé(s)"

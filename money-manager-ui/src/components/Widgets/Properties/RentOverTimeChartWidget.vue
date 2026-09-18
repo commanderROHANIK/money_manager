@@ -1,8 +1,6 @@
 <template>
   <div>
-    <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentOverTime.title') }}</h2>
-
-    <div v-if="hasData" class="chart-box">
+    <div v-if="hasData" class="h-[280px]">
       <Line :data="chartData" :options="chartOptions" />
     </div>
     <p v-else class="text-sm text-text-muted">
@@ -117,9 +115,3 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   },
 }));
 </script>
-
-<style scoped>
-.chart-box {
-  height: 280px;
-}
-</style>
