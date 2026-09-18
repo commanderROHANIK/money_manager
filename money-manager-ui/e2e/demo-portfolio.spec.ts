@@ -110,6 +110,27 @@ test.describe('the seeded demo portfolio', () => {
     await expect(page.getByText(NO_VALUATION)).toHaveCount(0);
   });
 
+  test('IRR needs a valuation to anchor a terminal value, same as the appreciation figure', async ({
+    page,
+  }) => {
+    // IRR discounts the property's dated cash flows against a terminal equity value, so it is
+    // unknowable on exactly the properties that already warn about having no valuation on record
+    // — Kerkstraat never got one, Maple Court did three months ago. Asserted as a pair for the
+    // same reason as the warning above: a seed where nothing has a valuation would pass on "IRR
+    // reads as unknown" alone, and a seed where nothing lacks one would pass on "IRR reads as a
+    // number" alone.
+    await signIn(page);
+
+    await openProperty(page, VACANT);
+    const vacantTile = page.getByText('IRR', { exact: true }).locator('xpath=..');
+    await expect(vacantTile).toContainText('—');
+
+    await openProperty(page, HEALTHY);
+    const healthyTile = page.getByText('IRR', { exact: true }).locator('xpath=..');
+    await expect(healthyTile).not.toContainText('—');
+    await expect(healthyTile).toContainText('%');
+  });
+
   test('the two-currency portfolio totals, and discloses the rate it used', async ({ page }) => {
     await signIn(page);
     await page.goto('/properties');

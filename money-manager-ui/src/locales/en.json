@@ -233,6 +233,8 @@
       "capRateHint": "net income ÷ value",
       "cashOnCash": "Cash-on-cash",
       "cashOnCashHint": "return on money actually put in",
+      "irr": "IRR",
+      "irrHint": "accounts for when cash moved, not just totals",
       "occupancy": "Occupancy",
       "occupancyHint": "held {years} yrs"
     },
