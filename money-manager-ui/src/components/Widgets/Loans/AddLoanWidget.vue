@@ -12,6 +12,7 @@
       <div>
         <BaseInput
           v-model.number="form.loanAmount"
+          :label="t('loan.add.originalAmount')"
           :placeholder="t('loan.add.originalAmount')"
           type="number"
           min="0"
@@ -23,6 +24,7 @@
       <div>
         <BaseInput
           v-model.number="form.remainingBalance"
+          :label="t('loan.add.remainingBalance')"
           :placeholder="t('loan.add.remainingBalance')"
           type="number"
           min="0"
@@ -36,6 +38,7 @@
       <div>
         <BaseInput
           v-model.number="form.interestRate"
+          :label="t('loan.add.interestRate')"
           :placeholder="t('loan.add.interestRate')"
           type="number"
           min="0"
@@ -51,7 +54,7 @@
       </div>
 
       <div>
-        <BaseSelect v-model="form.currencyCode">
+        <BaseSelect v-model="form.currencyCode" :label="t('loan.add.currency')">
           <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
         </BaseSelect>
         <p class="text-xs text-text-muted mt-1">{{ t('loan.add.currencyHint') }}</p>

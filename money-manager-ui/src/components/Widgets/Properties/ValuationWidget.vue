@@ -6,7 +6,7 @@
     </p>
 
     <form class="flex flex-wrap gap-2 mb-4" @submit.prevent="submit">
-      <BaseInput v-model="form.valuedOn" type="date" required />
+      <BaseInput v-model="form.valuedOn" type="date" :label="t('property.valuations.valuedOn')" required />
       <BaseInput
         v-model.number="form.value"
         type="number"

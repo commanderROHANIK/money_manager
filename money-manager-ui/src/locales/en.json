@@ -170,6 +170,7 @@
     "valuations": {
       "title": "Valuations",
       "subtitle": "Equity and appreciation are measured against the most recent figure here.",
+      "valuedOn": "Valued on",
       "valuePlaceholder": "Value",
       "add": "Add",
       "empty": "None recorded — the purchase price is being used as the current value."
@@ -245,6 +246,7 @@
       "sinceUntil": "Since {start} until {end}",
       "vacant": "Vacant — no tenancy is running today.",
       "tenantName": "Tenant name",
+      "startDate": "Start date",
       "endOptional": "End (optional)",
       "monthlyRent": "Monthly rent",
       "dueDay": "Due day",
@@ -254,15 +256,19 @@
       "title": "Add a property",
       "subtitle": "The purchase price and date are what every return figure is measured against — worth entering even if they are approximate.",
       "name": "Name",
+      "propertyType": "Property type",
       "address": "Address",
       "city": "City",
       "purchasePrice": "Purchase price",
+      "currency": "Currency",
       "size": "Size (m²)",
       "bedrooms": "Bedrooms",
       "submit": "Add property"
     },
     "ledger": {
       "title": "Ledger",
+      "date": "Date",
+      "category": "Category",
       "amount": "Amount",
       "note": "Note",
       "record": "Record",
@@ -336,6 +342,7 @@
       "interestRate": "Interest rate (%)",
       "interestRateHint": "Annual rate, e.g. 4.5 for 4.5%.",
       "dueDateHint": "Date the loan is scheduled to be fully repaid.",
+      "currency": "Currency",
       "currencyHint": "Currency this loan is denominated in.",
       "paidOffLabel": "Paid off",
       "paidOffHint": "Check if this loan has already been fully repaid.",
@@ -375,6 +382,7 @@
       "accountType": "Account type",
       "accountTypeHint": "e.g. Checking, Savings.",
       "balance": "Balance",
+      "currency": "Currency",
       "currencyHint": "Currency this account is denominated in.",
       "submit": "Add account"
     },
@@ -393,7 +401,9 @@
       "sharesOwned": "Shares owned",
       "purchasePrice": "Purchase price",
       "currentPrice": "Current price",
+      "purchaseDate": "Purchase date",
       "purchaseDateHint": "Date the shares were bought.",
+      "currency": "Currency",
       "currencyHint": "Currency this holding is denominated in.",
       "submit": "Add holding"
     },

@@ -170,6 +170,7 @@
     "valuations": {
       "title": "Értékbecslések",
       "subtitle": "A saját tőke és az értéknövekedés a legutóbbi itt szereplő értékhez mérve számolódik.",
+      "valuedOn": "Értékbecslés dátuma",
       "valuePlaceholder": "Érték",
       "add": "Hozzáadás",
       "empty": "Nincs rögzítve — jelenlegi értékként a vételár szerepel."
@@ -245,6 +246,7 @@
       "sinceUntil": "{start} — {end}",
       "vacant": "Üres — jelenleg nincs futó bérlet.",
       "tenantName": "Bérlő neve",
+      "startDate": "Kezdés dátuma",
       "endOptional": "Vége (nem kötelező)",
       "monthlyRent": "Havi bérleti díj",
       "dueDay": "Esedékesség napja",
@@ -254,15 +256,19 @@
       "title": "Ingatlan hozzáadása",
       "subtitle": "Minden hozamszámítás a vételárhoz és a vásárlás dátumához mérten készül — érdemes megadni akkor is, ha csak hozzávetőleges.",
       "name": "Név",
+      "propertyType": "Ingatlan típusa",
       "address": "Cím",
       "city": "Város",
       "purchasePrice": "Vételár",
+      "currency": "Pénznem",
       "size": "Alapterület (m²)",
       "bedrooms": "Hálószobák",
       "submit": "Ingatlan hozzáadása"
     },
     "ledger": {
       "title": "Könyvelés",
+      "date": "Dátum",
+      "category": "Kategória",
       "amount": "Összeg",
       "note": "Megjegyzés",
       "record": "Rögzítés",
@@ -336,6 +342,7 @@
       "interestRate": "Kamatláb (%)",
       "interestRateHint": "Éves kamat, például 4,5 a 4,5%-hoz.",
       "dueDateHint": "A hitel teljes visszafizetésének tervezett dátuma.",
+      "currency": "Pénznem",
       "currencyHint": "A hitel pénzneme.",
       "paidOffLabel": "Kifizetve",
       "paidOffHint": "Jelöld be, ha a hitelt már teljesen visszafizetted.",
@@ -375,6 +382,7 @@
       "accountType": "Számla típusa",
       "accountTypeHint": "pl. Folyószámla, Megtakarítási számla.",
       "balance": "Egyenleg",
+      "currency": "Pénznem",
       "currencyHint": "A számla pénzneme.",
       "submit": "Számla hozzáadása"
     },
@@ -393,7 +401,9 @@
       "sharesOwned": "Birtokolt darabszám",
       "purchasePrice": "Vételár",
       "currentPrice": "Jelenlegi ár",
+      "purchaseDate": "Vásárlás dátuma",
       "purchaseDateHint": "A vásárlás dátuma.",
+      "currency": "Pénznem",
       "currencyHint": "A részvény pénzneme.",
       "submit": "Részvény hozzáadása"
     },

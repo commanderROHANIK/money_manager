@@ -3,8 +3,8 @@
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.ledger.title') }}</h2>
 
     <form class="flex flex-wrap gap-2 mb-4" @submit.prevent="submit">
-      <BaseInput v-model="form.date" type="date" required />
-      <BaseSelect v-model.number="form.category">
+      <BaseInput v-model="form.date" type="date" :label="t('property.ledger.date')" required />
+      <BaseSelect v-model.number="form.category" :label="t('property.ledger.category')">
         <optgroup v-for="group in TRANSACTION_CATEGORY_GROUPS" :key="group.label" :label="group.label">
           <option v-for="category in group.categories" :key="category" :value="category">
             {{ TRANSACTION_CATEGORY_LABELS[category] }}
