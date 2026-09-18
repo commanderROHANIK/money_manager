@@ -233,6 +233,8 @@
       "capRateHint": "Nettoertrag ÷ Wert",
       "cashOnCash": "Eigenkapitalrendite",
       "cashOnCashHint": "Rendite auf das tatsächlich eingesetzte Geld",
+      "irr": "Interner Zinsfuß",
+      "irrHint": "berücksichtigt, wann das Geld floss, nicht nur die Summen",
       "occupancy": "Auslastung",
       "occupancyHint": "seit {years} Jahren im Bestand"
     },

@@ -233,6 +233,8 @@
       "capRateHint": "revenu net ÷ valeur",
       "cashOnCash": "Rendement sur fonds propres",
       "cashOnCashHint": "rendement de l'argent réellement engagé",
+      "irr": "TRI",
+      "irrHint": "tient compte du moment des flux, pas seulement des totaux",
       "occupancy": "Taux d'occupation",
       "occupancyHint": "détenu depuis {years} ans"
     },

@@ -8,6 +8,26 @@ namespace MoneyManager.Api.Services.Analytics
     /// Pure by design: no database, no clock, no configuration. Every input arrives in
     /// <see cref="PropertyAnalyticsInput"/>, which is what makes each formula checkable
     /// against a worked example.
+    ///
+    /// <para>
+    /// Worked example for <c>Irr</c> — a property bought outright, with no interim cash flows,
+    /// so the answer is checkable with a calculator rather than a spreadsheet:
+    /// </para>
+    /// <para>
+    ///   Studio bought 2022-01-01 for 100,000, paid entirely in cash (no mortgage).<br/>
+    ///   No rent, no expenses, no capital spend recorded.<br/>
+    ///   Valued at 125,440 on 2024-01-01. Evaluated as of 2024-01-01.
+    /// </para>
+    /// <para>
+    ///   Two dated cash flows: -100,000 at 2022-01-01 (the down payment, which here is the
+    ///   whole price) and +125,440 at 2024-01-01 (terminal equity — no mortgage balance to
+    ///   subtract). 2022 and 2023 are both 365-day years, so the gap is exactly 730 days, i.e.
+    ///   2.0000 years at the calculator's day-count convention.
+    /// </para>
+    /// <para>
+    ///   IRR solves (1 + r)^2.0000 = 125,440 / 100,000 = 1.2544, so
+    ///   r = 1.2544^(1/2) - 1 = 1.12 - 1 = 0.1200 (12.00%).
+    /// </para>
     /// </summary>
     public static class PropertyAnalyticsCalculator
     {
@@ -196,6 +216,71 @@ namespace MoneyManager.Api.Services.Analytics
             }
 
             // ---------------------------------------------------------------
+            // Internal rate of return
+            // ---------------------------------------------------------------
+            // Unlike AnnualizedRoi, which only looks at the start and end balances, this
+            // discounts every dated cash flow individually, so two properties that reached the
+            // same total return on a different capital-injection schedule no longer look alike.
+            decimal? irr = null;
+
+            var hasRealTerminalValue = (input.Status == PropertyStatus.Sold && input.SalePrice is not null)
+                                        || input.CurrentValuation is not null;
+
+            if (input.PurchasePrice is not { } purchasePrice)
+            {
+                // Already warned above via NoPurchasePrice: without it there is no dated
+                // outflow to anchor the schedule to.
+            }
+            else if (input.PurchaseDate is not { } irrStart)
+            {
+                warnings.Add(new MetricWarning(
+                    "IrrNoPurchaseDate",
+                    "No purchase date recorded, so cash flows cannot be dated and IRR cannot be calculated."));
+            }
+            else if (!hasRealTerminalValue || currentValue is not { } terminalValue)
+            {
+                warnings.Add(new MetricWarning(
+                    "IrrNoValuation",
+                    "No valuation recorded to anchor a terminal value, so IRR cannot be calculated."));
+            }
+            else
+            {
+                var cashFlows = new List<(DateTime Date, decimal Amount)>
+                {
+                    // The down payment: the mortgage covers the rest, and its proceeds never
+                    // pass through the investor's hands.
+                    (irrStart, -(purchasePrice - (input.MortgageOriginalAmount ?? 0m))),
+                };
+
+                cashFlows.AddRange(input.Transactions
+                    .Where(t => t.Category != TransactionCategory.DepositReceived && t.Date.Date <= endDate)
+                    .Select(t => (
+                        t.Date.Date,
+                        TransactionCategoryInfo.DirectionOf(t.Category) == CashFlowDirection.Income
+                            ? t.Amount
+                            : -t.Amount)));
+
+                cashFlows.Add((endDate, terminalValue - (input.MortgageBalance ?? 0m)));
+
+                if (cashFlows.Select(c => c.Date).Distinct().Count() < 2)
+                {
+                    warnings.Add(new MetricWarning(
+                        "IrrTooFewCashFlows",
+                        "Fewer than two dated cash flows, so IRR cannot be calculated."));
+                }
+                else
+                {
+                    irr = SolveIrr(cashFlows, irrStart);
+                    if (irr is null)
+                    {
+                        warnings.Add(new MetricWarning(
+                            "IrrDidNotConverge",
+                            "The recorded cash flows do not resolve to a single rate of return, so IRR cannot be calculated."));
+                    }
+                }
+            }
+
+            // ---------------------------------------------------------------
             // Occupancy
             // ---------------------------------------------------------------
             decimal? occupancyRate = null;
@@ -251,6 +336,7 @@ namespace MoneyManager.Api.Services.Analytics
                 TotalReturn = Round(totalReturn),
                 TotalRoi = totalRoi,
                 AnnualizedRoi = annualizedRoi,
+                Irr = irr,
                 YearsHeld = yearsHeld,
                 OccupancyRate = occupancyRate,
 
@@ -307,6 +393,74 @@ namespace MoneyManager.Api.Services.Analytics
                 total += (cursorEnd.Value - cursorStart).Days;
 
             return total;
+        }
+
+        private const int IrrMaxIterations = 100;
+        private const double IrrToleranceCurrencyUnits = 0.01;
+
+        /// <summary>
+        /// Solves for the annualised rate at which <paramref name="cashFlows"/>, discounted
+        /// back to <paramref name="baseline"/> at day-count fractions of a 365-day year, net to
+        /// zero. Newton-Raphson, the same closed-form-free approach a spreadsheet's XIRR uses,
+        /// because cash flows land on irregular dates rather than evenly spaced periods.
+        ///
+        /// Returns null rather than throwing when the flows do not resolve to a rate — always
+        /// positive, always negative, or a search that runs away — because the correct answer
+        /// to "cannot be solved" is unknown, not a number that happens to fall out of a capped
+        /// iteration count.
+        /// </summary>
+        private static decimal? SolveIrr(IReadOnlyList<(DateTime Date, decimal Amount)> cashFlows, DateTime baseline)
+        {
+            if (!cashFlows.Any(c => c.Amount > 0m) || !cashFlows.Any(c => c.Amount < 0m))
+                return null;
+
+            double Npv(double rate)
+            {
+                var total = 0.0;
+                foreach (var (date, amount) in cashFlows)
+                {
+                    var years = (date - baseline).Days / (double)DaysPerYear;
+                    total += (double)amount / Math.Pow(1 + rate, years);
+                }
+
+                return total;
+            }
+
+            double NpvDerivative(double rate)
+            {
+                var total = 0.0;
+                foreach (var (date, amount) in cashFlows)
+                {
+                    var years = (date - baseline).Days / (double)DaysPerYear;
+                    if (years == 0) continue;
+                    total += (double)amount * -years * Math.Pow(1 + rate, -years - 1);
+                }
+
+                return total;
+            }
+
+            var rate = 0.1;
+            for (var i = 0; i < IrrMaxIterations; i++)
+            {
+                var npv = Npv(rate);
+                if (Math.Abs(npv) < IrrToleranceCurrencyUnits)
+                    return Math.Round((decimal)rate, 4);
+
+                var derivative = NpvDerivative(rate);
+                if (derivative == 0) return null;
+
+                var next = rate - npv / derivative;
+
+                // Newton's method can step past -100%, where (1+rate) turns negative and the
+                // discount factor stops meaning anything. Halve the step towards -100% instead
+                // of following it there.
+                if (next <= -1) next = (rate - 1) / 2;
+                if (double.IsNaN(next) || double.IsInfinity(next)) return null;
+
+                rate = next;
+            }
+
+            return null;
         }
 
         /// <summary>Ratio that yields null rather than a divide-by-zero or a nonsense figure.</summary>

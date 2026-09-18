@@ -84,7 +84,10 @@ be known*, never zero. This is deliberate: a spreadsheet gives you a confident w
 number, and saying which inputs are soft is most of what makes the output worth trusting.
 
 Cap rate excludes financing so it stays comparable between properties; deposits are
-excluded from income because they are repayable.
+excluded from income because they are repayable. IRR discounts the property's own dated
+cash flows — the down payment, every recorded transaction, and the current valuation as a
+terminal value — so, unlike the annualized return, it tells two properties with different
+capital-injection timing apart.
 
 ### Multi-tenancy
 
@@ -133,4 +136,4 @@ later is a provider swap.
 A rate feed (rates are typed in, and dated rate history for past-period analytics is not
 modelled — the latest rate on record is used and the output says so); an automatic market-rent feed
 (market estimates are entered by hand today, behind the same `RentPricePoint` model a feed
-would write to); IRR; tax and depreciation modelling; billing and subscriptions.
+would write to); tax and depreciation modelling; billing and subscriptions.

@@ -92,6 +92,16 @@ namespace MoneyManager.Api.Services.Analytics
         public decimal? TotalReturn { get; init; }
         public decimal? TotalRoi { get; init; }
         public decimal? AnnualizedRoi { get; init; }
+
+        /// <summary>
+        /// Internal rate of return: the discount rate at which the property's dated cash
+        /// flows — down payment, every recorded transaction, and the terminal equity value —
+        /// net to zero. Unlike <see cref="AnnualizedRoi"/>, which only cares about the start
+        /// and end balances, this accounts for *when* money moved, so it tells two properties
+        /// with different capital-injection timing apart.
+        /// </summary>
+        public decimal? Irr { get; init; }
+
         public decimal? YearsHeld { get; init; }
         public decimal? OccupancyRate { get; init; }
 
