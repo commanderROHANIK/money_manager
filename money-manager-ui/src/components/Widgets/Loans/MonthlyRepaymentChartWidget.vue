@@ -13,7 +13,7 @@ import type {
 } from 'chart.js';
 import { computed } from 'vue';
 import type { Loan } from '../../../models/models';
-import { chartCategoricalPalette, chartColors } from '../../../utils/chartTheme';
+import { chartCategoricalPalette, chartColors, chartFonts } from '../../../utils/chartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -44,10 +44,12 @@ const options: ChartOptions<'pie'> = {
     legend: {
       position: 'bottom',
       labels: {
-        font: { size: 14 }
+        font: { size: 14, family: chartFonts.body }
       }
     },
     tooltip: {
+      titleFont: { family: chartFonts.body },
+      bodyFont: { family: chartFonts.body },
       callbacks: {
         label: function (context) {
           const label = context.label || '';

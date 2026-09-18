@@ -11,7 +11,7 @@ import {
 import { fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
 import type { ChartData, ChartOptions } from 'chart.js';
-import { chartColors, chartCategoricalPalette } from '../../../utils/chartTheme';
+import { chartColors, chartCategoricalPalette, chartFonts } from '../../../utils/chartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -73,10 +73,12 @@ const chartOptions: ChartOptions<'pie'> = {
     legend: {
       position: 'bottom',
       labels: {
-        font: { size: 14 }
+        font: { size: 14, family: chartFonts.body }
       }
     },
     tooltip: {
+      titleFont: { family: chartFonts.body },
+      bodyFont: { family: chartFonts.body },
       callbacks: {
         label: (context) => {
           const label = context.label || '';

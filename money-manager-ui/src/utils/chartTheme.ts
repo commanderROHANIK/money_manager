@@ -63,6 +63,13 @@ export const chartColors = {
   get textMuted() { return token('--mm-text-muted'); },
 };
 
+// Canvas text has no CSS cascade, so the type scale's body font (see the design-system doc)
+// has to be handed to Chart.js explicitly — every legend, tooltip and axis tick would otherwise
+// render in the browser's generic sans-serif instead of Inter.
+export const chartFonts = {
+  body: "'Inter', ui-sans-serif, system-ui, sans-serif",
+};
+
 // Categorical palette for charts with more series than primary/accent/danger cover
 // (sector/holding breakdowns, per-account distributions, etc.).
 export function chartCategoricalPalette(): string[] {

@@ -25,7 +25,7 @@ import { Bar } from 'vue-chartjs';
 import { computed } from 'vue';
 import type { RentalProperty } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
-import { chartColors } from '../../../utils/chartTheme';
+import { chartColors, chartFonts } from '../../../utils/chartTheme';
 import { useI18n } from 'vue-i18n';
 import { intlLocale } from '../../../i18n/locale';
 
@@ -93,15 +93,23 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   scales: {
+    x: {
+      ticks: { font: { family: chartFonts.body } }
+    },
     y: {
       beginAtZero: true,
       ticks: {
+        font: { family: chartFonts.body },
         callback: (value) => formatMoney(Number(value), currency.value)
       }
     }
   },
   plugins: {
-    legend: { display: false }
+    legend: { display: false },
+    tooltip: {
+      titleFont: { family: chartFonts.body },
+      bodyFont: { family: chartFonts.body }
+    }
   }
 }));
 </script>

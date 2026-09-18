@@ -16,10 +16,11 @@
       </p>
 
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-surface-2">
-          <p class="text-xs text-text-muted">{{ tile.label }}</p>
-          <p class="text-lg font-bold tabular-nums" :class="tile.tone">{{ tile.value }}</p>
-        </div>
+        <StatCard v-for="tile in tiles" :key="tile.label" :label="tile.label">
+          <template #value>
+            <span :class="tile.tone">{{ tile.value }}</span>
+          </template>
+        </StatCard>
       </div>
 
       <p v-if="conversionNote" class="text-xs text-text-muted mt-3">{{ conversionNote }}</p>
@@ -33,6 +34,7 @@ import type { PortfolioAnalytics } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
 import { formatPercent } from '../../../utils/labels';
 import { useRateDisclosure } from '../../../composables/useRateDisclosure';
+import StatCard from '../../ui/StatCard.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

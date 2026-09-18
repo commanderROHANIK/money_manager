@@ -17,7 +17,7 @@ import {
   Legend
 } from 'chart.js';
 import type { RentalProperty } from '../../../models/models';
-import { chartColors } from '../../../utils/chartTheme';
+import { chartColors, chartFonts } from '../../../utils/chartTheme';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -48,7 +48,14 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'bottom' as const
+      position: 'bottom' as const,
+      labels: {
+        font: { family: chartFonts.body }
+      }
+    },
+    tooltip: {
+      titleFont: { family: chartFonts.body },
+      bodyFont: { family: chartFonts.body }
     }
   }
 };
