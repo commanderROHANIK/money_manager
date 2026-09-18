@@ -272,6 +272,7 @@ export interface PropertyMetrics {
     totalReturn: number | null;
     totalRoi: number | null;
     annualizedRoi: number | null;
+    irr: number | null;
     yearsHeld: number | null;
     occupancyRate: number | null;
     marketMonthlyRent: number | null;

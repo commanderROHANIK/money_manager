@@ -85,6 +85,20 @@ describe('PropertyMetricsWidget', () => {
     // language — but computed against the same locale the widget uses, not the machine's, which
     // is what the two siblings above were already updated to and this one was missed.
     expect(text).toContain((43333).toLocaleString(intlLocale(), { maximumFractionDigits: 0 }));
+
+    // irr 0.041 — a figure the tile grid is expected to carry alongside the older return metrics.
+    expect(text).toContain('4.10%');
+  });
+
+  it('renders an unknown IRR as a dash rather than a fabricated rate', () => {
+    // IRR needs its own dated cash flows and a real valuation to anchor a terminal value; a
+    // property missing those should show unknown here even when other figures are known. Every
+    // other field on this fixture is populated, so a dash appearing at all can only be IRR's.
+    const wrapper = mount(PropertyMetricsWidget, {
+      props: { metrics: { ...f.propertyMetrics, irr: null } as unknown as PropertyMetrics },
+    });
+
+    expect(wrapper.text()).toContain('—');
   });
 });
 

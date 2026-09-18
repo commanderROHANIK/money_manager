@@ -99,6 +99,12 @@ const tiles = computed(() => [
     hint: t('property.metrics.cashOnCashHint'),
   },
   {
+    label: t('property.metrics.irr'),
+    value: formatPercent(props.metrics.irr, 2),
+    tone: sign(props.metrics.irr),
+    hint: t('property.metrics.irrHint'),
+  },
+  {
     label: t('property.metrics.occupancy'),
     value: formatPercent(props.metrics.occupancyRate, 0),
     tone: '',
