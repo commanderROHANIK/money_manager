@@ -11,7 +11,7 @@
         <template #title>
           <router-link
             :to="`/properties/${property.id}`"
-            class="font-medium text-primary-strong hover:underline"
+            class="font-heading font-semibold text-primary-strong hover:underline"
           >
             {{ property.propertyName }}
           </router-link>

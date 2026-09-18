@@ -14,7 +14,7 @@ import {
 import { fetchStocks } from '../../../services/api';
 import type { Stock } from '../../../models/models';
 import type { ChartData, ChartOptions } from 'chart.js';
-import { chartColors } from '../../../utils/chartTheme';
+import { chartColors, chartFonts } from '../../../utils/chartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale);
 
@@ -58,22 +58,29 @@ const data = computed<ChartData<'line'>>(() => {
 
 const options: ChartOptions<'line'> = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: 'bottom',
       labels: {
-        font: { size: 14 }
+        font: { family: chartFonts.body }
       }
     },
     tooltip: {
+      titleFont: { family: chartFonts.body },
+      bodyFont: { family: chartFonts.body },
       callbacks: {
         label: (context) => `Value: ${context.formattedValue} Ft`
       }
     }
   },
   scales: {
+    x: {
+      ticks: { font: { family: chartFonts.body } }
+    },
     y: {
       ticks: {
+        font: { family: chartFonts.body },
         callback: (value) => `${value} Ft`
       }
     }
@@ -84,7 +91,7 @@ const options: ChartOptions<'line'> = {
 <template>
   <div>
     <div v-if="loading" class="text-sm text-text-muted">Loading...</div>
-    <div v-else>
+    <div v-else class="h-[280px]">
       <Line :data="data" :options="options" />
     </div>
   </div>

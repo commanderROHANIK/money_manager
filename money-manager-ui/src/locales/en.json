@@ -349,6 +349,10 @@
       "title": "Loan Status",
       "empty": "No data available."
     },
+    "monthlyRepayment": {
+      "title": "Monthly Repayments",
+      "total": "Total"
+    },
     "summary": {
       "label": "Loans",
       "activePaidOff": "{active} active · {paidOff} paid off"
@@ -384,7 +388,8 @@
       "open": "Edit {name}"
     },
     "close": "Close",
-    "delete": "Remove {name}"
+    "delete": "Remove {name}",
+    "total": "Total"
   },
   "stock": {
     "add": {

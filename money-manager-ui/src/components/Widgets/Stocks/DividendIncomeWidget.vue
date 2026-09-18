@@ -1,8 +1,10 @@
 <template>
   <div>
-    <div class="font-heading text-2xl font-bold text-primary-strong tabular-nums">
-      {{ formattedDividend }}
-    </div>
+    <StatCard label="Estimated Dividend Income">
+      <template #value>
+        <span class="text-primary-strong">{{ formattedDividend }}</span>
+      </template>
+    </StatCard>
     <p class="text-xs text-text-muted mt-1">
       Estimate only — assumes a {{ (ASSUMED_YIELD * 100).toFixed(0) }}% yield.
       Actual dividends are not tracked yet.
@@ -15,6 +17,7 @@ import { ref, computed, onMounted } from 'vue';
 import { fetchStocksTotalValue } from '../../../services/api';
 import { formatMoney } from '../../../utils/money';
 import type { StockValueSummary } from '../../../models/models';
+import StatCard from '../../ui/StatCard.vue';
 
 /**
  * There is no dividend data in the schema, so this is a flat assumption rather than a

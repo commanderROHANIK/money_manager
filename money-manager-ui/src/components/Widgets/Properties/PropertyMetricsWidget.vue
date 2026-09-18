@@ -10,7 +10,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
       <div v-for="tile in tiles" :key="tile.label" class="p-3 rounded-lg bg-surface-2">
         <p class="text-xs text-text-muted">{{ tile.label }}</p>
-        <p class="text-lg font-bold tabular-nums" :class="tile.tone">{{ tile.value }}</p>
+        <p class="font-heading text-lg font-bold tabular-nums" :class="tile.tone">{{ tile.value }}</p>
         <p v-if="tile.hint" class="text-[11px] text-text-muted mt-0.5">{{ tile.hint }}</p>
       </div>
     </div>

@@ -349,6 +349,10 @@
       "title": "État des prêts",
       "empty": "Aucune donnée disponible."
     },
+    "monthlyRepayment": {
+      "title": "Remboursements mensuels",
+      "total": "Total"
+    },
     "summary": {
       "label": "Prêts",
       "activePaidOff": "{active} en cours · {paidOff} remboursé(s)"
@@ -384,7 +388,8 @@
       "open": "Modifier {name}"
     },
     "close": "Fermer",
-    "delete": "Supprimer {name}"
+    "delete": "Supprimer {name}",
+    "total": "Total"
   },
   "stock": {
     "add": {

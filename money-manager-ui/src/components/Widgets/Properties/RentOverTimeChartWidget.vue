@@ -1,8 +1,7 @@
 <template>
   <div>
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.rentOverTime.title') }}</h2>
-
-    <div v-if="hasData" class="chart-box">
+    <div v-if="hasData" class="h-[280px]">
       <Line :data="chartData" :options="chartOptions" />
     </div>
     <p v-else class="text-sm text-text-muted">
@@ -26,7 +25,7 @@ import {
 import type { ChartOptions } from 'chart.js';
 import { RentPriceSource, type RentPricePoint } from '../../../models/models';
 import { formatMoney } from '../../../utils/money';
-import { chartColors } from '../../../utils/chartTheme';
+import { chartColors, chartFonts } from '../../../utils/chartTheme';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -94,21 +93,26 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   maintainAspectRatio: false,
   spanGaps: true,
   scales: {
+    x: {
+      ticks: { font: { family: chartFonts.body } },
+    },
     y: {
       beginAtZero: false,
       ticks: {
+        font: { family: chartFonts.body },
         callback: (value) => formatMoney(Number(value), props.currencyCode),
       },
     },
   },
   plugins: {
-    legend: { position: 'bottom' as const },
+    legend: {
+      position: 'bottom' as const,
+      labels: { font: { family: chartFonts.body } },
+    },
+    tooltip: {
+      titleFont: { family: chartFonts.body },
+      bodyFont: { family: chartFonts.body },
+    },
   },
 }));
 </script>
-
-<style scoped>
-.chart-box {
-  height: 280px;
-}
-</style>

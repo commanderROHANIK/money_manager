@@ -6,6 +6,8 @@ using MoneyManager.Api.Data;
 using MoneyManager.Api.Infrastructure;
 using MoneyManager.Api.Infrastructure.Validation;
 using MoneyManager.Api.Models;
+using MoneyManager.Api.Services.Analytics;
+using MoneyManager.Api.Services.Currency;
 
 namespace MoneyManager.Api.Controllers
 {
@@ -16,10 +18,12 @@ namespace MoneyManager.Api.Controllers
     public class LoansController : ControllerBase
     {
         private readonly MoneyManagerDbContext _context;
+        private readonly CurrencyRollupService _rollups;
 
-        public LoansController(MoneyManagerDbContext context)
+        public LoansController(MoneyManagerDbContext context, CurrencyRollupService rollups)
         {
             _context = context;
+            _rollups = rollups;
         }
 
         [HttpGet]
@@ -37,6 +41,29 @@ namespace MoneyManager.Api.Controllers
                 return NotFound();
 
             return loan;
+        }
+
+        /// <summary>
+        /// Total owed across every loan's original principal, plus the per-currency breakdown it
+        /// was built from — the loans equivalent of <c>BankAccountsController.GetTotalBalance</c>.
+        ///
+        /// <para>
+        /// This used to be summed client-side across <c>LoanAmount</c> while ignoring
+        /// <c>CurrencyCode</c> (and labelled with a hardcoded HUF suffix regardless), so a EUR
+        /// mortgage beside a HUF one produced a confident nonsense number. Loans in different
+        /// currencies are now converted at the owner's own rates, and if a rate is missing the
+        /// total is null with the pair named — the breakdown below is still exact either way.
+        /// </para>
+        /// </summary>
+        [HttpGet("summary/total-amount")]
+        public async Task<ActionResult<LoanAmountSummaryDto>> GetTotalAmount()
+        {
+            // Materialized before summing on purpose: SQLite has no native decimal type, so
+            // aggregating decimals in SQL either fails or loses precision.
+            var loans = await _context.Loans.ToListAsync();
+            var rollup = await _rollups.LoadAsync();
+
+            return LoanAmountSummaryDto.From(loans, rollup);
         }
 
         [HttpPost]
@@ -140,6 +167,72 @@ namespace MoneyManager.Api.Controllers
                     "Remaining balance cannot exceed the original loan amount.",
                     [nameof(RemainingBalance)]);
             }
+        }
+    }
+
+    /// <summary>
+    /// <c>Currency</c> names the unit <c>TotalAmount</c> is in, and is never a guess: when the
+    /// loans share a currency it is that one, and when they do not it is the owner's base
+    /// currency, which is also the only case where a rate is applied.
+    ///
+    /// <para>
+    /// <c>ByCurrency</c> is the part that is always true. If a rate is missing the headline total
+    /// is null rather than approximate, and the breakdown still tells the user exactly what they
+    /// owe.
+    /// </para>
+    /// </summary>
+    public record LoanAmountSummaryDto(
+        decimal? TotalAmount,
+        string Currency,
+        bool MixedCurrency,
+        bool Converted,
+        string BaseCurrency,
+        IReadOnlyList<CurrencyTotal> ByCurrency,
+        IReadOnlyList<CurrencyPair> MissingRates,
+        IReadOnlyList<AppliedRate> AppliedRates,
+        IReadOnlyList<MetricWarning> Warnings)
+    {
+        public static LoanAmountSummaryDto From(IReadOnlyList<Loan> loans, RollupContext rollup)
+        {
+            var byCurrency = loans
+                .GroupBy(l => l.CurrencyCode.Trim().ToUpperInvariant(), StringComparer.Ordinal)
+                .Select(g => new CurrencyTotal(g.Key, Math.Round(g.Sum(l => l.LoanAmount), 2)))
+                .OrderBy(t => t.CurrencyCode, StringComparer.Ordinal)
+                .ToList();
+
+            // No loans is not the same shape of unknown as a missing rate: owing nothing is
+            // genuinely zero, and reporting it as such needs no rate at all.
+            if (byCurrency.Count == 0)
+            {
+                return new LoanAmountSummaryDto(
+                    0m, rollup.BaseCurrency, false, false, rollup.BaseCurrency, byCurrency, [], [], []);
+            }
+
+            var currencies = byCurrency.Select(t => t.CurrencyCode).ToList();
+            var target = rollup.ResolveTarget(currencies);
+            var missingRates = CurrencyRollup.MissingRates(currencies, rollup.Rates, target);
+
+            // Summed from the loans rather than from the rounded subtotals above, so the
+            // headline figure is not the sum of a set of roundings.
+            var total = CurrencyRollup.Sum(
+                loans.Select(l => ((decimal?)l.LoanAmount, l.CurrencyCode)),
+                rollup.Rates,
+                target);
+
+            var warnings = new List<MetricWarning>();
+            if (missingRates.Count > 0)
+                warnings.Add(CurrencyRollup.MissingRateWarning(missingRates));
+
+            return new LoanAmountSummaryDto(
+                total.Amount,
+                target,
+                currencies.Count > 1,
+                currencies.Any(c => !string.Equals(c, target, StringComparison.OrdinalIgnoreCase)),
+                rollup.BaseCurrency,
+                byCurrency,
+                missingRates,
+                CurrencyRollup.AppliedRates(currencies, rollup.Rates, target),
+                warnings);
         }
     }
 }

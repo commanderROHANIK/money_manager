@@ -21,6 +21,7 @@ import {
   chartColors,
   chartCategoricalPalette,
   chartColor,
+  chartFonts,
   resetChartColorCache,
 } from './chartTheme';
 
@@ -40,7 +41,9 @@ beforeEach(() => {
     .spyOn(HTMLCanvasElement.prototype, 'getContext')
     .mockReturnValue(null as unknown as RenderingContext);
 
-  getPropertyValue = vi.fn((name: string) => `resolved(${name})`);
+  getPropertyValue = vi.fn((name: string) =>
+    name === '--font-sans' ? "'Inter', ui-sans-serif, system-ui, sans-serif" : `resolved(${name})`,
+  );
   computedStyle = vi
     .spyOn(window, 'getComputedStyle')
     .mockReturnValue({ getPropertyValue } as unknown as CSSStyleDeclaration);
@@ -100,6 +103,14 @@ describe('caching', () => {
     // The theme-switch path depends on this: Chart.js copies these values into its own config
     // when a dataset is built, so a stale cache would survive a theme change indefinitely.
     expect(getPropertyValue).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('fonts', () => {
+  it('names Inter as the body font, matching the design system type scale', () => {
+    // Canvas text ignores the page's CSS cascade, so this is the only place a chart's font
+    // family comes from — if it drifted off Inter, every legend/tooltip/tick would too.
+    expect(chartFonts.body).toContain('Inter');
   });
 });
 

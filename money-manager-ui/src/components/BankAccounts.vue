@@ -11,7 +11,7 @@
       <ul class="text-sm">
         <ListRow v-for="account in bankAccounts" :key="account.id">
           <template #title>
-            <p class="font-medium">{{ account.accountName }} - {{ account.bankName }}</p>
+            <p class="font-heading font-semibold">{{ account.accountName }} - {{ account.bankName }}</p>
           </template>
           <template #subtitle>
             <p class="text-xs text-text-muted">
