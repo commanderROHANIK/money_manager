@@ -99,6 +99,13 @@ test.describe('the seeded demo portfolio', () => {
     await openProperty(page, VACANT);
 
     await expect(page.getByText(NO_VALUATION)).toBeVisible();
+
+    // IRR discounts the property's dated cash flows against a terminal equity value, so it is
+    // unknowable on exactly the properties that already warn about having no valuation — riding
+    // this test rather than getting its own avoids a second sign-in against this container (see
+    // the budget note on bank-accounts-and-stocks.spec.ts).
+    const irrTile = page.getByText('IRR', { exact: true }).locator('xpath=..');
+    await expect(irrTile).toContainText('—');
   });
 
   test('the property with a valuation carries no such warning', async ({ page }) => {
@@ -108,27 +115,12 @@ test.describe('the seeded demo portfolio', () => {
     // The half of the pair that makes the other half mean something: this is what distinguishes
     // "the seed exercises the unknown-input path" from "the seed forgot to record any valuations".
     await expect(page.getByText(NO_VALUATION)).toHaveCount(0);
-  });
 
-  test('IRR needs a valuation to anchor a terminal value, same as the appreciation figure', async ({
-    page,
-  }) => {
-    // IRR discounts the property's dated cash flows against a terminal equity value, so it is
-    // unknowable on exactly the properties that already warn about having no valuation on record
-    // — Kerkstraat never got one, Maple Court did three months ago. Asserted as a pair for the
-    // same reason as the warning above: a seed where nothing has a valuation would pass on "IRR
-    // reads as unknown" alone, and a seed where nothing lacks one would pass on "IRR reads as a
-    // number" alone.
-    await signIn(page);
-
-    await openProperty(page, VACANT);
-    const vacantTile = page.getByText('IRR', { exact: true }).locator('xpath=..');
-    await expect(vacantTile).toContainText('—');
-
-    await openProperty(page, HEALTHY);
-    const healthyTile = page.getByText('IRR', { exact: true }).locator('xpath=..');
-    await expect(healthyTile).not.toContainText('—');
-    await expect(healthyTile).toContainText('%');
+    // The other half of the IRR pair above: a valuation on record is what turns "cannot be known"
+    // into an actual figure.
+    const irrTile = page.getByText('IRR', { exact: true }).locator('xpath=..');
+    await expect(irrTile).not.toContainText('—');
+    await expect(irrTile).toContainText('%');
   });
 
   test('the two-currency portfolio totals, and discloses the rate it used', async ({ page }) => {
