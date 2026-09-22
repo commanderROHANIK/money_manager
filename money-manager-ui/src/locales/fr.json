@@ -170,6 +170,7 @@
     "valuations": {
       "title": "Estimations",
       "subtitle": "Les fonds propres et la valorisation sont mesurés par rapport au chiffre le plus récent.",
+      "valuedOn": "Évalué le",
       "valuePlaceholder": "Valeur",
       "add": "Ajouter",
       "empty": "Rien d'enregistré — le prix d'achat sert de valeur actuelle."
@@ -245,6 +246,7 @@
       "sinceUntil": "Du {start} au {end}",
       "vacant": "Vacant — aucun bail en cours aujourd'hui.",
       "tenantName": "Nom du locataire",
+      "startDate": "Date de début",
       "endOptional": "Fin (facultatif)",
       "monthlyRent": "Loyer mensuel",
       "dueDay": "Jour d'échéance",
@@ -254,15 +256,19 @@
       "title": "Ajouter un bien",
       "subtitle": "Le prix et la date d'achat servent de référence à tous les indicateurs de rendement — mieux vaut les saisir, même approximatifs.",
       "name": "Nom",
+      "propertyType": "Type de bien",
       "address": "Adresse",
       "city": "Ville",
       "purchasePrice": "Prix d'achat",
+      "currency": "Devise",
       "size": "Surface (m²)",
       "bedrooms": "Chambres",
       "submit": "Ajouter le bien"
     },
     "ledger": {
       "title": "Écritures",
+      "date": "Date",
+      "category": "Catégorie",
       "amount": "Montant",
       "note": "Note",
       "record": "Enregistrer",
@@ -336,6 +342,7 @@
       "interestRate": "Taux d'intérêt (%)",
       "interestRateHint": "Taux annuel, par exemple 4,5 pour 4,5 %.",
       "dueDateHint": "Date prévue du remboursement intégral.",
+      "currency": "Devise",
       "currencyHint": "Devise dans laquelle ce prêt est libellé.",
       "paidOffLabel": "Remboursé",
       "paidOffHint": "Cochez si ce prêt est déjà intégralement remboursé.",
@@ -375,6 +382,7 @@
       "accountType": "Type de compte",
       "accountTypeHint": "p. ex. Compte courant, Compte épargne.",
       "balance": "Solde",
+      "currency": "Devise",
       "currencyHint": "Devise dans laquelle ce compte est libellé.",
       "submit": "Ajouter le compte"
     },
@@ -393,7 +401,9 @@
       "sharesOwned": "Actions détenues",
       "purchasePrice": "Prix d'achat",
       "currentPrice": "Prix actuel",
+      "purchaseDate": "Date d'achat",
       "purchaseDateHint": "Date d'achat des actions.",
+      "currency": "Devise",
       "currencyHint": "Devise dans laquelle cette position est libellée.",
       "submit": "Ajouter la position"
     },

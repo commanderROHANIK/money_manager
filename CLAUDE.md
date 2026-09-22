@@ -173,6 +173,25 @@ them again rather than citing this one as precedent:
 fourth. The suite itself fetches nothing: `ApiFactory` sets `Features__AutomaticExchangeRates` to
 false, so a test that reached the real provider would be a deliberate act.
 
+### Placeholder is not a label
+
+A native `<input>` placeholder disappears the instant the field holds a value — it is a format
+hint for a field the user is about to fill in, not a persistent explanation. `BaseInput` and
+`BaseSelect` both take a `label` prop for the latter (a `<span>` that stays visible regardless of
+content); most call sites only ever set `:placeholder`.
+
+Set `:label` wherever a field's value can be non-empty the moment it renders: every field in
+every `Edit*Widget.vue` (prefilled from the record being edited, with no exceptions), and any
+`Add*Widget.vue` field seeded with a non-empty reactive default (a starting balance of `0`, a
+default currency, today's date). Fields that start and stay empty until the user types are fine
+with placeholder alone. `:label` and `:placeholder` are not alternatives — set both where the
+field is not self-explanatory even once it has a value.
+
+`src/__tests__/editWidgetLabels.test.ts` enforces this exhaustively for `Edit*Widget.vue`, where
+"is this field prefilled" needs no judgment call. It cannot cover `Add*Widget.vue` the same way —
+whether an Add field's default counts as "non-empty" is a per-field call — so labeling a new
+Add-form field with a non-empty default is a code-review concern, not a test.
+
 ## Things that look wrong but are deliberate
 
 Do not "fix" these:
@@ -203,6 +222,7 @@ A change to… | needs a test in…
 `Controllers/` | an integration test in `MoneyManager.Api.Tests/Integration/`
 `Program.cs`'s auth, or any `Microsoft.IdentityModel.*` / `JwtBearer` version | `Integration/AuthenticationTests.cs`
 a new widget | fixture props in `src/__tests__/fixtures.ts`, so the smoke suite mounts it
+a new field on an `Edit*Widget.vue` | `src/__tests__/editWidgetLabels.test.ts` must still pass — give it `:label`, not just `:placeholder`
 `src/utils/` or `src/services/` | a colocated unit test
 `Data/DemoDataSeeder.cs` | `DemoDataSeederTests.cs` for the rows, `e2e/demo-portfolio.spec.ts` for what they render as
 anything a reader sees | a spec in `money-manager-ui/e2e/` — see below

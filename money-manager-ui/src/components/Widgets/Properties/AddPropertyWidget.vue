@@ -13,7 +13,7 @@
         :error="errors.propertyName"
         required
       />
-      <BaseSelect v-model.number="form.propertyType">
+      <BaseSelect v-model.number="form.propertyType" :label="t('property.add.propertyType')">
         <option v-for="(label, value) in PROPERTY_TYPE_LABELS" :key="value" :value="Number(value)">
           {{ label }}
         </option>
@@ -36,7 +36,7 @@
         :error="errors.purchasePrice"
       />
       <BaseInput v-model="form.purchaseDate" type="date" :error="errors.purchaseDate" />
-      <BaseSelect v-model="form.currencyCode">
+      <BaseSelect v-model="form.currencyCode" :label="t('property.add.currency')">
         <option v-for="code in CURRENCIES" :key="code" :value="code">{{ code }}</option>
       </BaseSelect>
 

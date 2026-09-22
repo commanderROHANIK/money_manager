@@ -29,7 +29,7 @@
 
     <form class="grid grid-cols-2 gap-2 mb-4" @submit.prevent="submit">
       <BaseInput v-model="form.tenantName" :placeholder="t('property.tenancy.tenantName')" class="col-span-2" required />
-      <BaseInput v-model="form.startDate" type="date" required />
+      <BaseInput v-model="form.startDate" type="date" :label="t('property.tenancy.startDate')" required />
       <BaseInput v-model="form.endDate" type="date" :placeholder="t('property.tenancy.endOptional')" />
       <BaseInput
         v-model.number="form.monthlyRent"
@@ -43,6 +43,7 @@
         type="number"
         min="1"
         max="28"
+        :label="t('property.tenancy.dueDay')"
         :placeholder="t('property.tenancy.dueDay')"
       />
       <BaseButton type="submit" block class="col-span-2">{{ t('property.tenancy.add') }}</BaseButton>
