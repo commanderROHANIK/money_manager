@@ -13,7 +13,7 @@
           :class="event.isSystemGenerated ? 'bg-primary' : 'bg-text-muted'"
         />
         <div class="flex items-baseline justify-between gap-2">
-          <p class="font-medium">{{ event.title }}</p>
+          <p class="font-heading font-semibold">{{ event.title }}</p>
           <time class="text-xs text-text-muted whitespace-nowrap">
             {{ formatDate(event.occurredOn) }}
           </time>

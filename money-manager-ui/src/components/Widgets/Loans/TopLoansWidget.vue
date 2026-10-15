@@ -4,7 +4,7 @@
     <ul v-if="topLoans.length">
       <ListRow v-for="loan in topLoans" :key="loan.id">
         <template #title>
-          <p class="font-medium">{{ loan.loanName }}</p>
+          <p class="font-heading font-semibold">{{ loan.loanName }}</p>
         </template>
         <template #subtitle>
           <p class="text-sm text-text-muted">Remaining: {{ formatCurrency(loan.remainingBalance) }}</p>

@@ -158,4 +158,26 @@ test.describe('the seeded demo portfolio', () => {
     await expect(tile).not.toContainText('—');
     await expect(tile).toContainText(/[€$£]|\bFt\b/);
   });
+
+  test('the two type families in the design system actually reach the page', async ({ page }) => {
+    // Chart.js canvases aside (covered at the unit level — canvas text has no DOM node to assert
+    // against here), this is the one place that can tell a genuinely applied font from a class
+    // name that looks right: `getComputedStyle` reads what the browser resolved, not the markup.
+    await signIn(page);
+    await page.goto('/properties');
+
+    // Section headings are Display/H1/H2-tier in the type scale, which is Manrope.
+    const heading = page.getByRole('heading', { name: 'Portfolio', exact: true });
+    await expect(heading).toHaveCSS('font-family', /Manrope/);
+
+    // A StatCard's big figure carries the same treatment as a heading, even though it isn't one
+    // semantically — this is the exact element Phase 1/2 of issue #88 wired a font onto.
+    const rentTile = page.getByText('Total Monthly Rent', { exact: true }).locator('xpath=..');
+    await expect(rentTile.locator('.font-heading')).toHaveCSS('font-family', /Manrope/);
+
+    // Ordinary body copy — the valuation warning — stays on the Inter default rather than
+    // inheriting Manrope from a nearby heading.
+    await openProperty(page, VACANT);
+    await expect(page.getByText(NO_VALUATION)).toHaveCSS('font-family', /Inter/);
+  });
 });

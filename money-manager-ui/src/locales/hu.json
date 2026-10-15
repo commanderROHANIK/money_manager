@@ -356,6 +356,10 @@
       "title": "Hitelek állapota",
       "empty": "Nincs megjeleníthető adat."
     },
+    "monthlyRepayment": {
+      "title": "Havi törlesztések",
+      "total": "Összesen"
+    },
     "summary": {
       "label": "Hitelek",
       "activePaidOff": "{active} aktív · {paidOff} kifizetve"
@@ -392,7 +396,8 @@
       "open": "{name} szerkesztése"
     },
     "close": "Bezárás",
-    "delete": "{name} eltávolítása"
+    "delete": "{name} eltávolítása",
+    "total": "Összesen"
   },
   "stock": {
     "add": {

@@ -187,6 +187,14 @@ export const stockValueSummary = {
   missingRates: [], appliedRates: [], warnings: [],
 };
 
+/** The loans equivalent of `bankBalanceSummary`/`stockValueSummary` — same shape, same rules. */
+export const loanAmountSummary = {
+  totalAmount: 385000, currency: 'EUR', mixedCurrency: false, converted: false,
+  baseCurrency: 'EUR',
+  byCurrency: [{ currencyCode: 'EUR', total: 385000 }],
+  missingRates: [], appliedRates: [], warnings: [],
+};
+
 export const transactions = [
   { id: 1, rentalPropertyId: 1, date: iso('2026-07-10'), amount: 240000, currencyCode: 'HUF', category: TransactionCategory.RentIncome, description: 'July rent' },
   { id: 2, rentalPropertyId: 1, date: iso('2026-07-02'), amount: 18400, currencyCode: 'HUF', category: TransactionCategory.Insurance, description: 'Building insurance' },

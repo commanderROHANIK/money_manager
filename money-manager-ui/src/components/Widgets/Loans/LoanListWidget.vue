@@ -7,8 +7,9 @@
     <ul v-else>
       <ListRow v-for="loan in loans" :key="loan.id">
         <template #title>
-          <p class="font-medium tabular-nums">
-            {{ loan.loanName }} – {{ formatMoney(loan.remainingBalance, loan.currencyCode) }}
+          <p class="tabular-nums">
+            <span class="font-heading font-semibold">{{ loan.loanName }}</span>
+            – {{ formatMoney(loan.remainingBalance, loan.currencyCode) }}
             / {{ formatMoney(loan.loanAmount, loan.currencyCode) }}
           </p>
         </template>

@@ -3,7 +3,7 @@
     <h2 class="font-heading text-lg font-bold mb-4">{{ t('property.tenancy.title') }}</h2>
 
     <div v-if="active" class="p-3 rounded-lg bg-primary-soft border border-border mb-4">
-      <p class="font-medium text-primary-strong">{{ active.tenantName }}</p>
+      <p class="font-heading font-semibold text-primary-strong">{{ active.tenantName }}</p>
       <p class="text-sm text-text tabular-nums">
         {{
           t('property.tenancy.rentLine', {

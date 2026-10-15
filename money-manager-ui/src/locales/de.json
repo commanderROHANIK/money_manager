@@ -356,6 +356,10 @@
       "title": "Kreditstatus",
       "empty": "Keine Daten vorhanden."
     },
+    "monthlyRepayment": {
+      "title": "Monatliche Raten",
+      "total": "Gesamt"
+    },
     "summary": {
       "label": "Kredite",
       "activePaidOff": "{active} aktiv · {paidOff} abbezahlt"
@@ -392,7 +396,8 @@
       "open": "{name} bearbeiten"
     },
     "close": "Schließen",
-    "delete": "{name} entfernen"
+    "delete": "{name} entfernen",
+    "total": "Gesamt"
   },
   "stock": {
     "add": {

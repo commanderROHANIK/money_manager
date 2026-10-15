@@ -26,7 +26,7 @@
           <template #title>
             <router-link
               :to="`/properties/${item.propertyId}`"
-              class="text-primary-strong hover:underline truncate"
+              class="font-heading font-semibold text-primary-strong hover:underline truncate"
             >
               {{ item.propertyName }}
             </router-link>

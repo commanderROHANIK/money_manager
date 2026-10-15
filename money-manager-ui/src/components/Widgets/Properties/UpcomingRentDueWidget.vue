@@ -4,7 +4,7 @@
     <ul v-if="upcomingRents.length > 0">
       <ListRow v-for="property in upcomingRents" :key="property.id">
         <template #title>
-          <span class="font-medium">{{ property.propertyName }}</span>
+          <span class="font-heading font-semibold">{{ property.propertyName }}</span>
         </template>
         <template #subtitle>
           <span class="text-sm text-text-muted">
