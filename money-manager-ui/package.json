@@ -21,10 +21,10 @@
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.20.0",
     "chart.js": "^4.5.1",
-    "vue": "^3.5.42",
+    "vue": "^3.5.44",
     "vue-chartjs": "^5.3.4",
-    "vue-i18n": "^11.4.10",
-    "vue-router": "^5.3.1"
+    "vue-i18n": "^11.4.14",
+    "vue-router": "^5.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
